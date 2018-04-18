@@ -1,26 +1,26 @@
 /*
  * Copyright (c) 1997, 2013, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
  *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
  *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
  */
 
 package java.util;
@@ -28,6 +28,118 @@ package java.util;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+/**
+ * The root interface in the <i>collection hierarchy</i>.  A collection
+ * represents a group of objects, known as its <i>elements</i>.  Some
+ * collections allow duplicate elements and others do not.  Some are ordered
+ * and others unordered.  The JDK does not provide any <i>direct</i>
+ * implementations of this interface: it provides implementations of more
+ * specific subinterfaces like <tt>Set</tt> and <tt>List</tt>.  This interface
+ * is typically used to pass collections around and manipulate them where
+ * maximum generality is desired.
+ *
+ * <p><i>Bags</i> or <i>multisets</i> (unordered collections that may contain
+ * duplicate elements) should implement this interface directly.
+ *
+ * <p>All general-purpose <tt>Collection</tt> implementation classes (which
+ * typically implement <tt>Collection</tt> indirectly through one of its
+ * subinterfaces) should provide two "standard" constructors: a void (no
+ * arguments) constructor, which creates an empty collection, and a
+ * constructor with a single argument of type <tt>Collection</tt>, which
+ * creates a new collection with the same elements as its argument.  In
+ * effect, the latter constructor allows the user to copy any collection,
+ * producing an equivalent collection of the desired implementation type.
+ * There is no way to enforce this convention (as interfaces cannot contain
+ * constructors) but all of the general-purpose <tt>Collection</tt>
+ * implementations in the Java platform libraries comply.
+ *
+ * <p>The "destructive" methods contained in this interface, that is, the
+ * methods that modify the collection on which they operate, are specified to
+ * throw <tt>UnsupportedOperationException</tt> if this collection does not
+ * support the operation.  If this is the case, these methods may, but are not
+ * required to, throw an <tt>UnsupportedOperationException</tt> if the
+ * invocation would have no effect on the collection.  For example, invoking
+ * the {@link #addAll(Collection)} method on an unmodifiable collection may,
+ * but is not required to, throw the exception if the collection to be added
+ * is empty.
+ *
+ * <p><a name="optional-restrictions">
+ * Some collection implementations have restrictions on the elements that
+ * they may contain.</a>  For example, some implementations prohibit null elements,
+ * and some have restrictions on the types of their elements.  Attempting to
+ * add an ineligible element throws an unchecked exception, typically
+ * <tt>NullPointerException</tt> or <tt>ClassCastException</tt>.  Attempting
+ * to query the presence of an ineligible element may throw an exception,
+ * or it may simply return false; some implementations will exhibit the former
+ * behavior and some will exhibit the latter.  More generally, attempting an
+ * operation on an ineligible element whose completion would not result in
+ * the insertion of an ineligible element into the collection may throw an
+ * exception or it may succeed, at the option of the implementation.
+ * Such exceptions are marked as "optional" in the specification for this
+ * interface.
+ *
+ * <p>It is up to each collection to determine its own synchronization
+ * policy.  In the absence of a stronger guarantee by the
+ * implementation, undefined behavior may result from the invocation
+ * of any method on a collection that is being mutated by another
+ * thread; this includes direct invocations, passing the collection to
+ * a method that might perform invocations, and using an existing
+ * iterator to examine the collection.
+ *
+ * <p>Many methods in Collections Framework interfaces are defined in
+ * terms of the {@link Object#equals(Object) equals} method.  For example,
+ * the specification for the {@link #contains(Object) contains(Object o)}
+ * method says: "returns <tt>true</tt> if and only if this collection
+ * contains at least one element <tt>e</tt> such that
+ * <tt>(o==null ? e==null : o.equals(e))</tt>."  This specification should
+ * <i>not</i> be construed to imply that invoking <tt>Collection.contains</tt>
+ * with a non-null argument <tt>o</tt> will cause <tt>o.equals(e)</tt> to be
+ * invoked for any element <tt>e</tt>.  Implementations are free to implement
+ * optimizations whereby the <tt>equals</tt> invocation is avoided, for
+ * example, by first comparing the hash codes of the two elements.  (The
+ * {@link Object#hashCode()} specification guarantees that two objects with
+ * unequal hash codes cannot be equal.)  More generally, implementations of
+ * the various Collections Framework interfaces are free to take advantage of
+ * the specified behavior of underlying {@link Object} methods wherever the
+ * implementor deems it appropriate.
+ *
+ * <p>Some collection operations which perform recursive traversal of the
+ * collection may fail with an exception for self-referential instances where
+ * the collection directly or indirectly contains itself. This includes the
+ * {@code clone()}, {@code equals()}, {@code hashCode()} and {@code toString()}
+ * methods. Implementations may optionally handle the self-referential scenario,
+ * however most current implementations do not do so.
+ *
+ * <p>This interface is a member of the
+ * <a href="{@docRoot}/../technotes/guides/collections/index.html">
+ * Java Collections Framework</a>.
+ *
+ * @implSpec
+ * The default method implementations (inherited or otherwise) do not apply any
+ * synchronization protocol.  If a {@code Collection} implementation has a
+ * specific synchronization protocol, then it must override default
+ * implementations to apply that protocol.
+ *
+ * @param <E> the type of elements in this collection
+ *
+ * @author  Josh Bloch
+ * @author  Neal Gafter
+ * @see     Set
+ * @see     List
+ * @see     Map
+ * @see     SortedSet
+ * @see     SortedMap
+ * @see     HashSet
+ * @see     TreeSet
+ * @see     ArrayList
+ * @see     LinkedList
+ * @see     Vector
+ * @see     Collections
+ * @see     Arrays
+ * @see     AbstractCollection
+ * @since 1.2
+ */
 
 public interface Collection<E> extends Iterable<E> {
     // Query Operations
