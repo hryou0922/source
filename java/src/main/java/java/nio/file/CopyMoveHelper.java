@@ -27,7 +27,6 @@ package java.nio.file;
 
 import java.nio.file.attribute.*;
 import java.io.InputStream;
-import java.io.IOException;
 
 /**
  * Helper class to support copying or moving files when the source and target

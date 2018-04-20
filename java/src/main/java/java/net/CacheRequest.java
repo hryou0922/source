@@ -26,7 +26,6 @@
 package java.net;
 
 import java.io.OutputStream;
-import java.io.IOException;
 
 /**
  * Represents channels for storing resources in the

@@ -26,7 +26,6 @@
 package java.nio.channels;
 
 import java.nio.channels.spi.AsynchronousChannelProvider;
-import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;

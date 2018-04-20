@@ -26,7 +26,6 @@
 
 package javax.net.ssl;
 
-import java.io.IOException;
 import java.net.*;
 
 /**

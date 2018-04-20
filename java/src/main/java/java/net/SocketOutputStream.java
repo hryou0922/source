@@ -27,7 +27,6 @@ package java.net;
 
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.channels.FileChannel;
 
 /**

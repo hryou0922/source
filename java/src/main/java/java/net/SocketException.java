@@ -25,8 +25,6 @@
 
 package java.net;
 
-import java.io.IOException;
-
 /**
  * Thrown to indicate that there is an error creating or accessing a Socket.
  *

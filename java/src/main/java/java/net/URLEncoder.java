@@ -25,19 +25,13 @@
 
 package java.net;
 
-import java.io.ByteArrayOutputStream;
-import java.io.BufferedWriter;
-import java.io.OutputStreamWriter;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.io.CharArrayWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException ;
 import java.util.BitSet;
 import java.security.AccessController;
-import java.security.PrivilegedAction;
-import sun.security.action.GetBooleanAction;
+
 import sun.security.action.GetPropertyAction;
 
 /**

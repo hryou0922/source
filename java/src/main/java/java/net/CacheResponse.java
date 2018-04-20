@@ -28,7 +28,6 @@ package java.net;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.List;
-import java.io.IOException;
 
 /**
  * Represent channels for retrieving resources from the

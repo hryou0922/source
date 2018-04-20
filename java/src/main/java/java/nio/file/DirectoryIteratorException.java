@@ -27,9 +27,7 @@ package java.nio.file;
 
 import java.util.ConcurrentModificationException;
 import java.util.Objects;
-import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.InvalidObjectException;
 
 /**
  * Runtime exception thrown if an I/O error is encountered when iterating over

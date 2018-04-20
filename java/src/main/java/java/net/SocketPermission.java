@@ -31,17 +31,15 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.StringTokenizer;
-import java.net.InetAddress;
 import java.security.Permission;
 import java.security.PermissionCollection;
 import java.security.PrivilegedAction;
 import java.security.AccessController;
-import java.security.Security;
 import java.io.Serializable;
 import java.io.ObjectStreamField;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
-import java.io.IOException;
+
 import sun.net.util.IPAddressUtil;
 import sun.net.RegisteredDomain;
 import sun.net.PortConfig;

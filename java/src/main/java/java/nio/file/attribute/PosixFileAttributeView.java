@@ -27,7 +27,6 @@ package java.nio.file.attribute;
 
 import java.nio.file.*;
 import java.util.Set;
-import java.io.IOException;
 
 /**
  * A file attribute view that provides a view of the file attributes commonly

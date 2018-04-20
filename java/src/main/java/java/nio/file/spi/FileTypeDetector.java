@@ -26,7 +26,6 @@
 package java.nio.file.spi;
 
 import java.nio.file.Path;
-import java.io.IOException;
 
 /**
  * A file type detector for probing a file to guess its file type.

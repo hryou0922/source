@@ -292,14 +292,10 @@ public abstract class AbstractQueuedSynchronizer
 
     private static final long serialVersionUID = 7373984972572414691L;
 
-    /**
-     * Creates a new {@code AbstractQueuedSynchronizer} instance
-     * with initial synchronization state of zero.
-     */
     protected AbstractQueuedSynchronizer() { }
 
     /**
-     * Wait queue node class.
+     * 等待队列节点类
      *
      * <p>The wait queue is a variant of a "CLH" (Craig, Landin, and
      * Hagersten) lock queue. CLH locks are normally used for
@@ -378,14 +374,14 @@ public abstract class AbstractQueuedSynchronizer
      * on the design of this class.
      */
     static final class Node {
-        /** Marker to indicate a node is waiting in shared mode */
+        /** 标记：在共享模式下，处于等待状态的节点 */
         static final Node SHARED = new Node();
-        /** Marker to indicate a node is waiting in exclusive mode */
+        /** 标记：在排他模式下，处于等待状态的节点 */
         static final Node EXCLUSIVE = null;
 
-        /** waitStatus value to indicate thread has cancelled */
+        /** waitStatus： value to indicate thread has cancelled */
         static final int CANCELLED =  1;
-        /** waitStatus value to indicate successor's thread needs unparking */
+        /** waitStatus： 后继者的线程需要被执行*/
         static final int SIGNAL    = -1;
         /** waitStatus value to indicate thread is waiting on condition */
         static final int CONDITION = -2;

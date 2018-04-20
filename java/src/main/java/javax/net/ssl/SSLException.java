@@ -26,8 +26,6 @@
 
 package javax.net.ssl;
 
-import java.io.IOException;
-
 /**
  * Indicates some kind of error detected by an SSL subsystem.
  * This class is the general class of exceptions produced

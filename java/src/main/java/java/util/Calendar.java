@@ -38,10 +38,8 @@
 
 package java.util;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OptionalDataException;
 import java.io.Serializable;
 import java.security.AccessControlContext;
 import java.security.AccessController;

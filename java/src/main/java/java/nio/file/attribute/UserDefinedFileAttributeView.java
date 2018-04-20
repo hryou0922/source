@@ -27,7 +27,6 @@ package java.nio.file.attribute;
 
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.io.IOException;
 
 /**
  * A file attribute view that provides a view of a file's user-defined

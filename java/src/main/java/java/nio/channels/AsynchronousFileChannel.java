@@ -29,7 +29,6 @@ import java.nio.file.*;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.spi.*;
 import java.nio.ByteBuffer;
-import java.io.IOException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutorService;
 import java.util.Set;

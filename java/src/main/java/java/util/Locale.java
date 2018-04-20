@@ -40,7 +40,6 @@
 
 package java.util;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamField;
@@ -62,7 +61,6 @@ import sun.util.locale.ParseStatus;
 import sun.util.locale.provider.LocaleProviderAdapter;
 import sun.util.locale.provider.LocaleResources;
 import sun.util.locale.provider.LocaleServiceProviderPool;
-import sun.util.locale.provider.ResourceBundleBasedAdapter;
 
 /**
  * A <code>Locale</code> object represents a specific geographical, political,

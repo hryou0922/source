@@ -40,7 +40,7 @@ package java.util;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.IOException;
+
 import sun.util.calendar.CalendarSystem;
 import sun.util.calendar.CalendarUtils;
 import sun.util.calendar.BaseCalendar;

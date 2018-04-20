@@ -26,7 +26,6 @@
 package java.nio.channels;
 
 import java.nio.ByteBuffer;
-import java.io.IOException;
 
 /**
  * A byte channel that maintains a current <i>position</i> and allows the

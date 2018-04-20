@@ -30,7 +30,6 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.Serializable;
 import java.security.AccessController;
 import java.security.PrivilegedAction;

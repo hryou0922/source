@@ -29,7 +29,6 @@ import java.nio.file.attribute.*;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.Set;
 import java.io.Closeable;
-import java.io.IOException;
 
 /**
  * Provides an interface to a file system and is the factory for objects to

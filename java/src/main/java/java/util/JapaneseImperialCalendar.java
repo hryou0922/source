@@ -25,7 +25,6 @@
 
 package java.util;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import sun.util.locale.provider.CalendarDataUtility;
 import sun.util.calendar.BaseCalendar;

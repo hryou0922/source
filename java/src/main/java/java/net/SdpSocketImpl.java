@@ -25,9 +25,6 @@
 
 package java.net;
 
-import java.io.IOException;
-import java.io.FileDescriptor;
-
 import sun.net.sdp.SdpSupport;
 
 /**

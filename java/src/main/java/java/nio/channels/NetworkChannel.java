@@ -28,7 +28,6 @@ package java.nio.channels;
 import java.net.SocketOption;
 import java.net.SocketAddress;
 import java.util.Set;
-import java.io.IOException;
 
 /**
  * A channel to a network socket.

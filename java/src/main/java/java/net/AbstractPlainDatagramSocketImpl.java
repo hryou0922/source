@@ -25,7 +25,6 @@
 package java.net;
 
 import java.io.FileDescriptor;
-import java.io.IOException;
 import java.security.AccessController;
 import sun.net.ResourceManager;
 

@@ -25,7 +25,6 @@
 
 package java.net;
 
-import java.io.IOException;
 import java.nio.channels.DatagramChannel;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;

@@ -41,21 +41,11 @@ import java.util.Date;
 import sun.misc.Unsafe;
 
 /**
- * A version of {@link AbstractQueuedSynchronizer} in
- * which synchronization state is maintained as a {@code long}.
- * This class has exactly the same structure, properties, and methods
- * as {@code AbstractQueuedSynchronizer} with the exception
- * that all state-related parameters and results are defined
- * as {@code long} rather than {@code int}. This class
- * may be useful when creating synchronizers such as
- * multilevel locks and barriers that require
- * 64 bits of state.
+ * AbstractQueuedSynchronizer的一个版本，其中同步状态保持为long 。
+ * 此类具有完全相同的结构，属性和为方法AbstractQueuedSynchronizer与所有的状态有关的参数和结果被定义为例外long而非int
  *
- * <p>See {@link AbstractQueuedSynchronizer} for usage
- * notes and examples.
+ * JDK没有默认实现子类，可以不看
  *
- * @since 1.6
- * @author Doug Lea
  */
 public abstract class AbstractQueuedLongSynchronizer
     extends AbstractOwnableSynchronizer

@@ -27,7 +27,6 @@ package java.util;
 
 import java.io.BufferedWriter;
 import java.io.Closeable;
-import java.io.IOException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
@@ -35,7 +34,6 @@ import java.io.Flushable;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;

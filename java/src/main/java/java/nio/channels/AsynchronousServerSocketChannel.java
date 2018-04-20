@@ -29,7 +29,6 @@ import java.nio.channels.spi.*;
 import java.net.SocketOption;
 import java.net.SocketAddress;
 import java.util.concurrent.Future;
-import java.io.IOException;
 
 /**
  * An asynchronous channel for stream-oriented listening sockets.

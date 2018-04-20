@@ -28,7 +28,6 @@ package java.util;
 import java.util.function.Consumer;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.io.IOException;
 
 /**
  * <p>Hash table and linked list implementation of the <tt>Map</tt> interface,

@@ -25,10 +25,7 @@
 
 package java.net;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InvalidObjectException;
-import java.io.ObjectStreamException;
 import java.io.ObjectStreamField;
 import java.io.ObjectInputStream.GetField;
 import java.util.Hashtable;

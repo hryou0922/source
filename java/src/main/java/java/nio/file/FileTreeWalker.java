@@ -27,7 +27,6 @@ package java.nio.file;
 
 import java.nio.file.attribute.BasicFileAttributes;
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Iterator;

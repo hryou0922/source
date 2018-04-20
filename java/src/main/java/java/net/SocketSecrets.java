@@ -25,8 +25,6 @@
 
 package java.net;
 
-import java.io.IOException;
-
 class SocketSecrets {
 
     /* accessed by reflection from jdk.net.Sockets */

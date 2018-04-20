@@ -25,9 +25,9 @@
 
 package java.nio.channels;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.io.IOException;
 
 /**
  * A token representing the membership of an Internet Protocol (IP) multicast
@@ -119,7 +119,7 @@ public abstract class MembershipKey {
      * @throws  UnsupportedOperationException
      *          If the underlying operating system does not support source
      *          filtering
-     * @throws  IOException
+     * @throws IOException
      *          If an I/O error occurs
      */
     public abstract MembershipKey block(InetAddress source) throws IOException;

@@ -26,7 +26,6 @@
 package java.nio.channels.spi;
 
 import java.nio.channels.*;
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 import java.util.ServiceConfigurationError;

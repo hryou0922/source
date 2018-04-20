@@ -25,8 +25,6 @@
 
 package java.net;
 
-import java.io.IOException;
-
 /**
  * Thrown to indicate that a HTTP request needs to be retried
  * but cannot be retried automatically, due to streaming mode

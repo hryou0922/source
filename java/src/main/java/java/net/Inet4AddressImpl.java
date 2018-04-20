@@ -23,7 +23,6 @@
  * questions.
  */
 package java.net;
-import java.io.IOException;
 
 /*
  * Package private implementation of InetAddressImpl for IPv4.

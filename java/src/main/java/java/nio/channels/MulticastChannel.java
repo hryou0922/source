@@ -27,7 +27,6 @@ package java.nio.channels;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.io.IOException;
 import java.net.ProtocolFamily;             // javadoc
 import java.net.StandardProtocolFamily;     // javadoc
 import java.net.StandardSocketOptions;      // javadoc

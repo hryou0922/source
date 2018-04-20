@@ -25,8 +25,6 @@
 
 package java.nio.file.attribute;
 
-import java.io.IOException;
-
 /**
  * A file attribute view that provides a view of the legacy "DOS" file attributes.
  * These attributes are supported by file systems such as the File Allocation

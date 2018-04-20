@@ -25,7 +25,6 @@
 package java.net;
 
 import java.io.InputStream;
-import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 

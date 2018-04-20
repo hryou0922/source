@@ -27,7 +27,6 @@ package java.nio.file;
 
 import java.util.Iterator;
 import java.io.Closeable;
-import java.io.IOException;
 
 /**
  * An object to iterate over the entries in a directory. A directory stream

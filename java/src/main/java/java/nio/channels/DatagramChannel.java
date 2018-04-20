@@ -25,7 +25,6 @@
 
 package java.nio.channels;
 
-import java.io.IOException;
 import java.net.ProtocolFamily;
 import java.net.DatagramSocket;
 import java.net.SocketOption;

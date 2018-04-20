@@ -26,7 +26,6 @@
 package java.nio.file;
 
 import java.nio.file.attribute.BasicFileAttributes;
-import java.io.IOException;
 import java.util.Objects;
 
 /**

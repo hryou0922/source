@@ -75,7 +75,7 @@ public interface InterruptibleChannel
      * <p> This method otherwise behaves exactly as specified by the {@link
      * Channel#close Channel} interface.  </p>
      *
-     * @throws  IOException  If an I/O error occurs
+     * @throws IOException  If an I/O error occurs
      */
     public void close() throws IOException;
 

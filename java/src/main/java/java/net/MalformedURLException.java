@@ -25,8 +25,6 @@
 
 package java.net;
 
-import java.io.IOException;
-
 /**
  * Thrown to indicate that a malformed URL has occurred. Either no
  * legal protocol could be found in a specification string or the

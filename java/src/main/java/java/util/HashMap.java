@@ -25,8 +25,6 @@
 
 package java.util;
 
-import java.io.IOException;
-import java.io.InvalidObjectException;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;

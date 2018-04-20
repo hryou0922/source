@@ -24,7 +24,7 @@
  */
 
 package java.net;
-import java.io.IOException;
+
 /*
  * Package private interface to "implementation" used by
  * {@link InetAddress}.

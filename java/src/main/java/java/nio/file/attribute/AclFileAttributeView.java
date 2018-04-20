@@ -27,7 +27,6 @@ package java.nio.file.attribute;
 
 import java.nio.file.*;
 import java.util.List;
-import java.io.IOException;
 
 /**
  * A file attribute view that supports reading or updating a file's Access

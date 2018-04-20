@@ -27,7 +27,7 @@ package java.net;
 
 import java.util.Map;
 import java.util.List;
-import java.io.IOException;
+
 import sun.security.util.SecurityConstants;
 
 /**

@@ -25,9 +25,6 @@
 
 package java.util;
 
-import java.io.NotSerializableException;
-import java.io.IOException;
-
 /**
  * Thrown to indicate that an operation could not complete because
  * the input did not conform to the appropriate XML document type

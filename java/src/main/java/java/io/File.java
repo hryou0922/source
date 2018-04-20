@@ -151,7 +151,11 @@ public class File
 {
 
     /**
-     * The FileSystem object representing the platform's local file system.
+     *
+     * 返回本地默认的文件系统
+     *  如果unix，返回UnixFileSystem
+     *  如果window，则返回WinNTFileSystem
+     *
      */
     private static final FileSystem fs = DefaultFileSystem.getFileSystem();
 

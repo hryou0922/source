@@ -25,8 +25,6 @@
 
 package java.net;
 
-import java.io.ObjectStreamException;
-
 /**
  * This class represents an Internet Protocol version 4 (IPv4) address.
  * Defined by <a href="http://www.ietf.org/rfc/rfc790.txt">

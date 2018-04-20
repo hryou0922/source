@@ -41,7 +41,7 @@ package java.util;
 
 import java.io.InputStream;
 import java.io.Reader;
-import java.io.IOException;
+
 import sun.util.ResourceBundleEnumeration;
 
 /**
