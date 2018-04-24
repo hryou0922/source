@@ -30,6 +30,8 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
+ * 集合的根接口
+ *
  * The root interface in the <i>collection hierarchy</i>.  A collection
  * represents a group of objects, known as its <i>elements</i>.  Some
  * collections allow duplicate elements and others do not.  Some are ordered
@@ -111,15 +113,9 @@ import java.util.stream.StreamSupport;
  * methods. Implementations may optionally handle the self-referential scenario,
  * however most current implementations do not do so.
  *
- * <p>This interface is a member of the
- * <a href="{@docRoot}/../technotes/guides/collections/index.html">
- * Java Collections Framework</a>.
  *
  * @implSpec
- * The default method implementations (inherited or otherwise) do not apply any
- * synchronization protocol.  If a {@code Collection} implementation has a
- * specific synchronization protocol, then it must override default
- * implementations to apply that protocol.
+ *  默认的方法实现是没有同步的机制，如果需要同步，则需要覆盖默认的方法
  *
  * @param <E> the type of elements in this collection
  *
@@ -145,99 +141,48 @@ public interface Collection<E> extends Iterable<E> {
     // Query Operations
 
     /**
-     * Returns the number of elements in this collection.  If this collection
-     * contains more than <tt>Integer.MAX_VALUE</tt> elements, returns
-     * <tt>Integer.MAX_VALUE</tt>.
+     * 返回集合大小，如果数量大于Integer.MAX_VALUE，则返回Integer.MAX_VALUE
      *
-     * @return the number of elements in this collection
      */
     int size();
 
     /**
-     * Returns <tt>true</tt> if this collection contains no elements.
-     *
-     * @return <tt>true</tt> if this collection contains no elements
+     * 判断集合是否为空
      */
     boolean isEmpty();
 
     /**
-     * Returns <tt>true</tt> if this collection contains the specified element.
-     * More formally, returns <tt>true</tt> if and only if this collection
-     * contains at least one element <tt>e</tt> such that
-     * <tt>(o==null&nbsp;?&nbsp;e==null&nbsp;:&nbsp;o.equals(e))</tt>.
+     * 返回true，如果集合中包含指定的元素
+     * 两个元素相同的条件只能是如下方式： o==null ? e==null : o.equals(e)
      *
-     * @param o element whose presence in this collection is to be tested
-     * @return <tt>true</tt> if this collection contains the specified
-     *         element
-     * @throws ClassCastException if the type of the specified element
-     *         is incompatible with this collection
-     *         (<a href="#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified element is null and this
-     *         collection does not permit null elements
-     *         (<a href="#optional-restrictions">optional</a>)
      */
     boolean contains(Object o);
 
     /**
-     * Returns an iterator over the elements in this collection.  There are no
-     * guarantees concerning the order in which the elements are returned
-     * (unless this collection is an instance of some class that provides a
-     * guarantee).
+     * 返回迭代的iterator。 iterator中的元素顺序可以是不确定的
      *
-     * @return an <tt>Iterator</tt> over the elements in this collection
      */
     Iterator<E> iterator();
 
     /**
-     * Returns an array containing all of the elements in this collection.
-     * If this collection makes any guarantees as to what order its elements
-     * are returned by its iterator, this method must return the elements in
-     * the same order.
+     * 返回包含所有元素的数组。
+     * 如果对应的集合返回iterator中的元素是有顺序，则生成的数组排序和iterator相同
+     * 返回的数组是线程安全，线程对这个数据进行修改不会影响集合内的元素（但是修改数据引用的元素是不安全的）
+     * 因为每次此类内部会创建一个新的数组返回给调用方
      *
-     * <p>The returned array will be "safe" in that no references to it are
-     * maintained by this collection.  (In other words, this method must
-     * allocate a new array even if this collection is backed by an array).
-     * The caller is thus free to modify the returned array.
+     * 这个方法桥接基于数组的API和基于集合的API
      *
-     * <p>This method acts as bridge between array-based and collection-based
-     * APIs.
-     *
-     * @return an array containing all of the elements in this collection
      */
     Object[] toArray();
 
     /**
-     * Returns an array containing all of the elements in this collection;
-     * the runtime type of the returned array is that of the specified array.
-     * If the collection fits in the specified array, it is returned therein.
-     * Otherwise, a new array is allocated with the runtime type of the
-     * specified array and the size of this collection.
+     * 返回一个包含所有集合元素的数组
+     * 如果传入的数组符合集合的要求（如数组大小、元素类型），则将元素存储到这个数组中。
+     * 否则会根据元素运行时的类型和集合大小创建一个新的数组。
      *
-     * <p>If this collection fits in the specified array with room to spare
-     * (i.e., the array has more elements than this collection), the element
-     * in the array immediately following the end of the collection is set to
-     * <tt>null</tt>.  (This is useful in determining the length of this
-     * collection <i>only</i> if the caller knows that this collection does
-     * not contain any <tt>null</tt> elements.)
-     *
-     * <p>If this collection makes any guarantees as to what order its elements
-     * are returned by its iterator, this method must return the elements in
-     * the same order.
-     *
-     * <p>Like the {@link #toArray()} method, this method acts as bridge between
-     * array-based and collection-based APIs.  Further, this method allows
-     * precise control over the runtime type of the output array, and may,
-     * under certain circumstances, be used to save allocation costs.
-     *
-     * <p>Suppose <tt>x</tt> is a collection known to contain only strings.
-     * The following code can be used to dump the collection into a newly
-     * allocated array of <tt>String</tt>:
-     *
-     * <pre>
-     *     String[] y = x.toArray(new String[0]);</pre>
-     *
-     * Note that <tt>toArray(new Object[0])</tt> is identical in function to
-     * <tt>toArray()</tt>.
+     *  如果传入的数组大小比集合大，则多余的部分会设置为null
+     *  如果对应的集合返回iterator中的元素是有顺序，则生成的数组排序和iterator相同
+     *  和toArray类似，这个方法桥接基于数组的API和基于集合的API，这个方法对运行时的类型控制更精细
      *
      * @param <T> the runtime type of the array to contain the collection
      * @param a the array into which the elements of this collection are to be
