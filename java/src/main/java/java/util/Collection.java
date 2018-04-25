@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 1997, 2013, Oracle and/or its affiliates. All rights reserved.
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
- *
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
- *
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
- *
- * You should have received a copy of the GNU General Public License version
- * 2 along with this work; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
- * or visit www.oracle.com if you need additional information or have any
- * questions.
- */
-
 package java.util;
 
 import java.util.function.Predicate;
@@ -184,74 +159,29 @@ public interface Collection<E> extends Iterable<E> {
      *  如果对应的集合返回iterator中的元素是有顺序，则生成的数组排序和iterator相同
      *  和toArray类似，这个方法桥接基于数组的API和基于集合的API，这个方法对运行时的类型控制更精细
      *
-     * @param <T> the runtime type of the array to contain the collection
      * @param a the array into which the elements of this collection are to be
      *        stored, if it is big enough; otherwise, a new array of the same
      *        runtime type is allocated for this purpose.
      * @return an array containing all of the elements in this collection
-     * @throws ArrayStoreException if the runtime type of the specified array
-     *         is not a supertype of the runtime type of every element in
-     *         this collection
-     * @throws NullPointerException if the specified array is null
      */
     <T> T[] toArray(T[] a);
 
     // Modification Operations
 
     /**
-     * Ensures that this collection contains the specified element (optional
-     * operation).  Returns <tt>true</tt> if this collection changed as a
-     * result of the call.  (Returns <tt>false</tt> if this collection does
-     * not permit duplicates and already contains the specified element.)<p>
-     *
-     * Collections that support this operation may place limitations on what
-     * elements may be added to this collection.  In particular, some
-     * collections will refuse to add <tt>null</tt> elements, and others will
-     * impose restrictions on the type of elements that may be added.
-     * Collection classes should clearly specify in their documentation any
-     * restrictions on what elements may be added.<p>
-     *
-     * If a collection refuses to add a particular element for any reason
-     * other than that it already contains the element, it <i>must</i> throw
-     * an exception (rather than returning <tt>false</tt>).  This preserves
-     * the invariant that a collection always contains the specified element
-     * after this call returns.
-     *
-     * @param e element whose presence in this collection is to be ensured
-     * @return <tt>true</tt> if this collection changed as a result of the
-     *         call
-     * @throws UnsupportedOperationException if the <tt>add</tt> operation
-     *         is not supported by this collection
-     * @throws ClassCastException if the class of the specified element
-     *         prevents it from being added to this collection
-     * @throws NullPointerException if the specified element is null and this
-     *         collection does not permit null elements
-     * @throws IllegalArgumentException if some property of the element
-     *         prevents it from being added to this collection
-     * @throws IllegalStateException if the element cannot be added at this
-     *         time due to insertion restrictions
+     * 添加新元素：
+     * 返回值：
+     *  true: 真正将元素加入到集合中
+     *  false: 集合不允许加入重复元素且此元素已经在集合中存在
      */
     boolean add(E e);
 
     /**
-     * Removes a single instance of the specified element from this
-     * collection, if it is present (optional operation).  More formally,
-     * removes an element <tt>e</tt> such that
-     * <tt>(o==null&nbsp;?&nbsp;e==null&nbsp;:&nbsp;o.equals(e))</tt>, if
-     * this collection contains one or more such elements.  Returns
-     * <tt>true</tt> if this collection contained the specified element (or
-     * equivalently, if this collection changed as a result of the call).
+     * 从集合中删除元素：
+     *  相同元素判断条件 o==null ? e==null : o.equals(e)
+     * 返回值：
+     *  true:如果从集合中真正删除元素
      *
-     * @param o element to be removed from this collection, if present
-     * @return <tt>true</tt> if an element was removed as a result of this call
-     * @throws ClassCastException if the type of the specified element
-     *         is incompatible with this collection
-     *         (<a href="#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified element is null and this
-     *         collection does not permit null elements
-     *         (<a href="#optional-restrictions">optional</a>)
-     * @throws UnsupportedOperationException if the <tt>remove</tt> operation
-     *         is not supported by this collection
      */
     boolean remove(Object o);
 
@@ -259,73 +189,22 @@ public interface Collection<E> extends Iterable<E> {
     // Bulk Operations
 
     /**
-     * Returns <tt>true</tt> if this collection contains all of the elements
-     * in the specified collection.
-     *
-     * @param  c collection to be checked for containment in this collection
-     * @return <tt>true</tt> if this collection contains all of the elements
-     *         in the specified collection
-     * @throws ClassCastException if the types of one or more elements
-     *         in the specified collection are incompatible with this
-     *         collection
-     *         (<a href="#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified collection contains one
-     *         or more null elements and this collection does not permit null
-     *         elements
-     *         (<a href="#optional-restrictions">optional</a>),
-     *         or if the specified collection is null.
-     * @see    #contains(Object)
+     * 如果集合中包含所有指定的元素，则返回true
      */
     boolean containsAll(Collection<?> c);
 
     /**
-     * Adds all of the elements in the specified collection to this collection
-     * (optional operation).  The behavior of this operation is undefined if
-     * the specified collection is modified while the operation is in progress.
-     * (This implies that the behavior of this call is undefined if the
-     * specified collection is this collection, and this collection is
-     * nonempty.)
+     * 添加元素们到集合中
+     * 如果有至少一个元素真正添加到记录中，则返回true
      *
-     * @param c collection containing elements to be added to this collection
      * @return <tt>true</tt> if this collection changed as a result of the call
-     * @throws UnsupportedOperationException if the <tt>addAll</tt> operation
-     *         is not supported by this collection
-     * @throws ClassCastException if the class of an element of the specified
-     *         collection prevents it from being added to this collection
-     * @throws NullPointerException if the specified collection contains a
-     *         null element and this collection does not permit null elements,
-     *         or if the specified collection is null
-     * @throws IllegalArgumentException if some property of an element of the
-     *         specified collection prevents it from being added to this
-     *         collection
-     * @throws IllegalStateException if not all the elements can be added at
-     *         this time due to insertion restrictions
-     * @see #add(Object)
      */
     boolean addAll(Collection<? extends E> c);
 
     /**
-     * Removes all of this collection's elements that are also contained in the
-     * specified collection (optional operation).  After this call returns,
-     * this collection will contain no elements in common with the specified
-     * collection.
+     * 从集合中删除所有传入的元素
+     * 如果集合发生了变更（即有元素从集合中删除），则返回true
      *
-     * @param c collection containing elements to be removed from this collection
-     * @return <tt>true</tt> if this collection changed as a result of the
-     *         call
-     * @throws UnsupportedOperationException if the <tt>removeAll</tt> method
-     *         is not supported by this collection
-     * @throws ClassCastException if the types of one or more elements
-     *         in this collection are incompatible with the specified
-     *         collection
-     *         (<a href="#optional-restrictions">optional</a>)
-     * @throws NullPointerException if this collection contains one or more
-     *         null elements and the specified collection does not support
-     *         null elements
-     *         (<a href="#optional-restrictions">optional</a>),
-     *         or if the specified collection is null
-     * @see #remove(Object)
-     * @see #contains(Object)
      */
     boolean removeAll(Collection<?> c);
 

@@ -651,21 +651,18 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * 共享模式的Release：signals后续节点并且保证传播
+     * 共享模式的Release操作：signals后续节点并且保证传播
      * 对于排他模式，如果后续者的状态为signal，则Release就是upark head节点的后继者，
      */
     private void doReleaseShared() {
         /*
+         * 保证release可以被传播，即使有其它的线程中执行acquires/releases。
+         * 如果头节点的状态为SIGNAL，则这个方法会尝试调用unparkSuccessor方法处理头节点
+         * 如果不是，则需要设置状态为PROPAGATE，保证release之后PROPAGATE能够继续
          *
-         * Ensure that a release propagates, even if there are other
-         * in-progress acquires/releases.  This proceeds in the usual
-         * way of trying to unparkSuccessor of head if it needs
-         * signal. But if it does not, status is set to PROPAGATE to
-         * ensure that upon release, propagation continues.
-         * Additionally, we must loop in case a new node is added
-         * while we are doing this. Also, unlike other uses of
-         * unparkSuccessor, we need to know if CAS to reset status
-         * fails, if so rechecking.
+         * 另外，还需要通过循环保证在执行上面逻辑过程中有新的结点加入。
+         * 如果在通过CAS设置失败后需要重新检查
+         *
          */
         for (;;) {
             Node h = head;
