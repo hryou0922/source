@@ -651,7 +651,7 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * 共享模式的Release操作：signals后续节点并且保证传播
+     * 共享模式下的Release操作：signals后续节点并且保证传播
      * 对于排他模式，如果后续者的状态为signal，则Release就是upark head节点的后继者，
      */
     private void doReleaseShared() {
@@ -683,9 +683,8 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Sets head of queue, and checks if successor may be waiting
-     * in shared mode, if so propagating if either propagate > 0 or
-     * PROPAGATE status was set.
+     * 设置队列的头，如果传入结点的后续者处于共享模式，且(传入的参数propagate > 0 或 新/旧head节点的状态为PROPAGATE)
+     * ，则执行传播
      *
      * @param node the node
      * @param propagate the return value from a tryAcquireShared
@@ -694,20 +693,9 @@ public abstract class AbstractQueuedSynchronizer
         Node h = head; // Record old head for check below
         setHead(node);
         /*
-         * Try to signal next queued node if:
-         *   Propagation was indicated by caller,
-         *     or was recorded (as h.waitStatus either before
-         *     or after setHead) by a previous operation
-         *     (note: this uses sign-check of waitStatus because
-         *      PROPAGATE status may transition to SIGNAL.)
-         * and
-         *   The next node is waiting in shared mode,
-         *     or we don't know, because it appears null
-         *
-         * The conservatism in both of these checks may cause
-         * unnecessary wake-ups, but only when there are multiple
-         * racing acquires/releases, so most need signals now or soon
-         * anyway.
+         *  如果满足下如下两个条件，则signal队列中的下一个节点
+         *      1. 如果下一个节点处于共享模式或下一个节点为null
+         *      2. 传入的参数propagate > 0 或 (原head节点为null或状态<0) 或 (新的头节点 null 或 状态 < 0)
          */
         if (propagate > 0 || h == null || h.waitStatus < 0 ||
             (h = head) == null || h.waitStatus < 0) {
@@ -720,7 +708,7 @@ public abstract class AbstractQueuedSynchronizer
     // Utilities for various versions of acquire
 
     /**
-     * Cancels an ongoing attempt to acquire.
+     * 取消当前正在进行的acquire操作
      *
      * @param node the node
      */
@@ -731,7 +719,7 @@ public abstract class AbstractQueuedSynchronizer
 
         node.thread = null;
 
-        // Skip cancelled predecessors
+        // 路过状态为cancelled的前驱者
         Node pred = node.prev;
         while (pred.waitStatus > 0)
             node.prev = pred = pred.prev;
@@ -746,12 +734,20 @@ public abstract class AbstractQueuedSynchronizer
         // Before, we are free of interference from other threads.
         node.waitStatus = Node.CANCELLED;
 
-        // If we are the tail, remove ourselves.
+        // 如果传入的节点是tail，则将这个节点从队列删除并设置此节点的前驱节点设置为tail
         if (node == tail && compareAndSetTail(node, pred)) {
+            // 将pre节点设置为新的tail,通过CAS将其的next成员变量设置为null
             compareAndSetNext(pred, predNext, null);
         } else {
-            // If successor needs signal, try to set pred's next-link
-            // so it will get one. Otherwise wake it up to propagate.
+            /**
+             * 满足同时如下条件，则需要设置前驱节点的pre值,如果传入节点的next不为空且状态<0
+             *  1. 前驱节点不是头节点
+             *  2. 前驱节点里的线程不为空
+             *  3. 前驱节点的状态为SIGNAL或(状态<0且CAS设置值SIGNAL成功)
+             *
+             * 否则：唤醒传入节点的后续节点进行处理
+             *
+             */
             int ws;
             if (pred != head &&
                 ((ws = pred.waitStatus) == Node.SIGNAL ||
@@ -763,15 +759,15 @@ public abstract class AbstractQueuedSynchronizer
             } else {
                 unparkSuccessor(node);
             }
-
+            // 此节点从队列中删除后，同时设置它的next为空
             node.next = node; // help GC
         }
     }
 
     /**
-     * Checks and updates status for a node that failed to acquire.
-     * Returns true if thread should block. This is the main signal
-     * control in all acquire loops.  Requires that pred == node.prev.
+     * 如果一个节点acquire失败后,调用此方法设置状态为SIGNAL
+     *
+     * 两个参数的关系:Requires that pred == node.prev.
      *
      * @param pred node's predecessor holding status
      * @param node the node
@@ -781,14 +777,12 @@ public abstract class AbstractQueuedSynchronizer
         int ws = pred.waitStatus;
         if (ws == Node.SIGNAL)
             /*
-             * This node has already set status asking a release
-             * to signal it, so it can safely park.
+             * 前驱节点已经设置为SIGNAL，可以安全被park了
              */
             return true;
         if (ws > 0) {
             /*
-             * Predecessor was cancelled. Skip over predecessors and
-             * indicate retry.
+             * 如果前驱状态为cancelled，则跳过，直到找到非cancelled节点
              */
             do {
                 node.prev = pred = pred.prev;
@@ -796,6 +790,7 @@ public abstract class AbstractQueuedSynchronizer
             pred.next = node;
         } else {
             /*
+             * 设置节点值为 SIGNAL
              * waitStatus must be 0 or PROPAGATE.  Indicate that we
              * need a signal, but don't park yet.  Caller will need to
              * retry to make sure it cannot acquire before parking.
