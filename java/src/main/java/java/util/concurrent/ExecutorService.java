@@ -121,50 +121,14 @@ public interface ExecutorService extends Executor {
         throws InterruptedException;
 
     /**
-     *
-     * Executes the given tasks, returning the result
-     * of one that has completed successfully (i.e., without throwing
-     * an exception), if any do. Upon normal or exceptional return,
-     * tasks that have not completed are cancelled.
-     * The results of this method are undefined if the given
-     * collection is modified while this operation is in progress.
-     *
-     * @param tasks the collection of tasks
-     * @param <T> the type of the values returned from the tasks
-     * @return the result returned by one of the tasks
-     * @throws InterruptedException if interrupted while waiting
-     * @throws NullPointerException if tasks or any element task
-     *         subject to execution is {@code null}
-     * @throws IllegalArgumentException if tasks is empty
-     * @throws ExecutionException if no task successfully completes
-     * @throws RejectedExecutionException if tasks cannot be scheduled
-     *         for execution
+     * 返回集合中任何一个执行成功（没有抛出异常）的结果
      */
     <T> T invokeAny(Collection<? extends Callable<T>> tasks)
         throws InterruptedException, ExecutionException;
 
     /**
-     * Executes the given tasks, returning the result
-     * of one that has completed successfully (i.e., without throwing
-     * an exception), if any do before the given timeout elapses.
-     * Upon normal or exceptional return, tasks that have not
-     * completed are cancelled.
-     * The results of this method are undefined if the given
-     * collection is modified while this operation is in progress.
+     * 超时版本的invokeAny
      *
-     * @param tasks the collection of tasks
-     * @param timeout the maximum time to wait
-     * @param unit the time unit of the timeout argument
-     * @param <T> the type of the values returned from the tasks
-     * @return the result returned by one of the tasks
-     * @throws InterruptedException if interrupted while waiting
-     * @throws NullPointerException if tasks, or unit, or any element
-     *         task subject to execution is {@code null}
-     * @throws TimeoutException if the given timeout elapses before
-     *         any task successfully completes
-     * @throws ExecutionException if no task successfully completes
-     * @throws RejectedExecutionException if tasks cannot be scheduled
-     *         for execution
      */
     <T> T invokeAny(Collection<? extends Callable<T>> tasks,
                     long timeout, TimeUnit unit)

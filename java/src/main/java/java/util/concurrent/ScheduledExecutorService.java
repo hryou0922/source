@@ -36,8 +36,7 @@
 package java.util.concurrent;
 
 /**
- * An {@link ExecutorService} that can schedule commands to run after a given
- * delay, or to execute periodically.
+ * 安排任务在指定时间延迟后执行或周期性执行
  *
  * <p>The {@code schedule} methods create tasks with various delays
  * and return a task object that can be used to cancel or check
@@ -94,18 +93,12 @@ package java.util.concurrent;
 public interface ScheduledExecutorService extends ExecutorService {
 
     /**
-     * Creates and executes a one-shot action that becomes enabled
-     * after the given delay.
+     * 延迟指定时间执行任务
      *
-     * @param command the task to execute
-     * @param delay the time from now to delay execution
-     * @param unit the time unit of the delay parameter
      * @return a ScheduledFuture representing pending completion of
      *         the task and whose {@code get()} method will return
      *         {@code null} upon completion
-     * @throws RejectedExecutionException if the task cannot be
-     *         scheduled for execution
-     * @throws NullPointerException if command is null
+     *
      */
     public ScheduledFuture<?> schedule(Runnable command,
                                        long delay, TimeUnit unit);

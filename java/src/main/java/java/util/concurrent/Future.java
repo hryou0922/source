@@ -36,112 +36,50 @@
 package java.util.concurrent;
 
 /**
- * A {@code Future} represents the result of an asynchronous
- * computation.  Methods are provided to check if the computation is
- * complete, to wait for its completion, and to retrieve the result of
- * the computation.  The result can only be retrieved using method
- * {@code get} when the computation has completed, blocking if
- * necessary until it is ready.  Cancellation is performed by the
- * {@code cancel} method.  Additional methods are provided to
- * determine if the task completed normally or was cancelled. Once a
- * computation has completed, the computation cannot be cancelled.
- * If you would like to use a {@code Future} for the sake
- * of cancellability but not provide a usable result, you can
- * declare types of the form {@code Future<?>} and
- * return {@code null} as a result of the underlying task.
+ * 此类表示异常的计算结果。
  *
- * <p>
- * <b>Sample Usage</b> (Note that the following classes are all
- * made-up.)
- * <pre> {@code
- * interface ArchiveSearcher { String search(String target); }
- * class App {
- *   ExecutorService executor = ...
- *   ArchiveSearcher searcher = ...
- *   void showSearch(final String target)
- *       throws InterruptedException {
- *     Future<String> future
- *       = executor.submit(new Callable<String>() {
- *         public String call() {
- *             return searcher.search(target);
- *         }});
- *     displayOtherThings(); // do other things while searching
- *     try {
- *       displayText(future.get()); // use future
- *     } catch (ExecutionException ex) { cleanup(); return; }
- *   }
- * }}</pre>
- *
- * The {@link FutureTask} class is an implementation of {@code Future} that
- * implements {@code Runnable}, and so may be executed by an {@code Executor}.
- * For example, the above construction with {@code submit} could be replaced by:
- *  <pre> {@code
- * FutureTask<String> future =
- *   new FutureTask<String>(new Callable<String>() {
- *     public String call() {
- *       return searcher.search(target);
- *   }});
- * executor.execute(future);}</pre>
- *
- * <p>Memory consistency effects: Actions taken by the asynchronous computation
- * <a href="package-summary.html#MemoryVisibility"> <i>happen-before</i></a>
- * actions following the corresponding {@code Future.get()} in another thread.
- *
- * @see FutureTask
- * @see Executor
  * @since 1.5
  * @author Doug Lea
- * @param <V> The result type returned by this Future's {@code get} method
  */
 public interface Future<V> {
 
     /**
-     * Attempts to cancel execution of this task.  This attempt will
-     * fail if the task has already completed, has already been cancelled,
-     * or could not be cancelled for some other reason. If successful,
-     * and this task has not started when {@code cancel} is called,
-     * this task should never run.  If the task has already started,
-     * then the {@code mayInterruptIfRunning} parameter determines
-     * whether the thread executing this task should be interrupted in
-     * an attempt to stop the task.
+     * 深度取消当前的任务。
+     * 以下情况会返回false
+     *  a. 任务已经执行完毕
+     *  b. 任务已经被取消
+     *  c. 因为其它的原因无法被取消
      *
-     * <p>After this method returns, subsequent calls to {@link #isDone} will
-     * always return {@code true}.  Subsequent calls to {@link #isCancelled}
-     * will always return {@code true} if this method returned {@code true}.
+     * 如果执行这个方法成功，这个任务永远不会再被执行
+     *
+     * 如果在执行取消时，任务正在执行，根据mayInterruptIfRunning参数是否尝试中断当前正在执行的任务
+     *
+     * 当执行这个方法后，如果调用isDone，则一直返回true。
+     * 如果执行这个方法返回true，则调用isCancelled一直返回true
      *
      * @param mayInterruptIfRunning {@code true} if the thread executing this
      * task should be interrupted; otherwise, in-progress tasks are allowed
      * to complete
-     * @return {@code false} if the task could not be cancelled,
-     * typically because it has already completed normally;
-     * {@code true} otherwise
      */
     boolean cancel(boolean mayInterruptIfRunning);
 
     /**
-     * Returns {@code true} if this task was cancelled before it completed
-     * normally.
-     *
-     * @return {@code true} if this task was cancelled before it completed
+     * 如果任务在正常执行完毕前被取消，则返回true
      */
     boolean isCancelled();
 
     /**
-     * Returns {@code true} if this task completed.
+     * 满足以下任何条件，则返回true
+     *  a. 正常结束
+     *  b. 抛出异常
+     *  c. 被取消
      *
-     * Completion may be due to normal termination, an exception, or
-     * cancellation -- in all of these cases, this method will return
-     * {@code true}.
-     *
-     * @return {@code true} if this task completed
      */
     boolean isDone();
 
     /**
-     * Waits if necessary for the computation to complete, and then
-     * retrieves its result.
-     *
-     * @return the computed result
+     * 阻塞直任务执行完毕，并返回执行结果
+
      * @throws CancellationException if the computation was cancelled
      * @throws ExecutionException if the computation threw an
      * exception
@@ -151,12 +89,7 @@ public interface Future<V> {
     V get() throws InterruptedException, ExecutionException;
 
     /**
-     * Waits if necessary for at most the given time for the computation
-     * to complete, and then retrieves its result, if available.
-     *
-     * @param timeout the maximum time to wait
-     * @param unit the time unit of the timeout argument
-     * @return the computed result
+     * 超时版本的get方法
      * @throws CancellationException if the computation was cancelled
      * @throws ExecutionException if the computation threw an
      * exception

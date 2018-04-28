@@ -36,12 +36,9 @@
 package java.util.concurrent;
 
 /**
- * A mix-in style interface for marking objects that should be
- * acted upon after a given delay.
+ * 混合接口标记在给定延迟后执行本对象
  *
- * <p>An implementation of this interface must define a
- * {@code compareTo} method that provides an ordering consistent with
- * its {@code getDelay} method.
+ * 实现此接口的对象，必须实现compareTo方法用于排序，用于在getDelay中使用
  *
  * @since 1.5
  * @author Doug Lea
@@ -49,8 +46,7 @@ package java.util.concurrent;
 public interface Delayed extends Comparable<Delayed> {
 
     /**
-     * Returns the remaining delay associated with this object, in the
-     * given time unit.
+     * 返回剩余的延迟时间
      *
      * @param unit the time unit
      * @return the remaining delay; zero or negative values indicate
