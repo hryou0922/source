@@ -825,6 +825,10 @@ public abstract class AbstractQueuedSynchronizer
      */
 
     /**
+     * 抢资源
+     *
+     * 如果节点的线程有被中断，则返回值为true
+     *
      * Acquires in exclusive uninterruptible mode for thread already in
      * queue. Used by condition wait methods as well as acquire.
      *
@@ -833,30 +837,35 @@ public abstract class AbstractQueuedSynchronizer
      * @return {@code true} if interrupted while waiting
      */
     final boolean acquireQueued(final Node node, int arg) {
-        boolean failed = true;
+        boolean failed = true; // 标记是否成功拿到资源
         try {
-            boolean interrupted = false;
+            boolean interrupted = false; // 标记线程等待过程中是否被中断过
             for (;;) {
                 final Node p = node.predecessor();
+                // 如果前驱节点是head，即该结点已成老二，那么尝试获取资源
                 if (p == head && tryAcquire(arg)) {
+                    // 拿到资源后，将head指向该结点
                     setHead(node);
                     p.next = null; // help GC
                     failed = false;
                     return interrupted;
                 }
+                // 如果一个节点acquire失败后,调用此方法设置状态为SIGNAL
+                // 然后设置SIGNAL成功，则阻塞当前线程，直到被唤醒
                 if (shouldParkAfterFailedAcquire(p, node) &&
                     parkAndCheckInterrupt())
+                    // 如果等待过程中被中断过，就将interrupted标记为true
                     interrupted = true;
             }
         } finally {
             if (failed)
+                // 取消当前正在进行的acquire操作
                 cancelAcquire(node);
         }
     }
 
     /**
-     * Acquires in exclusive interruptible mode.
-     * @param arg the acquire argument
+     * 在排它无打断模式下，获取资源方法
      */
     private void doAcquireInterruptibly(int arg)
         throws InterruptedException {
