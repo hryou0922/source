@@ -28,70 +28,9 @@ package java.util;
 import java.util.function.UnaryOperator;
 
 /**
- * An ordered collection (also known as a <i>sequence</i>).  The user of this
- * interface has precise control over where in the list each element is
- * inserted.  The user can access elements by their integer index (position in
- * the list), and search for elements in the list.<p>
- *
- * Unlike sets, lists typically allow duplicate elements.  More formally,
- * lists typically allow pairs of elements <tt>e1</tt> and <tt>e2</tt>
- * such that <tt>e1.equals(e2)</tt>, and they typically allow multiple
- * null elements if they allow null elements at all.  It is not inconceivable
- * that someone might wish to implement a list that prohibits duplicates, by
- * throwing runtime exceptions when the user attempts to insert them, but we
- * expect this usage to be rare.<p>
- *
- * The <tt>List</tt> interface places additional stipulations, beyond those
- * specified in the <tt>Collection</tt> interface, on the contracts of the
- * <tt>iterator</tt>, <tt>add</tt>, <tt>remove</tt>, <tt>equals</tt>, and
- * <tt>hashCode</tt> methods.  Declarations for other inherited methods are
- * also included here for convenience.<p>
- *
- * The <tt>List</tt> interface provides four methods for positional (indexed)
- * access to list elements.  Lists (like Java arrays) are zero based.  Note
- * that these operations may execute in time proportional to the index value
- * for some implementations (the <tt>LinkedList</tt> class, for
- * example). Thus, iterating over the elements in a list is typically
- * preferable to indexing through it if the caller does not know the
- * implementation.<p>
- *
- * The <tt>List</tt> interface provides a special iterator, called a
- * <tt>ListIterator</tt>, that allows element insertion and replacement, and
- * bidirectional access in addition to the normal operations that the
- * <tt>Iterator</tt> interface provides.  A method is provided to obtain a
- * list iterator that starts at a specified position in the list.<p>
- *
- * The <tt>List</tt> interface provides two methods to search for a specified
- * object.  From a performance standpoint, these methods should be used with
- * caution.  In many implementations they will perform costly linear
- * searches.<p>
- *
- * The <tt>List</tt> interface provides two methods to efficiently insert and
- * remove multiple elements at an arbitrary point in the list.<p>
- *
- * Note: While it is permissible for lists to contain themselves as elements,
- * extreme caution is advised: the <tt>equals</tt> and <tt>hashCode</tt>
- * methods are no longer well defined on such a list.
- *
- * <p>Some list implementations have restrictions on the elements that
- * they may contain.  For example, some implementations prohibit null elements,
- * and some have restrictions on the types of their elements.  Attempting to
- * add an ineligible element throws an unchecked exception, typically
- * <tt>NullPointerException</tt> or <tt>ClassCastException</tt>.  Attempting
- * to query the presence of an ineligible element may throw an exception,
- * or it may simply return false; some implementations will exhibit the former
- * behavior and some will exhibit the latter.  More generally, attempting an
- * operation on an ineligible element whose completion would not result in
- * the insertion of an ineligible element into the list may throw an
- * exception or it may succeed, at the option of the implementation.
- * Such exceptions are marked as "optional" in the specification for this
- * interface.
- *
- * <p>This interface is a member of the
- * <a href="{@docRoot}/../technotes/guides/collections/index.html">
- * Java Collections Framework</a>.
- *
- * @param <E> the type of elements in this list
+ * 有顺序的集合
+ *  允许有重复元素
+ *  List会有特殊iterator，即ListIterator。它允许元素插入、 覆盖、双向访问和普通Iterator方法.
  *
  * @author  Josh Bloch
  * @author  Neal Gafter
@@ -112,101 +51,34 @@ public interface List<E> extends Collection<E> {
     // Query Operations
 
     /**
-     * Returns the number of elements in this list.  If this list contains
-     * more than <tt>Integer.MAX_VALUE</tt> elements, returns
-     * <tt>Integer.MAX_VALUE</tt>.
-     *
-     * @return the number of elements in this list
+     * 返回集合大小
      */
     int size();
 
     /**
-     * Returns <tt>true</tt> if this list contains no elements.
+     * 如果集合中没有元素，则返回true
      *
-     * @return <tt>true</tt> if this list contains no elements
      */
     boolean isEmpty();
 
     /**
-     * Returns <tt>true</tt> if this list contains the specified element.
-     * More formally, returns <tt>true</tt> if and only if this list contains
-     * at least one element <tt>e</tt> such that
-     * <tt>(o==null&nbsp;?&nbsp;e==null&nbsp;:&nbsp;o.equals(e))</tt>.
+     * 如果集合中至少包含指定的元素，则返回true
      *
-     * @param o element whose presence in this list is to be tested
-     * @return <tt>true</tt> if this list contains the specified element
-     * @throws ClassCastException if the type of the specified element
-     *         is incompatible with this list
-     * (<a href="Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified element is null and this
-     *         list does not permit null elements
-     * (<a href="Collection.html#optional-restrictions">optional</a>)
      */
     boolean contains(Object o);
 
     /**
-     * Returns an iterator over the elements in this list in proper sequence.
-     *
-     * @return an iterator over the elements in this list in proper sequence
+     * 返回Iterator
      */
     Iterator<E> iterator();
 
     /**
-     * Returns an array containing all of the elements in this list in proper
-     * sequence (from first to last element).
-     *
-     * <p>The returned array will be "safe" in that no references to it are
-     * maintained by this list.  (In other words, this method must
-     * allocate a new array even if this list is backed by an array).
-     * The caller is thus free to modify the returned array.
-     *
-     * <p>This method acts as bridge between array-based and collection-based
-     * APIs.
-     *
-     * @return an array containing all of the elements in this list in proper
-     *         sequence
-     * @see Arrays#asList(Object[])
+     * @see Collection#toArray()
      */
     Object[] toArray();
 
     /**
-     * Returns an array containing all of the elements in this list in
-     * proper sequence (from first to last element); the runtime type of
-     * the returned array is that of the specified array.  If the list fits
-     * in the specified array, it is returned therein.  Otherwise, a new
-     * array is allocated with the runtime type of the specified array and
-     * the size of this list.
-     *
-     * <p>If the list fits in the specified array with room to spare (i.e.,
-     * the array has more elements than the list), the element in the array
-     * immediately following the end of the list is set to <tt>null</tt>.
-     * (This is useful in determining the length of the list <i>only</i> if
-     * the caller knows that the list does not contain any null elements.)
-     *
-     * <p>Like the {@link #toArray()} method, this method acts as bridge between
-     * array-based and collection-based APIs.  Further, this method allows
-     * precise control over the runtime type of the output array, and may,
-     * under certain circumstances, be used to save allocation costs.
-     *
-     * <p>Suppose <tt>x</tt> is a list known to contain only strings.
-     * The following code can be used to dump the list into a newly
-     * allocated array of <tt>String</tt>:
-     *
-     * <pre>{@code
-     *     String[] y = x.toArray(new String[0]);
-     * }</pre>
-     *
-     * Note that <tt>toArray(new Object[0])</tt> is identical in function to
-     * <tt>toArray()</tt>.
-     *
-     * @param a the array into which the elements of this list are to
-     *          be stored, if it is big enough; otherwise, a new array of the
-     *          same runtime type is allocated for this purpose.
-     * @return an array containing the elements of this list
-     * @throws ArrayStoreException if the runtime type of the specified array
-     *         is not a supertype of the runtime type of every element in
-     *         this list
-     * @throws NullPointerException if the specified array is null
+     * @see Collection#toArray(T[])
      */
     <T> T[] toArray(T[] a);
 
@@ -214,49 +86,13 @@ public interface List<E> extends Collection<E> {
     // Modification Operations
 
     /**
-     * Appends the specified element to the end of this list (optional
-     * operation).
-     *
-     * <p>Lists that support this operation may place limitations on what
-     * elements may be added to this list.  In particular, some
-     * lists will refuse to add null elements, and others will impose
-     * restrictions on the type of elements that may be added.  List
-     * classes should clearly specify in their documentation any restrictions
-     * on what elements may be added.
-     *
-     * @param e element to be appended to this list
-     * @return <tt>true</tt> (as specified by {@link Collection#add})
-     * @throws UnsupportedOperationException if the <tt>add</tt> operation
-     *         is not supported by this list
-     * @throws ClassCastException if the class of the specified element
-     *         prevents it from being added to this list
-     * @throws NullPointerException if the specified element is null and this
-     *         list does not permit null elements
-     * @throws IllegalArgumentException if some property of this element
-     *         prevents it from being added to this list
+     * @see Collection#add(E)
      */
     boolean add(E e);
 
     /**
-     * Removes the first occurrence of the specified element from this list,
-     * if it is present (optional operation).  If this list does not contain
-     * the element, it is unchanged.  More formally, removes the element with
-     * the lowest index <tt>i</tt> such that
-     * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>
-     * (if such an element exists).  Returns <tt>true</tt> if this list
-     * contained the specified element (or equivalently, if this list changed
-     * as a result of the call).
-     *
-     * @param o element to be removed from this list, if present
-     * @return <tt>true</tt> if this list contained the specified element
-     * @throws ClassCastException if the type of the specified element
-     *         is incompatible with this list
-     * (<a href="Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified element is null and this
-     *         list does not permit null elements
-     * (<a href="Collection.html#optional-restrictions">optional</a>)
-     * @throws UnsupportedOperationException if the <tt>remove</tt> operation
-     *         is not supported by this list
+     * 删除第一个符合要求的元素。
+     * 如果集合发生变化，则返回true
      */
     boolean remove(Object o);
 
@@ -264,45 +100,12 @@ public interface List<E> extends Collection<E> {
     // Bulk Modification Operations
 
     /**
-     * Returns <tt>true</tt> if this list contains all of the elements of the
-     * specified collection.
-     *
-     * @param  c collection to be checked for containment in this list
-     * @return <tt>true</tt> if this list contains all of the elements of the
-     *         specified collection
-     * @throws ClassCastException if the types of one or more elements
-     *         in the specified collection are incompatible with this
-     *         list
-     * (<a href="Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified collection contains one
-     *         or more null elements and this list does not permit null
-     *         elements
-     *         (<a href="Collection.html#optional-restrictions">optional</a>),
-     *         or if the specified collection is null
-     * @see #contains(Object)
+     *  @see Collection#containsAll(Collection)
      */
     boolean containsAll(Collection<?> c);
 
     /**
-     * Appends all of the elements in the specified collection to the end of
-     * this list, in the order that they are returned by the specified
-     * collection's iterator (optional operation).  The behavior of this
-     * operation is undefined if the specified collection is modified while
-     * the operation is in progress.  (Note that this will occur if the
-     * specified collection is this list, and it's nonempty.)
-     *
-     * @param c collection containing elements to be added to this list
-     * @return <tt>true</tt> if this list changed as a result of the call
-     * @throws UnsupportedOperationException if the <tt>addAll</tt> operation
-     *         is not supported by this list
-     * @throws ClassCastException if the class of an element of the specified
-     *         collection prevents it from being added to this list
-     * @throws NullPointerException if the specified collection contains one
-     *         or more null elements and this list does not permit null
-     *         elements, or if the specified collection is null
-     * @throws IllegalArgumentException if some property of an element of the
-     *         specified collection prevents it from being added to this list
-     * @see #add(Object)
+     *  @see Collection#addAll(Collection)
      */
     boolean addAll(Collection<? extends E> c);
 
