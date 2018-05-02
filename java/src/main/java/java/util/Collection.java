@@ -209,25 +209,8 @@ public interface Collection<E> extends Iterable<E> {
     boolean removeAll(Collection<?> c);
 
     /**
-     * Removes all of the elements of this collection that satisfy the given
-     * predicate.  Errors or runtime exceptions thrown during iteration or by
-     * the predicate are relayed to the caller.
+     * 从集合中删除所有符合predicate要求的内容
      *
-     * @implSpec
-     * The default implementation traverses all elements of the collection using
-     * its {@link #iterator}.  Each matching element is removed using
-     * {@link Iterator#remove()}.  If the collection's iterator does not
-     * support removal then an {@code UnsupportedOperationException} will be
-     * thrown on the first matching element.
-     *
-     * @param filter a predicate which returns {@code true} for elements to be
-     *        removed
-     * @return {@code true} if any elements were removed
-     * @throws NullPointerException if the specified filter is null
-     * @throws UnsupportedOperationException if elements cannot be removed
-     *         from this collection.  Implementations may throw this exception if a
-     *         matching element cannot be removed or if, in general, removal is not
-     *         supported.
      * @since 1.8
      */
     default boolean removeIf(Predicate<? super E> filter) {
@@ -244,35 +227,15 @@ public interface Collection<E> extends Iterable<E> {
     }
 
     /**
-     * Retains only the elements in this collection that are contained in the
-     * specified collection (optional operation).  In other words, removes from
-     * this collection all of its elements that are not contained in the
-     * specified collection.
+     * 集合中只保留存在于传入集合中的元素。即从集合中删除不存在于传入集合中的过犹不及
      *
-     * @param c collection containing elements to be retained in this collection
-     * @return <tt>true</tt> if this collection changed as a result of the call
-     * @throws UnsupportedOperationException if the <tt>retainAll</tt> operation
-     *         is not supported by this collection
-     * @throws ClassCastException if the types of one or more elements
-     *         in this collection are incompatible with the specified
-     *         collection
-     *         (<a href="#optional-restrictions">optional</a>)
-     * @throws NullPointerException if this collection contains one or more
-     *         null elements and the specified collection does not permit null
-     *         elements
-     *         (<a href="#optional-restrictions">optional</a>),
-     *         or if the specified collection is null
-     * @see #remove(Object)
-     * @see #contains(Object)
+     * 如果集合发生变化，则返回true
+     *
      */
     boolean retainAll(Collection<?> c);
 
     /**
-     * Removes all of the elements from this collection (optional operation).
-     * The collection will be empty after this method returns.
-     *
-     * @throws UnsupportedOperationException if the <tt>clear</tt> operation
-     *         is not supported by this collection
+     * 清空整个集合
      */
     void clear();
 
