@@ -25,6 +25,8 @@
 package java.util.function;
 
 /**
+ * 接受一个参数为类型T，返回值类型也为T
+ *
  * Represents an operation on a single operand that produces a result of the
  * same type as its operand.  This is a specialization of {@code Function} for
  * the case where the operand and result are of the same type.
@@ -41,10 +43,8 @@ package java.util.function;
 public interface UnaryOperator<T> extends Function<T, T> {
 
     /**
-     * Returns a unary operator that always returns its input argument.
+     * 返回一个一元运算，这个运算总是返回输入参数
      *
-     * @param <T> the type of the input and output of the operator
-     * @return a unary operator that always returns its input argument
      */
     static <T> UnaryOperator<T> identity() {
         return t -> t;
