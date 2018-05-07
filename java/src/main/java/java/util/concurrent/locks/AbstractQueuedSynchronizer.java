@@ -865,7 +865,7 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * 在排它无打断模式下，获取资源方法
+     * 在排它中断模式下，获取资源方法
      */
     private void doAcquireInterruptibly(int arg)
         throws InterruptedException {
