@@ -274,40 +274,14 @@ public interface List<E> extends Collection<E> {
     // Search Operations
 
     /**
-     * Returns the index of the first occurrence of the specified element
-     * in this list, or -1 if this list does not contain the element.
-     * More formally, returns the lowest index <tt>i</tt> such that
-     * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
-     * or -1 if there is no such index.
+     * 返回特定元素首次出现的位置，如果没有找到则返回-1
      *
-     * @param o element to search for
-     * @return the index of the first occurrence of the specified element in
-     *         this list, or -1 if this list does not contain the element
-     * @throws ClassCastException if the type of the specified element
-     *         is incompatible with this list
-     *         (<a href="Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified element is null and this
-     *         list does not permit null elements
-     *         (<a href="Collection.html#optional-restrictions">optional</a>)
      */
     int indexOf(Object o);
 
     /**
-     * Returns the index of the last occurrence of the specified element
-     * in this list, or -1 if this list does not contain the element.
-     * More formally, returns the highest index <tt>i</tt> such that
-     * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
-     * or -1 if there is no such index.
+     * 返回特定元素最后一次出现的位置，如果没有找到则返回-1
      *
-     * @param o element to search for
-     * @return the index of the last occurrence of the specified element in
-     *         this list, or -1 if this list does not contain the element
-     * @throws ClassCastException if the type of the specified element
-     *         is incompatible with this list
-     *         (<a href="Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified element is null and this
-     *         list does not permit null elements
-     *         (<a href="Collection.html#optional-restrictions">optional</a>)
      */
     int lastIndexOf(Object o);
 
@@ -318,8 +292,6 @@ public interface List<E> extends Collection<E> {
      * Returns a list iterator over the elements in this list (in proper
      * sequence).
      *
-     * @return a list iterator over the elements in this list (in proper
-     *         sequence)
      */
     ListIterator<E> listIterator();
 

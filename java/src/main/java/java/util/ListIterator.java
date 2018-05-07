@@ -26,28 +26,24 @@
 package java.util;
 
 /**
- * An iterator for lists that allows the programmer
- * to traverse the list in either direction, modify
- * the list during iteration, and obtain the iterator's
- * current position in the list. A {@code ListIterator}
- * has no current element; its <I>cursor position</I> always
- * lies between the element that would be returned by a call
- * to {@code previous()} and the element that would be
- * returned by a call to {@code next()}.
- * An iterator for a list of length {@code n} has {@code n+1} possible
- * cursor positions, as illustrated by the carets ({@code ^}) below:
+ * 列表迭代器，在普通迭代器的基础增加如下内容：
+ *  a. 允许任意方向遍历列表;
+ *  b. 允许在迭代过程中修改列表
+ *  c. 允许迭代器在当前列表的位置
+ *
+ *  ListIterator没有当前元素，它的光标位置总是位于调用previous()返回的元素和调用next()返回元素的之间
+ *
+ *  对于长度为n的列表，迭代器有n+1个光标的位置，如下：
  * <PRE>
  *                      Element(0)   Element(1)   Element(2)   ... Element(n-1)
  * cursor positions:  ^            ^            ^            ^                  ^
  * </PRE>
+ *
  * Note that the {@link #remove} and {@link #set(Object)} methods are
  * <i>not</i> defined in terms of the cursor position;  they are defined to
  * operate on the last element returned by a call to {@link #next} or
  * {@link #previous()}.
  *
- * <p>This interface is a member of the
- * <a href="{@docRoot}/../technotes/guides/collections/index.html">
- * Java Collections Framework</a>.
  *
  * @author  Josh Bloch
  * @see Collection
@@ -61,72 +57,37 @@ public interface ListIterator<E> extends Iterator<E> {
     // Query Operations
 
     /**
-     * Returns {@code true} if this list iterator has more elements when
-     * traversing the list in the forward direction. (In other words,
-     * returns {@code true} if {@link #next} would return an element rather
-     * than throwing an exception.)
+     * 如果向前遍历时，如果有元素则返回true.
      *
-     * @return {@code true} if the list iterator has more elements when
-     *         traversing the list in the forward direction
      */
     boolean hasNext();
 
     /**
-     * Returns the next element in the list and advances the cursor position.
-     * This method may be called repeatedly to iterate through the list,
-     * or intermixed with calls to {@link #previous} to go back and forth.
-     * (Note that alternating calls to {@code next} and {@code previous}
-     * will return the same element repeatedly.)
-     *
-     * @return the next element in the list
-     * @throws NoSuchElementException if the iteration has no next element
+     * 返回列表中的下一个元素
+     *  和previous遍历的方向相反
      */
     E next();
 
     /**
-     * Returns {@code true} if this list iterator has more elements when
-     * traversing the list in the reverse direction.  (In other words,
-     * returns {@code true} if {@link #previous} would return an element
-     * rather than throwing an exception.)
+     * 如果向相反的方向遍历时，如果有元素则返回true.
      *
-     * @return {@code true} if the list iterator has more elements when
-     *         traversing the list in the reverse direction
      */
     boolean hasPrevious();
 
     /**
-     * Returns the previous element in the list and moves the cursor
-     * position backwards.  This method may be called repeatedly to
-     * iterate through the list backwards, or intermixed with calls to
-     * {@link #next} to go back and forth.  (Note that alternating calls
-     * to {@code next} and {@code previous} will return the same
-     * element repeatedly.)
-     *
-     * @return the previous element in the list
-     * @throws NoSuchElementException if the iteration has no previous
-     *         element
+     * 返回列表中的上一个元素
+     *  和next相反
      */
     E previous();
 
     /**
-     * Returns the index of the element that would be returned by a
-     * subsequent call to {@link #next}. (Returns list size if the list
-     * iterator is at the end of the list.)
+     * 返回下一个元素的索引，即调用next方法返回元素所在的位置
      *
-     * @return the index of the element that would be returned by a
-     *         subsequent call to {@code next}, or list size if the list
-     *         iterator is at the end of the list
      */
     int nextIndex();
 
     /**
-     * Returns the index of the element that would be returned by a
-     * subsequent call to {@link #previous}. (Returns -1 if the list
-     * iterator is at the beginning of the list.)
-     *
-     * @return the index of the element that would be returned by a
-     *         subsequent call to {@code previous}, or -1 if the list
-     *         iterator is at the beginning of the list
+     * 返回上一个元素的索引，即调用previous方法返回元素所在的位置
      */
     int previousIndex();
 
@@ -134,62 +95,28 @@ public interface ListIterator<E> extends Iterator<E> {
     // Modification Operations
 
     /**
-     * Removes from the list the last element that was returned by {@link
-     * #next} or {@link #previous} (optional operation).  This call can
-     * only be made once per call to {@code next} or {@code previous}.
-     * It can be made only if {@link #add} has not been
-     * called after the last call to {@code next} or {@code previous}.
+     * 只有在next方法和previous方法被执行后，且调用上面的方法后add方法也没有被执行，
+     * 才可以执行这个方法，会删除next方法和previous返回的元素。
      *
-     * @throws UnsupportedOperationException if the {@code remove}
-     *         operation is not supported by this list iterator
-     * @throws IllegalStateException if neither {@code next} nor
-     *         {@code previous} have been called, or {@code remove} or
-     *         {@code add} have been called after the last call to
-     *         {@code next} or {@code previous}
+     * 每次next方法和previous方法执行后，此方法最多被执行一次，
+     *
      */
     void remove();
 
     /**
-     * Replaces the last element returned by {@link #next} or
-     * {@link #previous} with the specified element (optional operation).
-     * This call can be made only if neither {@link #remove} nor {@link
-     * #add} have been called after the last call to {@code next} or
-     * {@code previous}.
+     * 只有在next方法和previous方法被执行后，且调用上面的方法后remove方法和add方法也没有被执行，
+     * 才可以执行这个方法，使用传入参数替换的next方法和previous返回的元素。
      *
-     * @param e the element with which to replace the last element returned by
-     *          {@code next} or {@code previous}
-     * @throws UnsupportedOperationException if the {@code set} operation
-     *         is not supported by this list iterator
-     * @throws ClassCastException if the class of the specified element
-     *         prevents it from being added to this list
-     * @throws IllegalArgumentException if some aspect of the specified
-     *         element prevents it from being added to this list
-     * @throws IllegalStateException if neither {@code next} nor
-     *         {@code previous} have been called, or {@code remove} or
-     *         {@code add} have been called after the last call to
-     *         {@code next} or {@code previous}
      */
     void set(E e);
 
     /**
-     * Inserts the specified element into the list (optional operation).
-     * The element is inserted immediately before the element that
-     * would be returned by {@link #next}, if any, and after the element
-     * that would be returned by {@link #previous}, if any.  (If the
-     * list contains no elements, the new element becomes the sole element
-     * on the list.)  The new element is inserted before the implicit
-     * cursor: a subsequent call to {@code next} would be unaffected, and a
-     * subsequent call to {@code previous} would return the new element.
-     * (This call increases by one the value that would be returned by a
-     * call to {@code nextIndex} or {@code previousIndex}.)
+     * 将指定的元素插入到列表中
+     *  a. 此元素会被插入到next方法返回元素所有位置的前一个。如果插入成功，则调用previous会返回这个插入的元素
+     *  b. 如果列表为空，则元素会成功列表的唯一元素
      *
-     * @param e the element to insert
-     * @throws UnsupportedOperationException if the {@code add} method is
-     *         not supported by this list iterator
-     * @throws ClassCastException if the class of the specified element
-     *         prevents it from being added to this list
-     * @throws IllegalArgumentException if some aspect of this element
-     *         prevents it from being added to this list
+     *  插入成功后，调用nextIndex和previousIndex，返回值会增加1
+     *
      */
     void add(E e);
 }

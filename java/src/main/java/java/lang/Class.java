@@ -915,13 +915,8 @@ public final class Class<T> implements java.io.Serializable,
 
 
     /**
-     * Returns the {@code Class} representing the component type of an
-     * array.  If this class does not represent an array class this method
-     * returns null.
-     *
-     * @return the {@code Class} representing the component type of this
-     * class if this class is an array
-     * @see     Array
+     * 返回数组中存储元素的类型的Class。
+     * 如果本class不是数组，则返回null
      * @since JDK1.1
      */
     public native Class<?> getComponentType();

@@ -26,8 +26,8 @@
 package java.lang.reflect;
 
 /**
- * The {@code Array} class provides static methods to dynamically create and
- * access Java arrays.
+ * 此类提供一些静态的方法，可以动态的创建和访问Java数组
+ *
  *
  * <p>{@code Array} permits widening conversions to occur during a get or set
  * operation, but throws an {@code IllegalArgumentException} if a narrowing
@@ -39,36 +39,19 @@ public final
 class Array {
 
     /**
-     * Constructor.  Class Array is not instantiable.
+     * 私有构造器
      */
     private Array() {}
 
     /**
-     * Creates a new array with the specified component type and
-     * length.
-     * Invoking this method is equivalent to creating an array
-     * as follows:
-     * <blockquote>
+     * 根据数组元素的类型和长度创建一个新的数组。
+     *  数组的维数不超过255
+     *
+     * 此方法等价于如下代码：
      * <pre>
      * int[] x = {length};
      * Array.newInstance(componentType, x);
      * </pre>
-     * </blockquote>
-     *
-     * <p>The number of dimensions of the new array must not
-     * exceed 255.
-     *
-     * @param componentType the {@code Class} object representing the
-     * component type of the new array
-     * @param length the length of the new array
-     * @return the new array
-     * @exception NullPointerException if the specified
-     * {@code componentType} parameter is null
-     * @exception IllegalArgumentException if componentType is {@link
-     * Void#TYPE} or if the number of dimensions of the requested array
-     * instance exceed 255.
-     * @exception NegativeArraySizeException if the specified {@code length}
-     * is negative
      */
     public static Object newInstance(Class<?> componentType, int length)
         throws NegativeArraySizeException {
@@ -76,6 +59,8 @@ class Array {
     }
 
     /**
+     * 根据数组元素的类型和维度创建一个新的数组。
+     *
      * Creates a new array
      * with the specified component type and dimensions.
      * If {@code componentType}

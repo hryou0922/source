@@ -1,67 +1,14 @@
-/*
- * Copyright (c) 1997, 2012, Oracle and/or its affiliates. All rights reserved.
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
- *
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
- *
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
- *
- * You should have received a copy of the GNU General Public License version
- * 2 along with this work; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
- * or visit www.oracle.com if you need additional information or have any
- * questions.
- */
-
 package java.util;
 
 /**
- * This class provides a skeletal implementation of the {@link List}
- * interface to minimize the effort required to implement this interface
- * backed by a "random access" data store (such as an array).  For sequential
- * access data (such as a linked list), {@link AbstractSequentialList} should
- * be used in preference to this class.
+ *  List接口的骨架实现，以尽量减少子类实现此接口所需的工作量
  *
- * <p>To implement an unmodifiable list, the programmer needs only to extend
- * this class and provide implementations for the {@link #get(int)} and
- * {@link List#size() size()} methods.
+ *  a. 如果要实现不可修改的list，则只需要在继承此类，并重写get(int)和size方法
+ *  b. 如果要实现可以修改的list，除了实现以上的方法外，还则重写set(int, Object) set(int, E)、#add(int, Object) add(int, E)、#remove(int)
  *
- * <p>To implement a modifiable list, the programmer must additionally
- * override the {@link #set(int, Object) set(int, E)} method (which otherwise
- * throws an {@code UnsupportedOperationException}).  If the list is
- * variable-size the programmer must additionally override the
- * {@link #add(int, Object) add(int, E)} and {@link #remove(int)} methods.
+ *  推荐实现一个没有参数的来着构造器
  *
- * <p>The programmer should generally provide a void (no argument) and collection
- * constructor, as per the recommendation in the {@link Collection} interface
- * specification.
- *
- * <p>Unlike the other abstract collection implementations, the programmer does
- * <i>not</i> have to provide an iterator implementation; the iterator and
- * list iterator are implemented by this class, on top of the "random access"
- * methods:
- * {@link #get(int)},
- * {@link #set(int, Object) set(int, E)},
- * {@link #add(int, Object) add(int, E)} and
- * {@link #remove(int)}.
- *
- * <p>The documentation for each non-abstract method in this class describes its
- * implementation in detail.  Each of these methods may be overridden if the
- * collection being implemented admits a more efficient implementation.
- *
- * <p>This class is a member of the
- * <a href="{@docRoot}/../technotes/guides/collections/index.html">
- * Java Collections Framework</a>.
+ * 不同于其他的集合实现，这个类已经实现iterator和list iterator的功能
  *
  * @author  Josh Bloch
  * @author  Neal Gafter
@@ -77,73 +24,19 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
     }
 
     /**
-     * Appends the specified element to the end of this list (optional
-     * operation).
-     *
-     * <p>Lists that support this operation may place limitations on what
-     * elements may be added to this list.  In particular, some
-     * lists will refuse to add null elements, and others will impose
-     * restrictions on the type of elements that may be added.  List
-     * classes should clearly specify in their documentation any restrictions
-     * on what elements may be added.
-     *
-     * <p>This implementation calls {@code add(size(), e)}.
-     *
-     * <p>Note that this implementation throws an
-     * {@code UnsupportedOperationException} unless
-     * {@link #add(int, Object) add(int, E)} is overridden.
-     *
-     * @param e element to be appended to this list
-     * @return {@code true} (as specified by {@link Collection#add})
-     * @throws UnsupportedOperationException if the {@code add} operation
-     *         is not supported by this list
-     * @throws ClassCastException if the class of the specified element
-     *         prevents it from being added to this list
-     * @throws NullPointerException if the specified element is null and this
-     *         list does not permit null elements
-     * @throws IllegalArgumentException if some property of this element
-     *         prevents it from being added to this list
+     * 在列表末尾添加特定元素
      */
     public boolean add(E e) {
         add(size(), e);
         return true;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @throws IndexOutOfBoundsException {@inheritDoc}
-     */
     abstract public E get(int index);
 
-    /**
-     * {@inheritDoc}
-     *
-     * <p>This implementation always throws an
-     * {@code UnsupportedOperationException}.
-     *
-     * @throws UnsupportedOperationException {@inheritDoc}
-     * @throws ClassCastException            {@inheritDoc}
-     * @throws NullPointerException          {@inheritDoc}
-     * @throws IllegalArgumentException      {@inheritDoc}
-     * @throws IndexOutOfBoundsException     {@inheritDoc}
-     */
     public E set(int index, E element) {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * <p>This implementation always throws an
-     * {@code UnsupportedOperationException}.
-     *
-     * @throws UnsupportedOperationException {@inheritDoc}
-     * @throws ClassCastException            {@inheritDoc}
-     * @throws NullPointerException          {@inheritDoc}
-     * @throws IllegalArgumentException      {@inheritDoc}
-     * @throws IndexOutOfBoundsException     {@inheritDoc}
-     */
     public void add(int index, E element) {
         throw new UnsupportedOperationException();
     }

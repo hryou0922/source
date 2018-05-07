@@ -26,31 +26,12 @@
 package java.util;
 
 /**
- * This class provides a skeletal implementation of the <tt>Collection</tt>
- * interface, to minimize the effort required to implement this interface. <p>
+ * Collection接口的骨架实现，以尽量减少子类实现此接口所需的工作量
  *
- * To implement an unmodifiable collection, the programmer needs only to
- * extend this class and provide implementations for the <tt>iterator</tt> and
- * <tt>size</tt> methods.  (The iterator returned by the <tt>iterator</tt>
- * method must implement <tt>hasNext</tt> and <tt>next</tt>.)<p>
+ * a. 如果要实现不可修改的collection，则只需要继承此类，并实现iterator和size方法
+ * b. 如果要实现可修改的collection，除了实现以上的方法外，还需要实现add和remove方法
  *
- * To implement a modifiable collection, the programmer must additionally
- * override this class's <tt>add</tt> method (which otherwise throws an
- * <tt>UnsupportedOperationException</tt>), and the iterator returned by the
- * <tt>iterator</tt> method must additionally implement its <tt>remove</tt>
- * method.<p>
- *
- * The programmer should generally provide a void (no argument) and
- * <tt>Collection</tt> constructor, as per the recommendation in the
- * <tt>Collection</tt> interface specification.<p>
- *
- * The documentation for each non-abstract method in this class describes its
- * implementation in detail.  Each of these methods may be overridden if
- * the collection being implemented admits a more efficient implementation.<p>
- *
- * This class is a member of the
- * <a href="{@docRoot}/../technotes/guides/collections/index.html">
- * Java Collections Framework</a>.
+ *  推荐实现一个没有参数的来着构造器
  *
  * @author  Josh Bloch
  * @author  Neal Gafter
@@ -69,31 +50,18 @@ public abstract class AbstractCollection<E> implements Collection<E> {
     // Query Operations
 
     /**
-     * Returns an iterator over the elements contained in this collection.
-     *
-     * @return an iterator over the elements contained in this collection
+     * 返回遍历集合的迭代器
      */
     public abstract Iterator<E> iterator();
 
     public abstract int size();
 
-    /**
-     * {@inheritDoc}
-     *
-     * <p>This implementation returns <tt>size() == 0</tt>.
-     */
     public boolean isEmpty() {
         return size() == 0;
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * <p>This implementation iterates over the elements in the collection,
-     * checking each element in turn for equality with the specified element.
-     *
-     * @throws ClassCastException   {@inheritDoc}
-     * @throws NullPointerException {@inheritDoc}
+     * 集合中是否包含指定元素
      */
     public boolean contains(Object o) {
         Iterator<E> it = iterator();
@@ -110,26 +78,7 @@ public abstract class AbstractCollection<E> implements Collection<E> {
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * <p>This implementation returns an array containing all the elements
-     * returned by this collection's iterator, in the same order, stored in
-     * consecutive elements of the array, starting with index {@code 0}.
-     * The length of the returned array is equal to the number of elements
-     * returned by the iterator, even if the size of this collection changes
-     * during iteration, as might happen if the collection permits
-     * concurrent modification during iteration.  The {@code size} method is
-     * called only as an optimization hint; the correct result is returned
-     * even if the iterator returns a different number of elements.
-     *
-     * <p>This method is equivalent to:
-     *
-     *  <pre> {@code
-     * List<E> list = new ArrayList<E>(size());
-     * for (E e : this)
-     *     list.add(e);
-     * return list.toArray();
-     * }</pre>
+     * 见Collection.toArray
      */
     public Object[] toArray() {
         // Estimate size of array; be prepared to see more or fewer elements
@@ -144,31 +93,7 @@ public abstract class AbstractCollection<E> implements Collection<E> {
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * <p>This implementation returns an array containing all the elements
-     * returned by this collection's iterator in the same order, stored in
-     * consecutive elements of the array, starting with index {@code 0}.
-     * If the number of elements returned by the iterator is too large to
-     * fit into the specified array, then the elements are returned in a
-     * newly allocated array with length equal to the number of elements
-     * returned by the iterator, even if the size of this collection
-     * changes during iteration, as might happen if the collection permits
-     * concurrent modification during iteration.  The {@code size} method is
-     * called only as an optimization hint; the correct result is returned
-     * even if the iterator returns a different number of elements.
-     *
-     * <p>This method is equivalent to:
-     *
-     *  <pre> {@code
-     * List<E> list = new ArrayList<E>(size());
-     * for (E e : this)
-     *     list.add(e);
-     * return list.toArray(a);
-     * }</pre>
-     *
-     * @throws ArrayStoreException  {@inheritDoc}
-     * @throws NullPointerException {@inheritDoc}
+     * 见Collection.toArray
      */
     @SuppressWarnings("unchecked")
     public <T> T[] toArray(T[] a) {
