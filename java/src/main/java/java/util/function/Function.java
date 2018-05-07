@@ -27,13 +27,7 @@ package java.util.function;
 import java.util.Objects;
 
 /**
- * Represents a function that accepts one argument and produces a result.
- *
- * <p>This is a <a href="package-summary.html">functional interface</a>
- * whose functional method is {@link #apply(Object)}.
- *
- * @param <T> the type of the input to the function
- * @param <R> the type of the result of the function
+ * 函数方法： 接受一个输入参数，返回一个结果
  *
  * @since 1.8
  */
@@ -41,7 +35,7 @@ import java.util.Objects;
 public interface Function<T, R> {
 
     /**
-     * Applies this function to the given argument.
+     * 在给定的参数上应用此方法
      *
      * @param t the function argument
      * @return the function result
@@ -49,19 +43,9 @@ public interface Function<T, R> {
     R apply(T t);
 
     /**
-     * Returns a composed function that first applies the {@code before}
-     * function to its input, and then applies this function to the result.
-     * If evaluation of either function throws an exception, it is relayed to
-     * the caller of the composed function.
+     * 返回一个组合方法：首先将before方法应用于其输入，然后将本方法应用到上面方法的输出结果
+     * 如果对任一函数的求值引发异常，则将其传递给组合函数的调用者
      *
-     * @param <V> the type of input to the {@code before} function, and to the
-     *           composed function
-     * @param before the function to apply before this function is applied
-     * @return a composed function that first applies the {@code before}
-     * function and then applies this function
-     * @throws NullPointerException if before is null
-     *
-     * @see #andThen(Function)
      */
     default <V> Function<V, R> compose(Function<? super V, ? extends T> before) {
         Objects.requireNonNull(before);
@@ -69,19 +53,9 @@ public interface Function<T, R> {
     }
 
     /**
-     * Returns a composed function that first applies this function to
-     * its input, and then applies the {@code after} function to the result.
-     * If evaluation of either function throws an exception, it is relayed to
-     * the caller of the composed function.
+     * 返回组合方法：首先将本方法应用于其输入，然后将after方法应用到上面方法的输出结果
+     * 如果对任一函数的求值引发异常，则将其传递给组合函数的调用者
      *
-     * @param <V> the type of output of the {@code after} function, and of the
-     *           composed function
-     * @param after the function to apply after this function is applied
-     * @return a composed function that first applies this function and then
-     * applies the {@code after} function
-     * @throws NullPointerException if after is null
-     *
-     * @see #compose(Function)
      */
     default <V> Function<T, V> andThen(Function<? super R, ? extends V> after) {
         Objects.requireNonNull(after);
@@ -89,10 +63,8 @@ public interface Function<T, R> {
     }
 
     /**
-     * Returns a function that always returns its input argument.
+     * 返回一个函数方法，此方法总是返回它的输入参数
      *
-     * @param <T> the type of the input and output objects to the function
-     * @return a function that always returns its input argument
      */
     static <T> Function<T, T> identity() {
         return t -> t;

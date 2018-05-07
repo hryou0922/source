@@ -110,103 +110,34 @@ public interface List<E> extends Collection<E> {
     boolean addAll(Collection<? extends E> c);
 
     /**
-     * Inserts all of the elements in the specified collection into this
-     * list at the specified position (optional operation).  Shifts the
-     * element currently at that position (if any) and any subsequent
-     * elements to the right (increases their indices).  The new elements
-     * will appear in this list in the order that they are returned by the
-     * specified collection's iterator.  The behavior of this operation is
-     * undefined if the specified collection is modified while the
-     * operation is in progress.  (Note that this will occur if the specified
-     * collection is this list, and it's nonempty.)
+     * 在index索引后面开始插入集合中的数据
      *
-     * @param index index at which to insert the first element from the
-     *              specified collection
-     * @param c collection containing elements to be added to this list
      * @return <tt>true</tt> if this list changed as a result of the call
-     * @throws UnsupportedOperationException if the <tt>addAll</tt> operation
-     *         is not supported by this list
-     * @throws ClassCastException if the class of an element of the specified
-     *         collection prevents it from being added to this list
-     * @throws NullPointerException if the specified collection contains one
-     *         or more null elements and this list does not permit null
-     *         elements, or if the specified collection is null
-     * @throws IllegalArgumentException if some property of an element of the
-     *         specified collection prevents it from being added to this list
-     * @throws IndexOutOfBoundsException if the index is out of range
-     *         (<tt>index &lt; 0 || index &gt; size()</tt>)
      */
     boolean addAll(int index, Collection<? extends E> c);
 
     /**
-     * Removes from this list all of its elements that are contained in the
-     * specified collection (optional operation).
+     * 根据传入的特定集合从集合中删除元素
      *
-     * @param c collection containing elements to be removed from this list
      * @return <tt>true</tt> if this list changed as a result of the call
-     * @throws UnsupportedOperationException if the <tt>removeAll</tt> operation
-     *         is not supported by this list
-     * @throws ClassCastException if the class of an element of this list
-     *         is incompatible with the specified collection
-     * (<a href="Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if this list contains a null element and the
-     *         specified collection does not permit null elements
-     *         (<a href="Collection.html#optional-restrictions">optional</a>),
-     *         or if the specified collection is null
-     * @see #remove(Object)
-     * @see #contains(Object)
      */
     boolean removeAll(Collection<?> c);
 
     /**
-     * Retains only the elements in this list that are contained in the
-     * specified collection (optional operation).  In other words, removes
-     * from this list all of its elements that are not contained in the
-     * specified collection.
+     * 集合中只保留传入的特定集合中的元素，即从集合中删除不在传入集合中的元素
      *
-     * @param c collection containing elements to be retained in this list
      * @return <tt>true</tt> if this list changed as a result of the call
-     * @throws UnsupportedOperationException if the <tt>retainAll</tt> operation
-     *         is not supported by this list
-     * @throws ClassCastException if the class of an element of this list
-     *         is incompatible with the specified collection
-     * (<a href="Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if this list contains a null element and the
-     *         specified collection does not permit null elements
-     *         (<a href="Collection.html#optional-restrictions">optional</a>),
-     *         or if the specified collection is null
-     * @see #remove(Object)
-     * @see #contains(Object)
      */
     boolean retainAll(Collection<?> c);
 
     /**
-     * Replaces each element of this list with the result of applying the
-     * operator to that element.  Errors or runtime exceptions thrown by
-     * the operator are relayed to the caller.
-     *
-     * @implSpec
-     * The default implementation is equivalent to, for this {@code list}:
-     * <pre>{@code
-     *     final ListIterator<E> li = list.listIterator();
-     *     while (li.hasNext()) {
-     *         li.set(operator.apply(li.next()));
-     *     }
-     * }</pre>
+     * 使用UnaryOperator操作的结果替换集合中每个元素
+     *  如果对任一函数的求值引发异常，则将其传递给组合函数的调用者
      *
      * If the list's list-iterator does not support the {@code set} operation
      * then an {@code UnsupportedOperationException} will be thrown when
      * replacing the first element.
      *
-     * @param operator the operator to apply to each element
-     * @throws UnsupportedOperationException if this list is unmodifiable.
-     *         Implementations may throw this exception if an element
-     *         cannot be replaced or if, in general, modification is not
-     *         supported
-     * @throws NullPointerException if the specified operator is null or
-     *         if the operator result is a null value and this list does
-     *         not permit null elements
-     *         (<a href="Collection.html#optional-restrictions">optional</a>)
      * @since 1.8
      */
     default void replaceAll(UnaryOperator<E> operator) {
@@ -287,11 +218,8 @@ public interface List<E> extends Collection<E> {
     }
 
     /**
-     * Removes all of the elements from this list (optional operation).
-     * The list will be empty after this call returns.
+     * 从集合中删除所有的元素
      *
-     * @throws UnsupportedOperationException if the <tt>clear</tt> operation
-     *         is not supported by this list
      */
     void clear();
 
@@ -299,37 +227,17 @@ public interface List<E> extends Collection<E> {
     // Comparison and hashing
 
     /**
-     * Compares the specified object with this list for equality.  Returns
-     * <tt>true</tt> if and only if the specified object is also a list, both
-     * lists have the same size, and all corresponding pairs of elements in
-     * the two lists are <i>equal</i>.  (Two elements <tt>e1</tt> and
-     * <tt>e2</tt> are <i>equal</i> if <tt>(e1==null ? e2==null :
-     * e1.equals(e2))</tt>.)  In other words, two lists are defined to be
-     * equal if they contain the same elements in the same order.  This
-     * definition ensures that the equals method works properly across
-     * different implementations of the <tt>List</tt> interface.
+     * 满足如下条件，则返回true:
+     *  传入的元素必须是list，要比较的两个列表的大小相同且两个列表中所有相应的元素对均等于
+     *  即：两个列表拥有相同的元素且顺序相同
      *
-     * @param o the object to be compared for equality with this list
-     * @return <tt>true</tt> if the specified object is equal to this list
      */
     boolean equals(Object o);
 
     /**
-     * Returns the hash code value for this list.  The hash code of a list
-     * is defined to be the result of the following calculation:
-     * <pre>{@code
-     *     int hashCode = 1;
-     *     for (E e : list)
-     *         hashCode = 31*hashCode + (e==null ? 0 : e.hashCode());
-     * }</pre>
-     * This ensures that <tt>list1.equals(list2)</tt> implies that
-     * <tt>list1.hashCode()==list2.hashCode()</tt> for any two lists,
-     * <tt>list1</tt> and <tt>list2</tt>, as required by the general
-     * contract of {@link Object#hashCode}.
+     * 返回列表的hash值
+     *  如果两个列表相等，则必须保证两个列表的hash值必须相同
      *
-     * @return the hash code value for this list
-     * @see Object#equals(Object)
-     * @see #equals(Object)
      */
     int hashCode();
 
@@ -337,68 +245,28 @@ public interface List<E> extends Collection<E> {
     // Positional Access Operations
 
     /**
-     * Returns the element at the specified position in this list.
-     *
-     * @param index index of the element to return
-     * @return the element at the specified position in this list
-     * @throws IndexOutOfBoundsException if the index is out of range
-     *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
+     * 返回列表中指定位置的元素
      */
     E get(int index);
 
     /**
-     * Replaces the element at the specified position in this list with the
-     * specified element (optional operation).
+     * 用指定的元素替换此列表中指定位置的元素
      *
-     * @param index index of the element to replace
-     * @param element element to be stored at the specified position
      * @return the element previously at the specified position
-     * @throws UnsupportedOperationException if the <tt>set</tt> operation
-     *         is not supported by this list
-     * @throws ClassCastException if the class of the specified element
-     *         prevents it from being added to this list
-     * @throws NullPointerException if the specified element is null and
-     *         this list does not permit null elements
-     * @throws IllegalArgumentException if some property of the specified
-     *         element prevents it from being added to this list
-     * @throws IndexOutOfBoundsException if the index is out of range
-     *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
+     *
      */
     E set(int index, E element);
 
     /**
-     * Inserts the specified element at the specified position in this list
-     * (optional operation).  Shifts the element currently at that position
-     * (if any) and any subsequent elements to the right (adds one to their
-     * indices).
+     * 将指定的元素插入此列表中的指定位置
      *
-     * @param index index at which the specified element is to be inserted
-     * @param element element to be inserted
-     * @throws UnsupportedOperationException if the <tt>add</tt> operation
-     *         is not supported by this list
-     * @throws ClassCastException if the class of the specified element
-     *         prevents it from being added to this list
-     * @throws NullPointerException if the specified element is null and
-     *         this list does not permit null elements
-     * @throws IllegalArgumentException if some property of the specified
-     *         element prevents it from being added to this list
-     * @throws IndexOutOfBoundsException if the index is out of range
-     *         (<tt>index &lt; 0 || index &gt; size()</tt>)
      */
     void add(int index, E element);
 
     /**
-     * Removes the element at the specified position in this list (optional
-     * operation).  Shifts any subsequent elements to the left (subtracts one
-     * from their indices).  Returns the element that was removed from the
-     * list.
+     * 删除此列表中指定位置的元素
      *
-     * @param index the index of the element to be removed
      * @return the element previously at the specified position
-     * @throws UnsupportedOperationException if the <tt>remove</tt> operation
-     *         is not supported by this list
-     * @throws IndexOutOfBoundsException if the index is out of range
-     *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
     E remove(int index);
 
