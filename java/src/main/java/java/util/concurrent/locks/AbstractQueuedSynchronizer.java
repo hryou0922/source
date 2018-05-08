@@ -683,7 +683,7 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * 设置队列的头，如果传入结点的后续者处于共享模式，且(传入的参数propagate > 0 或 新/旧head节点的状态为PROPAGATE)
+     * 将node设置为队列的头，如果传入结点的后续者处于共享模式，且(传入的参数propagate > 0 或 新/旧head节点的状态为PROPAGATE)
      * ，则执行传播
      *
      * @param node the node
@@ -832,9 +832,6 @@ public abstract class AbstractQueuedSynchronizer
      * Acquires in exclusive uninterruptible mode for thread already in
      * queue. Used by condition wait methods as well as acquire.
      *
-     * @param node the node
-     * @param arg the acquire argument
-     * @return {@code true} if interrupted while waiting
      */
     final boolean acquireQueued(final Node node, int arg) {
         boolean failed = true; // 标记是否成功拿到资源
@@ -891,22 +888,22 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Acquires in exclusive timed mode.
+     * 排他定时模式获取锁
+     * 如果获取成功，则返回true
      *
-     * @param arg the acquire argument
-     * @param nanosTimeout max wait time
-     * @return {@code true} if acquired
      */
     private boolean doAcquireNanos(int arg, long nanosTimeout)
             throws InterruptedException {
         if (nanosTimeout <= 0L)
             return false;
         final long deadline = System.nanoTime() + nanosTimeout;
+        // 将节点插入到队列中，并设置模式为排他性
         final Node node = addWaiter(Node.EXCLUSIVE);
         boolean failed = true;
         try {
             for (;;) {
                 final Node p = node.predecessor();
+                // 如果前驱节点为head，则尝试获取
                 if (p == head && tryAcquire(arg)) {
                     setHead(node);
                     p.next = null; // help GC
@@ -916,6 +913,7 @@ public abstract class AbstractQueuedSynchronizer
                 nanosTimeout = deadline - System.nanoTime();
                 if (nanosTimeout <= 0L)
                     return false;
+                // 如果一个节点acquire失败后,调用此方法设置状态为SIGNAL，如果时间未超时，则park当前线程
                 if (shouldParkAfterFailedAcquire(p, node) &&
                     nanosTimeout > spinForTimeoutThreshold)
                     LockSupport.parkNanos(this, nanosTimeout);
@@ -929,16 +927,18 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Acquires in shared uninterruptible mode.
-     * @param arg the acquire argument
+     * 共享非叫断模式获取锁
+     *   和doAcquireSharedInterruptibly不同之处，如果被中断，则自己中断自己
      */
     private void doAcquireShared(int arg) {
+        // 将节点插入到队列中，并设置模式为共享
         final Node node = addWaiter(Node.SHARED);
         boolean failed = true;
         try {
             boolean interrupted = false;
             for (;;) {
                 final Node p = node.predecessor();
+                // 如果前驱节点为head，则尝试获取
                 if (p == head) {
                     int r = tryAcquireShared(arg);
                     if (r >= 0) {
@@ -961,8 +961,8 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Acquires in shared interruptible mode.
-     * @param arg the acquire argument
+     * 在共享非中断模式下获取锁
+     *  和doAcquireShared不同之处，如果被中断，则抛出异常
      */
     private void doAcquireSharedInterruptibly(int arg)
         throws InterruptedException {
@@ -991,11 +991,9 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Acquires in shared timed mode.
+     * 共享模式下，在指定时间内获取锁
+     * 如果成功，则返回true
      *
-     * @param arg the acquire argument
-     * @param nanosTimeout max wait time
-     * @return {@code true} if acquired
      */
     private boolean doAcquireSharedNanos(int arg, long nanosTimeout)
             throws InterruptedException {
@@ -1034,104 +1032,57 @@ public abstract class AbstractQueuedSynchronizer
     // Main exported methods
 
     /**
-     * Attempts to acquire in exclusive mode. This method should query
-     * if the state of the object permits it to be acquired in the
-     * exclusive mode, and if so to acquire it.
+     * 在排他模式下，尝试获取锁
+     * 此方法应查询对象的状态是否允许在排他模式下获取它，如果是，则获取它
      *
-     * <p>This method is always invoked by the thread performing
-     * acquire.  If this method reports failure, the acquire method
-     * may queue the thread, if it is not already queued, until it is
-     * signalled by a release from some other thread. This can be used
-     * to implement method {@link Lock#tryLock()}.
-     *
-     * <p>The default
-     * implementation throws {@link UnsupportedOperationException}.
+     * 此方法总是由执行获取的线程调用。 如果此方法报告失败，则获取方法可以将该线程排队（如果该线程尚未排队），直到通过来自其他某个线程的发布发出信号。
      *
      * @param arg the acquire argument. This value is always the one
      *        passed to an acquire method, or is the value saved on entry
      *        to a condition wait.  The value is otherwise uninterpreted
      *        and can represent anything you like.
-     * @return {@code true} if successful. Upon success, this object has
-     *         been acquired.
-     * @throws IllegalMonitorStateException if acquiring would place this
-     *         synchronizer in an illegal state. This exception must be
-     *         thrown in a consistent fashion for synchronization to work
-     *         correctly.
-     * @throws UnsupportedOperationException if exclusive mode is not supported
      */
     protected boolean tryAcquire(int arg) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Attempts to set the state to reflect a release in exclusive
-     * mode.
+     * 在排他模式下，尝试设置状态为release
      *
-     * <p>This method is always invoked by the thread performing release.
+     * 此方法总是由执行获取的线程调用。
      *
-     * <p>The default implementation throws
-     * {@link UnsupportedOperationException}.
+     *  如果对象已经被完全释放，则返回true。
      *
      * @param arg the release argument. This value is always the one
      *        passed to a release method, or the current state value upon
      *        entry to a condition wait.  The value is otherwise
      *        uninterpreted and can represent anything you like.
-     * @return {@code true} if this object is now in a fully released
-     *         state, so that any waiting threads may attempt to acquire;
-     *         and {@code false} otherwise.
-     * @throws IllegalMonitorStateException if releasing would place this
-     *         synchronizer in an illegal state. This exception must be
-     *         thrown in a consistent fashion for synchronization to work
-     *         correctly.
-     * @throws UnsupportedOperationException if exclusive mode is not supported
+     *
      */
     protected boolean tryRelease(int arg) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Attempts to acquire in shared mode. This method should query if
-     * the state of the object permits it to be acquired in the shared
-     * mode, and if so to acquire it.
+     * 在共享模式下，尝试获取锁
+     * 此方法应查询对象的状态是否允许在共享模式下获取它，如果是，则获取它
      *
-     * <p>This method is always invoked by the thread performing
-     * acquire.  If this method reports failure, the acquire method
-     * may queue the thread, if it is not already queued, until it is
-     * signalled by a release from some other thread.
+     *  此方法总是由执行获取的线程调用。 如果此方法报告失败，则获取方法可以将该线程排队（如果该线程尚未排队），直到通过来自其他某个线程的发布发出信号。
      *
-     * <p>The default implementation throws {@link
-     * UnsupportedOperationException}.
-     *
-     * @param arg the acquire argument. This value is always the one
-     *        passed to an acquire method, or is the value saved on entry
-     *        to a condition wait.  The value is otherwise uninterpreted
-     *        and can represent anything you like.
-     * @return a negative value on failure; zero if acquisition in shared
-     *         mode succeeded but no subsequent shared-mode acquire can
-     *         succeed; and a positive value if acquisition in shared
-     *         mode succeeded and subsequent shared-mode acquires might
-     *         also succeed, in which case a subsequent waiting thread
-     *         must check availability. (Support for three different
-     *         return values enables this method to be used in contexts
-     *         where acquires only sometimes act exclusively.)  Upon
-     *         success, this object has been acquired.
-     * @throws IllegalMonitorStateException if acquiring would place this
-     *         synchronizer in an illegal state. This exception must be
-     *         thrown in a consistent fashion for synchronization to work
-     *         correctly.
-     * @throws UnsupportedOperationException if shared mode is not supported
+     *  返回结果：
+     *      a. 负数表示执行失败
+     *      b. 0：在共享模式下，获取锁成功，但是接下来，其它线程获取共享锁会失败
+     *      c. 正数：在共享模式下，获取锁成功，但是接下来，其它线程也可能获取共享锁会成功
      */
     protected int tryAcquireShared(int arg) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Attempts to set the state to reflect a release in shared mode.
+     * 在共享模式下，尝试设置状态为释放
      *
-     * <p>This method is always invoked by the thread performing release.
+     * 此方法总是由执行获取的线程调用。
      *
-     * <p>The default implementation throws
-     * {@link UnsupportedOperationException}.
      *
      * @param arg the release argument. This value is always the one
      *        passed to a release method, or the current state value upon
@@ -1140,46 +1091,31 @@ public abstract class AbstractQueuedSynchronizer
      * @return {@code true} if this release of shared mode may permit a
      *         waiting acquire (shared or exclusive) to succeed; and
      *         {@code false} otherwise
-     * @throws IllegalMonitorStateException if releasing would place this
-     *         synchronizer in an illegal state. This exception must be
-     *         thrown in a consistent fashion for synchronization to work
-     *         correctly.
-     * @throws UnsupportedOperationException if shared mode is not supported
+     *
      */
     protected boolean tryReleaseShared(int arg) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Returns {@code true} if synchronization is held exclusively with
-     * respect to the current (calling) thread.  This method is invoked
-     * upon each call to a non-waiting {@link ConditionObject} method.
-     * (Waiting methods instead invoke {@link #release}.)
+     * 如果同步器被当前调用线程独占，则返回true
      *
-     * <p>The default implementation throws {@link
-     * UnsupportedOperationException}. This method is invoked
-     * internally only within {@link ConditionObject} methods, so need
-     * not be defined if conditions are not used.
+     * 在ConditionObject中的非等待方法会调用此方法，等待方法会调用release有一份
      *
-     * @return {@code true} if synchronization is held exclusively;
-     *         {@code false} otherwise
-     * @throws UnsupportedOperationException if conditions are not supported
+     * 此方法内部只被ConditionObject的方法调用，所以如果没有使用conditions，则不需要定义此方法
+     *
      */
     protected boolean isHeldExclusively() {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * Acquires in exclusive mode, ignoring interrupts.  Implemented
-     * by invoking at least once {@link #tryAcquire},
-     * returning on success.  Otherwise the thread is queued, possibly
-     * repeatedly blocking and unblocking, invoking {@link
-     * #tryAcquire} until success.  This method can be used
-     * to implement method {@link Lock#lock}.
+     * 在排他模式、忽略中断模式下获取锁
+     * 第一次尝试调用tryAcquire，如果成功，则返回success。
+     * 如果失败，则将线程入队，在线程成功获取锁前，可以重复被阻塞和接触阻塞
      *
-     * @param arg the acquire argument.  This value is conveyed to
-     *        {@link #tryAcquire} but is otherwise uninterpreted and
-     *        can represent anything you like.
+     * 这个方法用于实现Lock#lock
+     *
      */
     public final void acquire(int arg) {
         if (!tryAcquire(arg) &&
@@ -1188,18 +1124,13 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Acquires in exclusive mode, aborting if interrupted.
-     * Implemented by first checking interrupt status, then invoking
-     * at least once {@link #tryAcquire}, returning on
-     * success.  Otherwise the thread is queued, possibly repeatedly
-     * blocking and unblocking, invoking {@link #tryAcquire}
-     * until success or the thread is interrupted.  This method can be
-     * used to implement method {@link Lock#lockInterruptibly}.
+     * 在排他模式、如果当前线程被中断就抛出异常模式下获取锁
      *
-     * @param arg the acquire argument.  This value is conveyed to
-     *        {@link #tryAcquire} but is otherwise uninterpreted and
-     *        can represent anything you like.
-     * @throws InterruptedException if the current thread is interrupted
+     * 使用tryAcquire尝试获取锁，如果成功，则返回
+     * 否则则将线程入队，在线程成功获取锁或线程被中断前，可以重复被阻塞和接触阻塞
+     *
+     * 这个方法可以被用于实现Lock#lockInterruptibly
+     *
      */
     public final void acquireInterruptibly(int arg)
             throws InterruptedException {
@@ -1210,21 +1141,13 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Attempts to acquire in exclusive mode, aborting if interrupted,
-     * and failing if the given timeout elapses.  Implemented by first
-     * checking interrupt status, then invoking at least once {@link
-     * #tryAcquire}, returning on success.  Otherwise, the thread is
-     * queued, possibly repeatedly blocking and unblocking, invoking
-     * {@link #tryAcquire} until success or the thread is interrupted
-     * or the timeout elapses.  This method can be used to implement
-     * method {@link Lock#tryLock(long, TimeUnit)}.
+     *  在排他模式、如果当前线程被中断就抛出异常、超时模式下获取锁
      *
-     * @param arg the acquire argument.  This value is conveyed to
-     *        {@link #tryAcquire} but is otherwise uninterpreted and
-     *        can represent anything you like.
-     * @param nanosTimeout the maximum number of nanoseconds to wait
-     * @return {@code true} if acquired; {@code false} if timed out
-     * @throws InterruptedException if the current thread is interrupted
+     *  实现逻辑：
+     *  首先确认当前线的中断状态，如果被中断则抛出异常
+     *  然后调用tryAcquire，如果成功，则返回
+     *  如果失败，则否则则将线程入队，在线程成功获取锁或线程被中断或超时前，可以重复被阻塞和解除阻塞
+     *
      */
     public final boolean tryAcquireNanos(int arg, long nanosTimeout)
             throws InterruptedException {
@@ -1235,14 +1158,11 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Releases in exclusive mode.  Implemented by unblocking one or
-     * more threads if {@link #tryRelease} returns true.
-     * This method can be used to implement method {@link Lock#unlock}.
+     * 排他模式下的释放锁操作
+     * 如果有为一个或多个线程解除阻塞，则返回true
      *
-     * @param arg the release argument.  This value is conveyed to
-     *        {@link #tryRelease} but is otherwise uninterpreted and
-     *        can represent anything you like.
-     * @return the value returned from {@link #tryRelease}
+     * 此方法用于实现Lock#unlock
+     *
      */
     public final boolean release(int arg) {
         if (tryRelease(arg)) {
@@ -1255,15 +1175,11 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Acquires in shared mode, ignoring interrupts.  Implemented by
-     * first invoking at least once {@link #tryAcquireShared},
-     * returning on success.  Otherwise the thread is queued, possibly
-     * repeatedly blocking and unblocking, invoking {@link
-     * #tryAcquireShared} until success.
+     * 在共享模式、忽略中断下获取锁
      *
-     * @param arg the acquire argument.  This value is conveyed to
-     *        {@link #tryAcquireShared} but is otherwise uninterpreted
-     *        and can represent anything you like.
+     * 首先调用tryAcquireShared获取锁，如果成功则返回
+     * 如果失败，则否则则将线程入队，在调用tryAcquireShared成功前，可以重复被阻塞和解除阻塞
+     *
      */
     public final void acquireShared(int arg) {
         if (tryAcquireShared(arg) < 0)
@@ -1271,58 +1187,39 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Acquires in shared mode, aborting if interrupted.  Implemented
-     * by first checking interrupt status, then invoking at least once
-     * {@link #tryAcquireShared}, returning on success.  Otherwise the
-     * thread is queued, possibly repeatedly blocking and unblocking,
-     * invoking {@link #tryAcquireShared} until success or the thread
-     * is interrupted.
-     * @param arg the acquire argument.
-     * This value is conveyed to {@link #tryAcquireShared} but is
-     * otherwise uninterpreted and can represent anything
-     * you like.
-     * @throws InterruptedException if the current thread is interrupted
+     * 在共享、如果当前线程被中断抛出异常模式下获取锁
+     *
      */
     public final void acquireSharedInterruptibly(int arg)
             throws InterruptedException {
         if (Thread.interrupted())
             throw new InterruptedException();
+        // 首先调用tryAcquireShared获取锁，如果成功则返回
         if (tryAcquireShared(arg) < 0)
+            // 如果失败，则否则则将线程入队，doAcquireSharedInterruptibly，可以重复被阻塞和解除阻塞
             doAcquireSharedInterruptibly(arg);
     }
 
     /**
-     * Attempts to acquire in shared mode, aborting if interrupted, and
-     * failing if the given timeout elapses.  Implemented by first
-     * checking interrupt status, then invoking at least once {@link
-     * #tryAcquireShared}, returning on success.  Otherwise, the
-     * thread is queued, possibly repeatedly blocking and unblocking,
-     * invoking {@link #tryAcquireShared} until success or the thread
-     * is interrupted or the timeout elapses.
+     * 在共享模式、如果当前线程被中断就抛出异常、超时模式下获取锁
      *
-     * @param arg the acquire argument.  This value is conveyed to
-     *        {@link #tryAcquireShared} but is otherwise uninterpreted
-     *        and can represent anything you like.
-     * @param nanosTimeout the maximum number of nanoseconds to wait
-     * @return {@code true} if acquired; {@code false} if timed out
-     * @throws InterruptedException if the current thread is interrupted
      */
     public final boolean tryAcquireSharedNanos(int arg, long nanosTimeout)
             throws InterruptedException {
         if (Thread.interrupted())
             throw new InterruptedException();
+        // 首先调用tryAcquireShared获取锁，如果成功则返回
+        // 如果失败，则将线程入队，在线程成功获取锁或线程被中断或超时前，可以重复被阻塞和解除阻塞
         return tryAcquireShared(arg) >= 0 ||
             doAcquireSharedNanos(arg, nanosTimeout);
     }
 
     /**
-     * Releases in shared mode.  Implemented by unblocking one or more
-     * threads if {@link #tryReleaseShared} returns true.
      *
-     * @param arg the release argument.  This value is conveyed to
-     *        {@link #tryReleaseShared} but is otherwise uninterpreted
-     *        and can represent anything you like.
-     * @return the value returned from {@link #tryReleaseShared}
+     * 共享模式下的释放锁操作
+     *
+     * 如果有为一个或多个线程解除阻塞，则返回true
+     *
      */
     public final boolean releaseShared(int arg) {
         if (tryReleaseShared(arg)) {
@@ -1335,13 +1232,13 @@ public abstract class AbstractQueuedSynchronizer
     // Queue inspection methods
 
     /**
-     * Queries whether any threads are waiting to acquire. Note that
+     * 查询队列是否可能有线程在等待获取锁，
+     * 如果有，则返回true
+     *
+     * Note that
      * because cancellations due to interrupts and timeouts may occur
      * at any time, a {@code true} return does not guarantee that any
      * other thread will ever acquire.
-     *
-     * <p>In this implementation, this operation returns in
-     * constant time.
      *
      * @return {@code true} if there may be other threads waiting to acquire
      */
@@ -1350,28 +1247,18 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Queries whether any threads have ever contended to acquire this
-     * synchronizer; that is if an acquire method has ever blocked.
      *
-     * <p>In this implementation, this operation returns in
-     * constant time.
+     * 查询是否有线程曾争夺过这个同步器; 即是否acquire方法曾经被阻塞
+     * 如果是，则返回true
      *
-     * @return {@code true} if there has ever been contention
      */
     public final boolean hasContended() {
         return head != null;
     }
 
     /**
-     * Returns the first (longest-waiting) thread in the queue, or
-     * {@code null} if no threads are currently queued.
+     * 获取队列中的第一个线程（等待时间最长）。如果队列为空，则返回null
      *
-     * <p>In this implementation, this operation normally returns in
-     * constant time, but may iterate upon contention if other threads are
-     * concurrently modifying the queue.
-     *
-     * @return the first (longest-waiting) thread in the queue, or
-     *         {@code null} if no threads are currently queued
      */
     public final Thread getFirstQueuedThread() {
         // handle only fast path, else relay
@@ -1418,14 +1305,8 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Returns true if the given thread is currently queued.
+     * 如果指定的线程中队列中，则返回true
      *
-     * <p>This implementation traverses the queue to determine
-     * presence of the given thread.
-     *
-     * @param thread the thread
-     * @return {@code true} if the given thread is on the queue
-     * @throws NullPointerException if the thread is null
      */
     public final boolean isQueued(Thread thread) {
         if (thread == null)
