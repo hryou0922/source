@@ -37,6 +37,9 @@ package java.util.concurrent;
 import java.util.*;
 
 /**
+ * 提供对ExecutorService的默认实现
+ *
+ *
  * Provides default implementations of {@link ExecutorService}
  * execution methods. This class implements the {@code submit},
  * {@code invokeAny} and {@code invokeAll} methods using a
@@ -71,16 +74,9 @@ import java.util.*;
 public abstract class AbstractExecutorService implements ExecutorService {
 
     /**
-     * Returns a {@code RunnableFuture} for the given runnable and default
-     * value.
+     * 根据给定的runnable和默认值，返回RunnableFuture结果。
+     * 调用者根据返回的RunnableFuture，可以阻塞等待结果或取消正在执行的任务
      *
-     * @param runnable the runnable task being wrapped
-     * @param value the default value for the returned future
-     * @param <T> the type of the given value
-     * @return a {@code RunnableFuture} which, when run, will run the
-     * underlying runnable and which, as a {@code Future}, will yield
-     * the given value as its result and provide for cancellation of
-     * the underlying task
      * @since 1.6
      */
     protected <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value) {
@@ -88,24 +84,15 @@ public abstract class AbstractExecutorService implements ExecutorService {
     }
 
     /**
-     * Returns a {@code RunnableFuture} for the given callable task.
+     * 根据给定的Callable，返回RunnableFuture
+     * 调用者根据返回的RunnableFuture，可以阻塞等待结果或取消正在执行的任务
      *
-     * @param callable the callable task being wrapped
-     * @param <T> the type of the callable's result
-     * @return a {@code RunnableFuture} which, when run, will call the
-     * underlying callable and which, as a {@code Future}, will yield
-     * the callable's result as its result and provide for
-     * cancellation of the underlying task
      * @since 1.6
      */
     protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
         return new FutureTask<T>(callable);
     }
 
-    /**
-     * @throws RejectedExecutionException {@inheritDoc}
-     * @throws NullPointerException       {@inheritDoc}
-     */
     public Future<?> submit(Runnable task) {
         if (task == null) throw new NullPointerException();
         RunnableFuture<Void> ftask = newTaskFor(task, null);

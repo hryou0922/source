@@ -37,28 +37,13 @@ package java.util.concurrent;
 import java.util.concurrent.locks.LockSupport;
 
 /**
- * A cancellable asynchronous computation.  This class provides a base
- * implementation of {@link Future}, with methods to start and cancel
- * a computation, query to see if the computation is complete, and
- * retrieve the result of the computation.  The result can only be
- * retrieved when the computation has completed; the {@code get}
- * methods will block if the computation has not yet completed.  Once
- * the computation has completed, the computation cannot be restarted
- * or cancelled (unless the computation is invoked using
- * {@link #runAndReset}).
- *
- * <p>A {@code FutureTask} can be used to wrap a {@link Callable} or
- * {@link Runnable} object.  Because {@code FutureTask} implements
- * {@code Runnable}, a {@code FutureTask} can be submitted to an
- * {@link Executor} for execution.
- *
- * <p>In addition to serving as a standalone class, this class provides
- * {@code protected} functionality that may be useful when creating
- * customized task classes.
+ * 可取消异常计算
+ * 本类提供Future的基础实现，包括启动任务、取消任务、查看当前任务是否执行完毕、获取计算结果
+ * 只有执行完毕，才可以获取计算结果。如果执行get方法会被阻塞，直到计算完毕。
+ * 执行完毕后，任务不可以被重启、取消，除非调用runAndReset
  *
  * @since 1.5
  * @author Doug Lea
- * @param <V> The result type returned by this FutureTask's {@code get} methods
  */
 public class FutureTask<V> implements RunnableFuture<V> {
     /*
@@ -74,16 +59,13 @@ public class FutureTask<V> implements RunnableFuture<V> {
      */
 
     /**
-     * The run state of this task, initially NEW.  The run state
-     * transitions to a terminal state only in methods set,
-     * setException, and cancel.  During completion, state may take on
-     * transient values of COMPLETING (while outcome is being set) or
-     * INTERRUPTING (only while interrupting the runner to satisfy a
-     * cancel(true)). Transitions from these intermediate to final
-     * states use cheaper ordered/lazy writes because values are unique
-     * and cannot be further modified.
+     * 任务的运行的状态，初始值为New
+     * 运行状态仅在方法set，setException和cancel中转换为terminal状态
      *
-     * Possible state transitions:
+     *  在执行期间，状态可能会呈现COMPLETING（结果正在设置）或INTERRUPTING（运行者正在被中断）的瞬态值。
+     *  从这些中间状态到最终状态的转换使用更便宜的有序/惰性写入，因为值是唯一的并且不能进一步修改。
+     *
+     * 可能状态转化：
      * NEW -> COMPLETING -> NORMAL
      * NEW -> COMPLETING -> EXCEPTIONAL
      * NEW -> CANCELLED
