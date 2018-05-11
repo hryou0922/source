@@ -12,3 +12,5 @@
         - Collections：集合工具类
         - 以下类不看源码，只关心用法：Calendar、Date
         - 以下类直接删除：
+        
+    - [JDK1.6](http://download.oracle.com/technetwork/java/javase/6/docs/zh/api/java/util/Comparator.html)

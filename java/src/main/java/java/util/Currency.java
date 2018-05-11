@@ -25,12 +25,7 @@
 
 package java.util;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.Serializable;
+import java.io.*;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.ParseException;

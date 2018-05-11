@@ -44,24 +44,9 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- * This class contains various methods for manipulating arrays (such as
- * sorting and searching). This class also contains a static factory
- * that allows arrays to be viewed as lists.
+ * 此类提供处理数组的各种方法
+ * 此类还包含静态式允许想列表一样看数组
  *
- * <p>The methods in this class all throw a {@code NullPointerException},
- * if the specified array reference is null, except where noted.
- *
- * <p>The documentation for the methods contained in this class includes
- * briefs description of the <i>implementations</i>. Such descriptions should
- * be regarded as <i>implementation notes</i>, rather than parts of the
- * <i>specification</i>. Implementors should feel free to substitute other
- * algorithms, so long as the specification itself is adhered to. (For
- * example, the algorithm used by {@code sort(Object[])} does not have to be
- * a MergeSort, but it does have to be <i>stable</i>.)
- *
- * <p>This class is a member of the
- * <a href="{@docRoot}/../technotes/guides/collections/index.html">
- * Java Collections Framework</a>.
  *
  * @author Josh Bloch
  * @author Neal Gafter
@@ -71,6 +56,9 @@ import java.util.stream.StreamSupport;
 public class Arrays {
 
     /**
+     * 并行排序算法不会进一步划分排序任务的最小数组长度。 使用较小的尺寸通常会导致跨任务的内存争用，
+     * 导致并行加速的可能性不大
+     *
      * The minimum array length below which a parallel sorting
      * algorithm will not further partition the sorting task. Using
      * smaller sizes typically results in memory contention across
@@ -82,11 +70,10 @@ public class Arrays {
     private Arrays() {}
 
     /**
-     * A comparator that implements the natural ordering of a group of
-     * mutually comparable elements. May be used when a supplied
-     * comparator is null. To simplify code-sharing within underlying
-     * implementations, the compare method only declares type Object
-     * for its second argument.
+     * comparator实现对一组可相互比较的元素进行自然排序
+     * 可以在提供的comparator为null时使用。
+     * 为了简化底层实现中的代码共享，比较方法只为第二个参数声明了Object类型。
+     *
      *
      * Arrays class implementor's note: It is an empirical matter
      * whether ComparableTimSort offers any performance benefit over
@@ -3158,22 +3145,16 @@ public class Arrays {
     // Cloning
 
     /**
-     * Copies the specified array, truncating or padding with nulls (if necessary)
-     * so the copy has the specified length.  For all indices that are
-     * valid in both the original array and the copy, the two arrays will
-     * contain identical values.  For any indices that are valid in the
-     * copy but not the original, the copy will contain <tt>null</tt>.
-     * Such indices will exist if and only if the specified length
-     * is greater than that of the original array.
-     * The resulting array is of exactly the same class as the original array.
+     * 复制指定的数组，使用空值截断或填充（如有必要），以便副本具有指定的长度
+     * 对于在原始数组和复制中都有效的所有索引，这两个数组将包含相同的值。
+     * 对于在副本中有效但不是原始副本的索引，副本将包含 null 。
+     * 当且仅当指定的长度大于原始数组的长度时，这些索引才会存在。
+     * 结果数组与原始数组的类完全相同。
      *
-     * @param <T> the class of the objects in the array
      * @param original the array to be copied
      * @param newLength the length of the copy to be returned
      * @return a copy of the original array, truncated or padded with nulls
      *     to obtain the specified length
-     * @throws NegativeArraySizeException if <tt>newLength</tt> is negative
-     * @throws NullPointerException if <tt>original</tt> is null
      * @since 1.6
      */
     @SuppressWarnings("unchecked")
@@ -3182,14 +3163,11 @@ public class Arrays {
     }
 
     /**
-     * Copies the specified array, truncating or padding with nulls (if necessary)
-     * so the copy has the specified length.  For all indices that are
-     * valid in both the original array and the copy, the two arrays will
-     * contain identical values.  For any indices that are valid in the
-     * copy but not the original, the copy will contain <tt>null</tt>.
-     * Such indices will exist if and only if the specified length
-     * is greater than that of the original array.
-     * The resulting array is of the class <tt>newType</tt>.
+     * 复制指定的数组，使用空值截断或填充（如有必要），以便副本具有指定的长度
+     * 对于在原始数组和复制中都有效的所有索引，这两个数组将包含相同的值。
+     * 对于在副本中有效但不是原始副本的索引，副本将包含 null 。
+     * 当且仅当指定的长度大于原始数组的长度时，这些索引才会存在。
+     * 生成的结果数组类是newType
      *
      * @param <U> the class of the objects in the original array
      * @param <T> the class of the objects in the returned array
@@ -3198,11 +3176,7 @@ public class Arrays {
      * @param newType the class of the copy to be returned
      * @return a copy of the original array, truncated or padded with nulls
      *     to obtain the specified length
-     * @throws NegativeArraySizeException if <tt>newLength</tt> is negative
-     * @throws NullPointerException if <tt>original</tt> is null
-     * @throws ArrayStoreException if an element copied from
-     *     <tt>original</tt> is not of a runtime type that can be stored in
-     *     an array of class <tt>newType</tt>
+     *
      * @since 1.6
      */
     public static <T,U> T[] copyOf(U[] original, int newLength, Class<? extends T[]> newType) {
