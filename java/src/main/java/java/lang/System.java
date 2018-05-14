@@ -44,14 +44,13 @@ import sun.security.util.SecurityConstants;
 import sun.reflect.annotation.AnnotationType;
 
 /**
- * The <code>System</code> class contains several useful class fields
- * and methods. It cannot be instantiated.
+ * 此类提供一些有用的类字段和方法。此类不能被初始化
  *
- * <p>Among the facilities provided by the <code>System</code> class
- * are standard input, standard output, and error output streams;
- * access to externally defined properties and environment
- * variables; a means of loading files and libraries; and a utility
- * method for quickly copying a portion of an array.
+ * 此类类提供的功能如下：
+ *  准输入，标准输出和错误输出流;
+ *  访问外部定义的属性和环境变量;
+ *  加载文件和库的手段
+ *  以及用于快速复制数组的实用方法。
  *
  * @author  unascribed
  * @since   JDK1.0
@@ -75,26 +74,21 @@ public final class System {
     }
 
     /**
-     * The "standard" input stream. This stream is already
-     * open and ready to supply input data. Typically this stream
-     * corresponds to keyboard input or another input source specified by
-     * the host environment or user.
+     *
+     * "标准”输入流。
+     * 该流已经打开并准备好输入数据。
+     * 通常，此流对应于由主机环境或用户指定的键盘输入或其他输入源。
+     *
      */
     public final static InputStream in = null;
 
     /**
-     * The "standard" output stream. This stream is already
-     * open and ready to accept output data. Typically this stream
-     * corresponds to display output or another output destination
-     * specified by the host environment or user.
-     * <p>
-     * For simple stand-alone Java applications, a typical way to write
-     * a line of output data is:
-     * <blockquote><pre>
-     *     System.out.println(data)
-     * </pre></blockquote>
-     * <p>
-     * See the <code>println</code> methods in class <code>PrintStream</code>.
+     * “标准”输出流。
+     * 该流已经打开并准备好接受输出数据。
+     * 通常，此流对应于由主机环境或用户指定的显示屏输出或其他输出目标。
+     *
+     * 如：
+     *  System.out.println(data)
      *
      * @see     PrintStream#println()
      * @see     PrintStream#println(boolean)
@@ -110,16 +104,12 @@ public final class System {
     public final static PrintStream out = null;
 
     /**
-     * The "standard" error output stream. This stream is already
-     * open and ready to accept output data.
-     * <p>
-     * Typically this stream corresponds to display output or another
-     * output destination specified by the host environment or user. By
-     * convention, this output stream is used to display error messages
-     * or other information that should come to the immediate attention
-     * of a user even if the principal output stream, the value of the
-     * variable <code>out</code>, has been redirected to a file or other
-     * destination that is typically not continuously monitored.
+     * “标准”错误输出流。
+     * 该流已经打开并准备好接受输出数据。
+     *  通常，此流对应于由主机环境或用户指定的显示屏输出或其他输出目标。
+     *
+     *  按照惯例，该输出流也将用于显示错误消息或应该立即引起用户注意的其他信息，
+     *
      */
     public final static PrintStream err = null;
 
@@ -128,22 +118,8 @@ public final class System {
     private static volatile SecurityManager security = null;
 
     /**
-     * Reassigns the "standard" input stream.
-     *
-     * <p>First, if there is a security manager, its <code>checkPermission</code>
-     * method is called with a <code>RuntimePermission("setIO")</code> permission
-     *  to see if it's ok to reassign the "standard" input stream.
-     * <p>
-     *
-     * @param in the new standard input stream.
-     *
-     * @throws SecurityException
-     *        if a security manager exists and its
-     *        <code>checkPermission</code> method doesn't allow
-     *        reassigning of the standard input stream.
-     *
-     * @see SecurityManager#checkPermission
-     * @see RuntimePermission
+     * 重新配置"标准”输入流。
+     * 首先如果有security manager，则会检查是不是有权限设置新的"标准”输入流。如果没有则抛出SecurityException
      *
      * @since   JDK1.1
      */
@@ -153,21 +129,8 @@ public final class System {
     }
 
     /**
-     * Reassigns the "standard" output stream.
-     *
-     * <p>First, if there is a security manager, its <code>checkPermission</code>
-     * method is called with a <code>RuntimePermission("setIO")</code> permission
-     *  to see if it's ok to reassign the "standard" output stream.
-     *
-     * @param out the new standard output stream
-     *
-     * @throws SecurityException
-     *        if a security manager exists and its
-     *        <code>checkPermission</code> method doesn't allow
-     *        reassigning of the standard output stream.
-     *
-     * @see SecurityManager#checkPermission
-     * @see RuntimePermission
+     * 重新配置"标准”输出流。
+     * 首先如果有security manager，则会检查是不是有权限设置新的"标准”输出流。如果没有则抛出SecurityException
      *
      * @since   JDK1.1
      */
@@ -177,21 +140,8 @@ public final class System {
     }
 
     /**
-     * Reassigns the "standard" error output stream.
-     *
-     * <p>First, if there is a security manager, its <code>checkPermission</code>
-     * method is called with a <code>RuntimePermission("setIO")</code> permission
-     *  to see if it's ok to reassign the "standard" error output stream.
-     *
-     * @param err the new standard error output stream.
-     *
-     * @throws SecurityException
-     *        if a security manager exists and its
-     *        <code>checkPermission</code> method doesn't allow
-     *        reassigning of the standard error output stream.
-     *
-     * @see SecurityManager#checkPermission
-     * @see RuntimePermission
+     * 重新配置“标准”错误输出流。
+     * 首先如果有security manager，则会检查是不是有权限设置新的“标准”错误输出流。如果没有则抛出SecurityException
      *
      * @since   JDK1.1
      */
@@ -202,10 +152,7 @@ public final class System {
 
     private static volatile Console cons = null;
     /**
-     * Returns the unique {@link Console Console} object associated
-     * with the current Java virtual machine, if any.
-     *
-     * @return  The system console, if any, otherwise <tt>null</tt>.
+     * 返回当前JVM关联的唯一{@link Console Console}对象
      *
      * @since   1.6
      */
@@ -259,27 +206,10 @@ public final class System {
     private static native void setErr0(PrintStream err);
 
     /**
-     * Sets the System security.
+     * 设置System security.
+     * 如果已经有一个security manager安装好了，则首先会调用security manager的checkPermission方法进行判断是
+     * 否可以用新security manager替换当前的当前的security manager
      *
-     * <p> If there is a security manager already installed, this method first
-     * calls the security manager's <code>checkPermission</code> method
-     * with a <code>RuntimePermission("setSecurityManager")</code>
-     * permission to ensure it's ok to replace the existing
-     * security manager.
-     * This may result in throwing a <code>SecurityException</code>.
-     *
-     * <p> Otherwise, the argument is established as the current
-     * security manager. If the argument is <code>null</code> and no
-     * security manager has been established, then no action is taken and
-     * the method simply returns.
-     *
-     * @param      s   the security manager.
-     * @exception  SecurityException  if the security manager has already
-     *             been set and its <code>checkPermission</code> method
-     *             doesn't allow it to be replaced.
-     * @see #getSecurityManager
-     * @see SecurityManager#checkPermission
-     * @see RuntimePermission
      */
     public static
     void setSecurityManager(final SecurityManager s) {
@@ -297,6 +227,7 @@ public final class System {
         if (sm != null) {
             // ask the currently installed security manager if we
             // can replace it.
+            // 访问当前的已经安装的security manager是否有权限访问setSecurityManager的方法
             sm.checkPermission(new RuntimePermission
                                      ("setSecurityManager"));
         }
@@ -323,38 +254,24 @@ public final class System {
     }
 
     /**
-     * Gets the system security interface.
+     * 获取SecurityManager
      *
-     * @return  if a security manager has already been established for the
-     *          current application, then that security manager is returned;
-     *          otherwise, <code>null</code> is returned.
-     * @see     #setSecurityManager
      */
     public static SecurityManager getSecurityManager() {
         return security;
     }
 
     /**
-     * Returns the current time in milliseconds.  Note that
-     * while the unit of time of the return value is a millisecond,
-     * the granularity of the value depends on the underlying
-     * operating system and may be larger.  For example, many
-     * operating systems measure time in units of tens of
-     * milliseconds.
+     * 以毫秒为单位返回当前时间。 请注意，尽管返回值的时间单位是毫秒，
+     * 但其值的精确度取决于底层操作系统，返回的时间可能会比实际更大。
+     * 例如，许多操作系统以几十毫秒为单位来测量时间(in units of tens of milliseconds.)。
      *
-     * <p> See the description of the class <code>Date</code> for
-     * a discussion of slight discrepancies that may arise between
-     * "computer time" and coordinated universal time (UTC).
-     *
-     * @return  the difference, measured in milliseconds, between
-     *          the current time and midnight, January 1, 1970 UTC.
-     * @see     java.util.Date
+     * @return  当前时间和1970年1月1日午夜UTC之间的差值（以毫秒为单位）
      */
     public static native long currentTimeMillis();
 
     /**
-     * Returns the current value of the running Java Virtual Machine's
-     * high-resolution time source, in nanoseconds.
+     * 以纳秒为单位，返回当前的时间
      *
      * <p>This method can only be used to measure elapsed time and is
      * not related to any other notion of system or wall-clock time.
@@ -392,72 +309,35 @@ public final class System {
      * one should use {@code t1 - t0 < 0}, not {@code t1 < t0},
      * because of the possibility of numerical overflow.
      *
-     * @return the current value of the running Java Virtual Machine's
-     *         high-resolution time source, in nanoseconds
      * @since 1.5
      */
     public static native long nanoTime();
 
     /**
-     * Copies an array from the specified source array, beginning at the
-     * specified position, to the specified position of the destination array.
-     * A subsequence of array components are copied from the source
-     * array referenced by <code>src</code> to the destination array
-     * referenced by <code>dest</code>. The number of components copied is
-     * equal to the <code>length</code> argument. The components at
-     * positions <code>srcPos</code> through
-     * <code>srcPos+length-1</code> in the source array are copied into
-     * positions <code>destPos</code> through
-     * <code>destPos+length-1</code>, respectively, of the destination
-     * array.
-     * <p>
-     * If the <code>src</code> and <code>dest</code> arguments refer to the
-     * same array object, then the copying is performed as if the
-     * components at positions <code>srcPos</code> through
-     * <code>srcPos+length-1</code> were first copied to a temporary
-     * array with <code>length</code> components and then the contents of
-     * the temporary array were copied into positions
-     * <code>destPos</code> through <code>destPos+length-1</code> of the
-     * destination array.
-     * <p>
-     * If <code>dest</code> is <code>null</code>, then a
-     * <code>NullPointerException</code> is thrown.
-     * <p>
-     * If <code>src</code> is <code>null</code>, then a
-     * <code>NullPointerException</code> is thrown and the destination
-     * array is not modified.
-     * <p>
-     * Otherwise, if any of the following is true, an
-     * <code>ArrayStoreException</code> is thrown and the destination is
-     * not modified:
-     * <ul>
-     * <li>The <code>src</code> argument refers to an object that is not an
-     *     array.
-     * <li>The <code>dest</code> argument refers to an object that is not an
-     *     array.
-     * <li>The <code>src</code> argument and <code>dest</code> argument refer
-     *     to arrays whose component types are different primitive types.
-     * <li>The <code>src</code> argument refers to an array with a primitive
-     *    component type and the <code>dest</code> argument refers to an array
-     *     with a reference component type.
-     * <li>The <code>src</code> argument refers to an array with a reference
-     *    component type and the <code>dest</code> argument refers to an array
-     *     with a primitive component type.
-     * </ul>
-     * <p>
-     * Otherwise, if any of the following is true, an
-     * <code>IndexOutOfBoundsException</code> is
-     * thrown and the destination is not modified:
-     * <ul>
-     * <li>The <code>srcPos</code> argument is negative.
-     * <li>The <code>destPos</code> argument is negative.
-     * <li>The <code>length</code> argument is negative.
-     * <li><code>srcPos+length</code> is greater than
-     *     <code>src.length</code>, the length of the source array.
-     * <li><code>destPos+length</code> is greater than
-     *     <code>dest.length</code>, the length of the destination array.
-     * </ul>
-     * <p>
+     * 从指定的源数组复制数据到指定数组，可以指定源和目标数组的开始复制的索引
+     * 源数组 srcPos-(srcPos+length-1) 上的元素 会被复制到目标数组 destPos-(destPos+length-1) 上
+     *
+     * 如果源数组和目标数组相同，也是可以的。复制的过程类似这样：
+     *  系统会将srcPos-(srcPos+length-1) 上的元素复制到中间的临时数组，然后从临时数组复制数据到目标数组 destPos-(destPos+length-1) 上
+     *
+     *  以下情况，会抛出NullPointerException异常：
+     *  1. src/dest是null
+     *
+     * 以下的任何情况，会抛出ArrayStoreException异常：
+     *  1. 传入src/dest参数不是数组
+     *  2. 传入src/dest参数是数组，但是元素不是相同的基本私有类型的数组（如int[] 和 long[])
+     *  3. 传入src/dest参数是数组，但是一个指向基本私有类型的数组，一个指向引用元素的数组（如int[], Integer[])
+     *
+     * 以下任务情况，会抛出IndexOutOfBoundsException异常：
+     *  1. srcPos、destPos、length任一值为负数
+     *  2. 对于源数组: (srcPos+length) >  src.length
+     *  3. 对于目标数组： (destPos+length) > dest.length
+     *
+     *
+     * 如果源数组上 srcPos-(srcPos+length-1) 的数据无法被转化为目标数组对象，抛出异常ArrayStoreException
+     *
+     *
+     *
      * Otherwise, if any actual component of the source array from
      * position <code>srcPos</code> through
      * <code>srcPos+length-1</code> cannot be converted to the component
@@ -477,18 +357,6 @@ public final class System {
      * paragraph effectively applies only to the situation where both
      * arrays have component types that are reference types.)
      *
-     * @param      src      the source array.
-     * @param      srcPos   starting position in the source array.
-     * @param      dest     the destination array.
-     * @param      destPos  starting position in the destination data.
-     * @param      length   the number of array elements to be copied.
-     * @exception  IndexOutOfBoundsException  if copying would cause
-     *               access of data outside array bounds.
-     * @exception  ArrayStoreException  if an element in the <code>src</code>
-     *               array could not be stored into the <code>dest</code> array
-     *               because of a type mismatch.
-     * @exception  NullPointerException if either <code>src</code> or
-     *               <code>dest</code> is <code>null</code>.
      */
     public static native void arraycopy(Object src,  int  srcPos,
                                         Object dest, int destPos,

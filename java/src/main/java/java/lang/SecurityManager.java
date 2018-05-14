@@ -531,18 +531,9 @@ class SecurityManager {
     }
 
     /**
-     * Throws a <code>SecurityException</code> if the requested
-     * access, specified by the given permission, is not permitted based
-     * on the security policy currently in effect.
-     * <p>
-     * This method calls <code>AccessController.checkPermission</code>
-     * with the given permission.
+     * 如果因为安全的策略，请求访问指定的权限没有被允许，则抛出SecurityException异常
+     * 这个方法是访问ccessController.checkPermission完成权限的检查
      *
-     * @param     perm   the requested permission.
-     * @exception SecurityException if access is not permitted based on
-     *            the current security policy.
-     * @exception NullPointerException if the permission argument is
-     *            <code>null</code>.
      * @since     1.2
      */
     public void checkPermission(Permission perm) {
@@ -1496,34 +1487,16 @@ class SecurityManager {
     }
 
     /**
-     * Throws a <code>SecurityException</code> if the
-     * calling thread is not allowed to access the package specified by
-     * the argument.
-     * <p>
-     * This method is used by the <code>loadClass</code> method of class
-     * loaders.
-     * <p>
-     * This method first gets a list of
-     * restricted packages by obtaining a comma-separated list from
-     * a call to
-     * <code>java.security.Security.getProperty("package.access")</code>,
-     * and checks to see if <code>pkg</code> starts with or equals
-     * any of the restricted packages. If it does, then
-     * <code>checkPermission</code> gets called with the
-     * <code>RuntimePermission("accessClassInPackage."+pkg)</code>
-     * permission.
-     * <p>
-     * If this method is overridden, then
-     * <code>super.checkPackageAccess</code> should be called
-     * as the first line in the overridden method.
+     * 如果调用线程不允许访问指定的包，则抛出SecurityException
+     * 首先，通过java.security.Security.getProperty("package.access")获取用逗号分隔的受限软件包的列表
+     * 获取判断当前传入的包名是否以这些包名开始或相同。
+     * 如果是，则调用checkPermission进行判断当前线程有无访问这些包的权限
+     *
+     * 如果子类要覆盖此方法，则覆盖方法的第一行必须是super.checkPackageAccess
      *
      * @param      pkg   the package name.
-     * @exception  SecurityException  if the calling thread does not have
-     *             permission to access the specified package.
-     * @exception  NullPointerException if the package name argument is
-     *             <code>null</code>.
+     *
      * @see        ClassLoader#loadClass(String, boolean)
-     *  loadClass
      * @see        Security#getProperty getProperty
      * @see        #checkPermission(Permission) checkPermission
      */

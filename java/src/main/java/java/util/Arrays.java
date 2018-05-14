@@ -3169,13 +3169,14 @@ public class Arrays {
      * 当且仅当指定的长度大于原始数组的长度时，这些索引才会存在。
      * 生成的结果数组类是newType
      *
-     * @param <U> the class of the objects in the original array
-     * @param <T> the class of the objects in the returned array
-     * @param original the array to be copied
-     * @param newLength the length of the copy to be returned
-     * @param newType the class of the copy to be returned
+     * @param original 待复制的数组
+     * @param newLength 复制的长度
+     * @param newType 要返回数组里对象的class
      * @return a copy of the original array, truncated or padded with nulls
      *     to obtain the specified length
+     *
+     *  备注：
+     *      数组也是Object
      *
      * @since 1.6
      */
