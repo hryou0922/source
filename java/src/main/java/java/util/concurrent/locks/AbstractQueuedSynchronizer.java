@@ -1318,6 +1318,13 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
+     * 以下情况返回true:
+     *  第一个结点存在且正在独占模式下等待，返回true
+     *
+     *  如果此方法返回true，然后当前线程试图以共享模式获取（即，此方法从{#tryAcquireShared}调用），则确保当前线程不是第一个排队线程。
+     *
+     *  此方法仅用作ReentrantReadWriteLock中的启发式。
+     *
      * Returns {@code true} if the apparent first queued thread, if one
      * exists, is waiting in exclusive mode.  If this method returns
      * {@code true}, and the current thread is attempting to acquire in
@@ -1335,42 +1342,15 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Queries whether any threads have been waiting to acquire longer
-     * than the current thread.
+     * 查询队列中是否有比当前线程等待时间更长的线程
      *
-     * <p>An invocation of this method is equivalent to (but may be
-     * more efficient than):
-     *  <pre> {@code
-     * getFirstQueuedThread() != Thread.currentThread() &&
-     * hasQueuedThreads()}</pre>
+     * 注意：
+     *  由于中断和超时有可能导致任务被取消会发生在任何时候，返回true不能保证其它线程会比当前线程早获取锁
+     *  同时，由于队列为空，所以在此方法返回{false}时，另一个线程有可能先获取锁
      *
-     * <p>Note that because cancellations due to interrupts and
-     * timeouts may occur at any time, a {@code true} return does not
-     * guarantee that some other thread will acquire before the current
-     * thread.  Likewise, it is possible for another thread to win a
-     * race to enqueue after this method has returned {@code false},
-     * due to the queue being empty.
-     *
-     * <p>This method is designed to be used by a fair synchronizer to
-     * avoid <a href="AbstractQueuedSynchronizer#barging">barging</a>.
-     * Such a synchronizer's {@link #tryAcquire} method should return
-     * {@code false}, and its {@link #tryAcquireShared} method should
-     * return a negative value, if this method returns {@code true}
-     * (unless this is a reentrant acquire).  For example, the {@code
-     * tryAcquire} method for a fair, reentrant, exclusive mode
-     * synchronizer might look like this:
-     *
-     *  <pre> {@code
-     * protected boolean tryAcquire(int arg) {
-     *   if (isHeldExclusively()) {
-     *     // A reentrant acquire; increment hold count
-     *     return true;
-     *   } else if (hasQueuedPredecessors()) {
-     *     return false;
-     *   } else {
-     *     // try to acquire normally
-     *   }
-     * }}</pre>
+     * 此方法被公平锁使用，以避免AbstractQueuedSynchronizer#barging的闯入
+     * 此类同步器的{#tryAcquire}方法应返回false代码，并且其{#tryAcquireShared}方法应返回一个负值。
+     * 只有这是一个可重入获取，此方法返回{true}
      *
      * @return {@code true} if there is a queued thread preceding the
      *         current thread, and {@code false} if the current thread
@@ -1392,14 +1372,9 @@ public abstract class AbstractQueuedSynchronizer
     // Instrumentation and monitoring methods
 
     /**
-     * Returns an estimate of the number of threads waiting to
-     * acquire.  The value is only an estimate because the number of
-     * threads may change dynamically while this method traverses
-     * internal data structures.  This method is designed for use in
-     * monitoring system state, not for synchronization
-     * control.
+     * 返回等待队列中节点的估值数量
+     * 此方法用于监视system state，不是为了同步控制
      *
-     * @return the estimated number of threads waiting to acquire
      */
     public final int getQueueLength() {
         int n = 0;
@@ -1411,13 +1386,10 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Returns a collection containing threads that may be waiting to
-     * acquire.  Because the actual set of threads may change
-     * dynamically while constructing this result, the returned
-     * collection is only a best-effort estimate.  The elements of the
-     * returned collection are in no particular order.  This method is
-     * designed to facilitate construction of subclasses that provide
-     * more extensive monitoring facilities.
+     * 返回在队列中等待的线程。
+     * 因为队列中的线程是动态变化的，返回的线程列表只是尽力而为的估计。
+     *
+     * This method is designed to facilitate construction of subclasses that provide more extensive monitoring facilities.
      *
      * @return the collection of threads
      */
@@ -1432,6 +1404,7 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
+     *
      * Returns a collection containing threads that may be waiting to
      * acquire in exclusive mode. This has the same properties
      * as {@link #getQueuedThreads} except that it only returns
