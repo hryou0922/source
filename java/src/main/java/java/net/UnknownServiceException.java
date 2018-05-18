@@ -25,6 +25,8 @@
 
 package java.net;
 
+import java.io.IOException;
+
 /**
  * Thrown to indicate that an unknown service exception has
  * occurred. Either the MIME type returned by a URL connection does

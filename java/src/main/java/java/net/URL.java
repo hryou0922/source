@@ -25,8 +25,7 @@
 
 package java.net;
 
-import java.io.InputStream;
-import java.io.ObjectStreamField;
+import java.io.*;
 import java.io.ObjectInputStream.GetField;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
