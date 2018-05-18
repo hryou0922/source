@@ -36,7 +36,7 @@
 package java.util.concurrent;
 
 /**
- * A handler for tasks that cannot be executed by a {@link ThreadPoolExecutor}.
+ * 用于处理哪些无法被ThreadPoolExecutor执行的任务
  *
  * @since 1.5
  * @author Doug Lea
@@ -44,19 +44,9 @@ package java.util.concurrent;
 public interface RejectedExecutionHandler {
 
     /**
-     * Method that may be invoked by a {@link ThreadPoolExecutor} when
-     * {@link ThreadPoolExecutor#execute execute} cannot accept a
-     * task.  This may occur when no more threads or queue slots are
-     * available because their bounds would be exceeded, or upon
-     * shutdown of the Executor.
+     * 当ThreadPoolExecutor#execute的方法不在接受新任务时，此方法被ThreadPoolExecutor调用
+     * 当Executor关闭或线程的数量超过阈值时，会导致没有更多线程来执行任务时，此方法会被执行
      *
-     * <p>In the absence of other alternatives, the method may throw
-     * an unchecked {@link RejectedExecutionException}, which will be
-     * propagated to the caller of {@code execute}.
-     *
-     * @param r the runnable task requested to be executed
-     * @param executor the executor attempting to execute this task
-     * @throws RejectedExecutionException if there is no remedy
      */
     void rejectedExecution(Runnable r, ThreadPoolExecutor executor);
 }

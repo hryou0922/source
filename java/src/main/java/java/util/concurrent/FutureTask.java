@@ -379,33 +379,40 @@ public class FutureTask<V> implements RunnableFuture<V> {
 
             int s = state;
             if (s > COMPLETING) {
+                // 如果当前的状态为已经大于COMPLETING，则返回当前的state值
                 if (q != null)
                     q.thread = null;
                 return s;
             }
             else if (s == COMPLETING) // cannot time out yet
-                Thread.yield();
+                Thread.yield(); // 如果是COMPLETING，则yield当前线程
             else if (q == null)
-                q = new WaitNode();
+                q = new WaitNode();  // 如果没有等待结点，则创建一个等待结节
             else if (!queued)
                 queued = UNSAFE.compareAndSwapObject(this, waitersOffset,
-                                                     q.next = waiters, q);
+                                                     q.next = waiters, q); // 如果waiters之前的值是q.next，则CAS设置waiter值为q,且q.next==原waiter值
             else if (timed) {
                 nanos = deadline - System.nanoTime();
                 if (nanos <= 0L) {
+                    // 如果超时，则删除等待队列
                     removeWaiter(q);
                     return state;
                 }
-                LockSupport.parkNanos(this, nanos);
+                LockSupport.parkNanos(this, nanos); // 等待N 纳秒
             }
             else
-                LockSupport.park(this);
+                LockSupport.park(this); // 等待
         }
     }
 
     /**
-     * Tries to unlink a timed-out or interrupted wait node to avoid
-     * accumulating garbage.  Internal nodes are simply unspliced
+     *
+     * 从等待队列中删除因超时或中断的等待节点
+     *
+     * 内部节点只是在没有CAS的情况下进行拼接，因为如果它们被释放者遍历，它是无害的。
+     * 为了避免已经移除节点的影响，在出现明显竞赛的情况下，列表会被重新扫描。 当有很多节点时这很慢，但是我们不希望列表的长度足以超过开销较高的方案。
+     *
+     * Internal nodes are simply unspliced
      * without CAS since it is harmless if they are traversed anyway
      * by releasers.  To avoid effects of unsplicing from already
      * removed nodes, the list is retraversed in case of an apparent
@@ -415,7 +422,7 @@ public class FutureTask<V> implements RunnableFuture<V> {
      */
     private void removeWaiter(WaitNode node) {
         if (node != null) {
-            node.thread = null;
+            node.thread = null; // 设置节点的线程为空
             retry:
             for (;;) {          // restart on removeWaiter race
                 for (WaitNode pred = null, q = waiters, s; q != null; q = s) {
@@ -424,6 +431,7 @@ public class FutureTask<V> implements RunnableFuture<V> {
                         pred = q;
                     else if (pred != null) {
                         pred.next = s;
+                        // 为了避免已经移除节点的影响，在出现明显竞赛的情况下，列表会被重新扫描
                         if (pred.thread == null) // check for race
                             continue retry;
                     }

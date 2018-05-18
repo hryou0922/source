@@ -383,7 +383,7 @@ public abstract class AbstractQueuedSynchronizer
         static final int CANCELLED =  1;
         /** 节点等待状态： 后继者的线程需要被执行*/
         static final int SIGNAL    = -1;
-        /** waitStatus value to indicate thread is waiting on condition */
+        /** 节点等待状态：表明此节点正在条件队列中排队 */
         static final int CONDITION = -2;
         /**
          * 节点等待状态：指示下一个acquireShared应无条件传播
@@ -1318,6 +1318,13 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
+     * 以下情况返回true:
+     *  第一个结点存在且正在独占模式下等待，返回true
+     *
+     *  如果此方法返回true，然后当前线程试图以共享模式获取（即，此方法从{#tryAcquireShared}调用），则确保当前线程不是第一个排队线程。
+     *
+     *  此方法仅用作ReentrantReadWriteLock中的启发式。
+     *
      * Returns {@code true} if the apparent first queued thread, if one
      * exists, is waiting in exclusive mode.  If this method returns
      * {@code true}, and the current thread is attempting to acquire in
@@ -1335,42 +1342,15 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Queries whether any threads have been waiting to acquire longer
-     * than the current thread.
+     * 查询队列中是否有比当前线程等待时间更长的线程
      *
-     * <p>An invocation of this method is equivalent to (but may be
-     * more efficient than):
-     *  <pre> {@code
-     * getFirstQueuedThread() != Thread.currentThread() &&
-     * hasQueuedThreads()}</pre>
+     * 注意：
+     *  由于中断和超时有可能导致任务被取消会发生在任何时候，返回true不能保证其它线程会比当前线程早获取锁
+     *  同时，由于队列为空，所以在此方法返回{false}时，另一个线程有可能先获取锁
      *
-     * <p>Note that because cancellations due to interrupts and
-     * timeouts may occur at any time, a {@code true} return does not
-     * guarantee that some other thread will acquire before the current
-     * thread.  Likewise, it is possible for another thread to win a
-     * race to enqueue after this method has returned {@code false},
-     * due to the queue being empty.
-     *
-     * <p>This method is designed to be used by a fair synchronizer to
-     * avoid <a href="AbstractQueuedSynchronizer#barging">barging</a>.
-     * Such a synchronizer's {@link #tryAcquire} method should return
-     * {@code false}, and its {@link #tryAcquireShared} method should
-     * return a negative value, if this method returns {@code true}
-     * (unless this is a reentrant acquire).  For example, the {@code
-     * tryAcquire} method for a fair, reentrant, exclusive mode
-     * synchronizer might look like this:
-     *
-     *  <pre> {@code
-     * protected boolean tryAcquire(int arg) {
-     *   if (isHeldExclusively()) {
-     *     // A reentrant acquire; increment hold count
-     *     return true;
-     *   } else if (hasQueuedPredecessors()) {
-     *     return false;
-     *   } else {
-     *     // try to acquire normally
-     *   }
-     * }}</pre>
+     * 此方法被公平锁使用，以避免AbstractQueuedSynchronizer#barging的闯入
+     * 此类同步器的{#tryAcquire}方法应返回false代码，并且其{#tryAcquireShared}方法应返回一个负值。
+     * 只有这是一个可重入获取，此方法返回{true}
      *
      * @return {@code true} if there is a queued thread preceding the
      *         current thread, and {@code false} if the current thread
@@ -1392,14 +1372,9 @@ public abstract class AbstractQueuedSynchronizer
     // Instrumentation and monitoring methods
 
     /**
-     * Returns an estimate of the number of threads waiting to
-     * acquire.  The value is only an estimate because the number of
-     * threads may change dynamically while this method traverses
-     * internal data structures.  This method is designed for use in
-     * monitoring system state, not for synchronization
-     * control.
+     * 返回等待队列中节点的估值数量
+     * 此方法用于监视system state，不是为了同步控制
      *
-     * @return the estimated number of threads waiting to acquire
      */
     public final int getQueueLength() {
         int n = 0;
@@ -1411,13 +1386,10 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Returns a collection containing threads that may be waiting to
-     * acquire.  Because the actual set of threads may change
-     * dynamically while constructing this result, the returned
-     * collection is only a best-effort estimate.  The elements of the
-     * returned collection are in no particular order.  This method is
-     * designed to facilitate construction of subclasses that provide
-     * more extensive monitoring facilities.
+     * 返回在队列中等待的线程。
+     * 因为队列中的线程是动态变化的，返回的线程列表只是尽力而为的估计。
+     *
+     * This method is designed to facilitate construction of subclasses that provide more extensive monitoring facilities.
      *
      * @return the collection of threads
      */
@@ -1432,12 +1404,10 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Returns a collection containing threads that may be waiting to
-     * acquire in exclusive mode. This has the same properties
-     * as {@link #getQueuedThreads} except that it only returns
-     * those threads waiting due to an exclusive acquire.
+     * 在排它模式下，返回可能在等待队列中的节点列表
+     *  因为队列中的线程是动态变化的，返回的线程列表只是尽力而为的估计。
      *
-     * @return the collection of threads
+     *  同#getQueuedThreads
      */
     public final Collection<Thread> getExclusiveQueuedThreads() {
         ArrayList<Thread> list = new ArrayList<Thread>();
@@ -1452,12 +1422,11 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Returns a collection containing threads that may be waiting to
-     * acquire in shared mode. This has the same properties
-     * as {@link #getQueuedThreads} except that it only returns
-     * those threads waiting due to a shared acquire.
+     *  在共享模式下，返回可能在等待队列中的节点列表
+     *      因为队列中的线程是动态变化的，返回的线程列表只是尽力而为的估计。
      *
-     * @return the collection of threads
+     *  同：#getQueuedThreads
+     *
      */
     public final Collection<Thread> getSharedQueuedThreads() {
         ArrayList<Thread> list = new ArrayList<Thread>();
@@ -1491,15 +1460,16 @@ public abstract class AbstractQueuedSynchronizer
     // Internal support methods for Conditions
 
     /**
-     * Returns true if a node, always one that was initially placed on
-     * a condition queue, is now waiting to reacquire on sync queue.
-     * @param node the node
-     * @return true if is reacquiring
+     *
+     *  如果指定节点正在同步队列并等待重新获取，则返回true。
+     *  这个节点最初总是放在条件队列(a condition queue)中
+     *
      */
     final boolean isOnSyncQueue(Node node) {
         if (node.waitStatus == Node.CONDITION || node.prev == null)
             return false;
         if (node.next != null) // If has successor, it must be on queue
+            // 如果有后此节点有后继节点，则肯定在队列中
             return true;
         /*
          * node.prev can be non-null, but not yet on queue because
@@ -1513,9 +1483,9 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Returns true if node is on sync queue by searching backwards from tail.
-     * Called only when needed by isOnSyncQueue.
-     * @return true if present
+     * 从尾巴开始查找这个节点是否在队列中，如果是，则返回true
+     * 只能被isOnSyncQueue方法调用
+     *
      */
     private boolean findNodeFromTail(Node node) {
         Node t = tail;
@@ -1529,25 +1499,22 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Transfers a node from a condition queue onto sync queue.
-     * Returns true if successful.
-     * @param node the node
-     * @return true if successfully transferred (else the node was
-     * cancelled before signal)
+     * 将节点从条件队列转移到同步队列，如果成功，则返回true
+     *
      */
     final boolean transferForSignal(Node node) {
         /*
-         * If cannot change waitStatus, the node has been cancelled.
+         * 如果设置节点状态失败，则表示此节点已经被取消
          */
         if (!compareAndSetWaitStatus(node, Node.CONDITION, 0))
             return false;
 
         /*
-         * Splice onto queue and try to set waitStatus of predecessor to
-         * indicate that thread is (probably) waiting. If cancelled or
-         * attempt to set waitStatus fails, wake up to resync (in which
-         * case the waitStatus can be transiently and harmlessly wrong).
+         * 将节点插入到队列中，设置节点的前驱节点的状态为Node.SIGNAL以指示线程（可能）在等待
+         * 如果节点被取消或尝试设置waitStatus失败，则唤醒此节点重新同步
+         *
          */
+        // 将节点插入到队列中，如果队列不存在，则先初始队列，并返回前驱节点
         Node p = enq(node);
         int ws = p.waitStatus;
         if (ws > 0 || !compareAndSetWaitStatus(p, ws, Node.SIGNAL))
@@ -1564,23 +1531,25 @@ public abstract class AbstractQueuedSynchronizer
      */
     final boolean transferAfterCancelledWait(Node node) {
         if (compareAndSetWaitStatus(node, Node.CONDITION, 0)) {
+            // 设置节点的状态为0成功，则插入到队列中
             enq(node);
             return true;
         }
         /*
-         * If we lost out to a signal(), then we can't proceed
-         * until it finishes its enq().  Cancelling during an
-         * incomplete transfer is both rare and transient, so just
-         * spin.
+         *
+         * 如果我们失去了一个signal()，那么我们就不能继续下去，直到它完成它的enq()。
+         * 在incomplete transfer过程中执行取消既罕见又短暂，所以使用自旋
+         *
          */
         while (!isOnSyncQueue(node))
-            Thread.yield();
+            Thread.yield(); // yield
         return false;
     }
 
     /**
-     * Invokes release with current state value; returns saved state.
-     * Cancels node and throws exception on failure.
+     * 使用当前的state值调用release方法，如果成功此方法会返回保存的state值
+     * 如果失败，则设置取消节点，并抛出异常
+     *
      * @param node the condition node for this wait
      * @return previous sync state
      */
@@ -1588,6 +1557,7 @@ public abstract class AbstractQueuedSynchronizer
         boolean failed = true;
         try {
             int savedState = getState();
+            // 排他模式下的释放锁操作
             if (release(savedState)) {
                 failed = false;
                 return savedState;
@@ -1600,35 +1570,24 @@ public abstract class AbstractQueuedSynchronizer
         }
     }
 
-    // Instrumentation methods for conditions
+    // Instrumentation methods for conditions: conditions的仪表方法
 
     /**
-     * Queries whether the given ConditionObject
-     * uses this synchronizer as its lock.
+     * 查询给定的ConditionObject中是否使用本同步器，如果是，则返回true
      *
      * @param condition the condition
-     * @return {@code true} if owned
-     * @throws NullPointerException if the condition is null
+     *
      */
     public final boolean owns(ConditionObject condition) {
         return condition.isOwnedBy(this);
     }
 
     /**
-     * Queries whether any threads are waiting on the given condition
-     * associated with this synchronizer. Note that because timeouts
-     * and interrupts may occur at any time, a {@code true} return
-     * does not guarantee that a future {@code signal} will awaken
-     * any threads.  This method is designed primarily for use in
-     * monitoring of the system state.
+     * 查询指定的condition下面有无线程在等待执行。condition和当前的同步器关联
      *
-     * @param condition the condition
-     * @return {@code true} if there are any waiting threads
-     * @throws IllegalMonitorStateException if exclusive synchronization
-     *         is not held
-     * @throws IllegalArgumentException if the given condition is
-     *         not associated with this synchronizer
-     * @throws NullPointerException if the condition is null
+     * 注意：因为超时、中断任何时候都会发生，返回true并不保证将来执行signal会唤醒任何线程
+     * 此方法主要用于监视system state
+     *
      */
     public final boolean hasWaiters(ConditionObject condition) {
         if (!owns(condition))
@@ -1637,20 +1596,10 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Returns an estimate of the number of threads waiting on the
-     * given condition associated with this synchronizer. Note that
-     * because timeouts and interrupts may occur at any time, the
-     * estimate serves only as an upper bound on the actual number of
-     * waiters.  This method is designed for use in monitoring of the
-     * system state, not for synchronization control.
+     * 查询指定的condition下面有线程在等待执行的数量。condition和当前的同步器关联
+     * 注意：因为超时、中断任何时候都会发生，返回的值只是估值
+     * 此方法主要用于监视system state，不用于同步控制
      *
-     * @param condition the condition
-     * @return the estimated number of waiting threads
-     * @throws IllegalMonitorStateException if exclusive synchronization
-     *         is not held
-     * @throws IllegalArgumentException if the given condition is
-     *         not associated with this synchronizer
-     * @throws NullPointerException if the condition is null
      */
     public final int getWaitQueueLength(ConditionObject condition) {
         if (!owns(condition))
@@ -1659,20 +1608,10 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Returns a collection containing those threads that may be
-     * waiting on the given condition associated with this
-     * synchronizer.  Because the actual set of threads may change
-     * dynamically while constructing this result, the returned
-     * collection is only a best-effort estimate. The elements of the
-     * returned collection are in no particular order.
+     * 查询指定的condition下面等待执行线程的列表。condition和当前的同步器关联
+     * 注意：因为超时、中断任何时候都会发生，返回的值只是估值
+     * 此方法主要用于监视system state，不用于同步控制
      *
-     * @param condition the condition
-     * @return the collection of threads
-     * @throws IllegalMonitorStateException if exclusive synchronization
-     *         is not held
-     * @throws IllegalArgumentException if the given condition is
-     *         not associated with this synchronizer
-     * @throws NullPointerException if the condition is null
      */
     public final Collection<Thread> getWaitingThreads(ConditionObject condition) {
         if (!owns(condition))
@@ -2045,28 +1984,22 @@ public abstract class AbstractQueuedSynchronizer
         //  support for instrumentation
 
         /**
-         * Returns true if this condition was created by the given
-         * synchronization object.
+         * 如果condition是被指定的同步对象创建，则返回true
          *
-         * @return {@code true} if owned
          */
         final boolean isOwnedBy(AbstractQueuedSynchronizer sync) {
             return sync == AbstractQueuedSynchronizer.this;
         }
 
         /**
-         * Queries whether any threads are waiting on this condition.
-         * Implements {@link AbstractQueuedSynchronizer#hasWaiters(ConditionObject)}.
-         *
-         * @return {@code true} if there are any waiting threads
-         * @throws IllegalMonitorStateException if {@link #isHeldExclusively}
-         *         returns {@code false}
+         * 查询是否有线程等待在这个condition下面，如果是，则返回true
          */
         protected final boolean hasWaiters() {
+            // 如果同步器被当前调用线程独占，则返回true
             if (!isHeldExclusively())
                 throw new IllegalMonitorStateException();
             for (Node w = firstWaiter; w != null; w = w.nextWaiter) {
-                if (w.waitStatus == Node.CONDITION)
+                if (w.waitStatus == Node.CONDITION) // 找到节点的状态为CONDITION
                     return true;
             }
             return false;

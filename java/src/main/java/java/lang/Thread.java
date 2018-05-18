@@ -264,9 +264,7 @@ class Thread implements Runnable {
     public static native Thread currentThread();
 
     /**
-     * A hint to the scheduler that the current thread is willing to yield
-     * its current use of a processor. The scheduler is free to ignore this
-     * hint.
+     * 向调度程序提示当前线程愿意让出当前正在使用的处理器。 调度程序也可以自由地忽略这个提示。
      *
      * <p> Yield is a heuristic attempt to improve relative progression
      * between threads that would otherwise over-utilise a CPU. Its use
