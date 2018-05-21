@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import java.io.IOException;
+
 /**
  * An object to which <tt>char</tt> sequences and values can be appended.  The
  * <tt>Appendable</tt> interface must be implemented by any class whose

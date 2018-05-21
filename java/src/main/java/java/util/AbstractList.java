@@ -49,14 +49,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
     // Search Operations
 
     /**
-     * {@inheritDoc}
-     *
-     * <p>This implementation first gets a list iterator (with
-     * {@code listIterator()}).  Then, it iterates over the list until the
-     * specified element is found or the end of the list is reached.
-     *
-     * @throws ClassCastException   {@inheritDoc}
-     * @throws NullPointerException {@inheritDoc}
+     * 见 {@link java.util.List#indexOf }
      */
     public int indexOf(Object o) {
         ListIterator<E> it = listIterator();
@@ -73,15 +66,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * <p>This implementation first gets a list iterator that points to the end
-     * of the list (with {@code listIterator(size())}).  Then, it iterates
-     * backwards over the list until the specified element is found, or the
-     * beginning of the list is reached.
-     *
-     * @throws ClassCastException   {@inheritDoc}
-     * @throws NullPointerException {@inheritDoc}
+     * 见 {@link java.util.List#lastIndexOf }
      */
     public int lastIndexOf(Object o) {
         ListIterator<E> it = listIterator(size());
@@ -101,41 +86,16 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
     // Bulk Operations
 
     /**
-     * Removes all of the elements from this list (optional operation).
-     * The list will be empty after this call returns.
+     * 从列表中删除所有的元素（可选操作）
      *
-     * <p>This implementation calls {@code removeRange(0, size())}.
-     *
-     * <p>Note that this implementation throws an
-     * {@code UnsupportedOperationException} unless {@code remove(int
-     * index)} or {@code removeRange(int fromIndex, int toIndex)} is
-     * overridden.
-     *
-     * @throws UnsupportedOperationException if the {@code clear} operation
-     *         is not supported by this list
      */
     public void clear() {
         removeRange(0, size());
     }
 
     /**
-     * {@inheritDoc}
+     *  @see Collection#addAll(Collection)
      *
-     * <p>This implementation gets an iterator over the specified collection
-     * and iterates over it, inserting the elements obtained from the
-     * iterator into this list at the appropriate position, one at a time,
-     * using {@code add(int, E)}.
-     * Many implementations will override this method for efficiency.
-     *
-     * <p>Note that this implementation throws an
-     * {@code UnsupportedOperationException} unless
-     * {@link #add(int, Object) add(int, E)} is overridden.
-     *
-     * @throws UnsupportedOperationException {@inheritDoc}
-     * @throws ClassCastException            {@inheritDoc}
-     * @throws NullPointerException          {@inheritDoc}
-     * @throws IllegalArgumentException      {@inheritDoc}
-     * @throws IndexOutOfBoundsException     {@inheritDoc}
      */
     public boolean addAll(int index, Collection<? extends E> c) {
         rangeCheckForAdd(index);
@@ -151,31 +111,19 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
     // Iterators
 
     /**
-     * Returns an iterator over the elements in this list in proper sequence.
+     * 返回一个Iterator
      *
-     * <p>This implementation returns a straightforward implementation of the
-     * iterator interface, relying on the backing list's {@code size()},
-     * {@code get(int)}, and {@code remove(int)} methods.
+     * 此方法返回一个直接实现的迭代器接口：依赖于外部列表的{size（）}，{get（int）}和{remove（int）}方法的实现
      *
-     * <p>Note that the iterator returned by this method will throw an
-     * {@link UnsupportedOperationException} in response to its
-     * {@code remove} method unless the list's {@code remove(int)} method is
-     * overridden.
+     * 如果碰到并发的修改，则可能抛出runtime exceptions
      *
-     * <p>This implementation can be made to throw runtime exceptions in the
-     * face of concurrent modification, as described in the specification
-     * for the (protected) {@link #modCount} field.
-     *
-     * @return an iterator over the elements in this list in proper sequence
      */
     public Iterator<E> iterator() {
         return new Itr();
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * <p>This implementation returns {@code listIterator(0)}.
+     * 见 {@link java.util.List#listIterator }
      *
      * @see #listIterator(int)
      */
@@ -184,6 +132,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
     }
 
     /**
+     * 见 {@link java.util.List#listIterator }
      * {@inheritDoc}
      *
      * <p>This implementation returns a straightforward implementation of the

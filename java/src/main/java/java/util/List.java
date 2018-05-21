@@ -289,32 +289,26 @@ public interface List<E> extends Collection<E> {
     // List Iterators
 
     /**
-     * Returns a list iterator over the elements in this list (in proper
-     * sequence).
+     * 返回一个ListIterator
      *
      */
     ListIterator<E> listIterator();
 
     /**
-     * Returns a list iterator over the elements in this list (in proper
-     * sequence), starting at the specified position in the list.
-     * The specified index indicates the first element that would be
-     * returned by an initial call to {@link ListIterator#next next}.
-     * An initial call to {@link ListIterator#previous previous} would
-     * return the element with the specified index minus one.
+     * 返回一个ListIterator，从指定的索引开始
      *
-     * @param index index of the first element to be returned from the
-     *        list iterator (by a call to {@link ListIterator#next next})
-     * @return a list iterator over the elements in this list (in proper
-     *         sequence), starting at the specified position in the list
-     * @throws IndexOutOfBoundsException if the index is out of range
-     *         ({@code index < 0 || index > size()})
+     * 当第一次调用ListIterator#next时，返回指定索引的元素
+     * 当第一次调用ListIterator#previous时，返回(指定索引-1)的元素
+     *
      */
     ListIterator<E> listIterator(int index);
 
     // View
 
     /**
+     *
+     * 返回指定的<tt> fromIndex </ tt>（包含）和<tt> toIndex </ tt>之间的此列表部分的视图，exclusive。 （如果<tt> fromIndex </ tt>和<tt> toIndex </ tt>相等，则返回的列表为空。）返回的列表由此列表支持，因此返回列表中的非结构更改将反映在 这个列表，反之亦然。 返回的列表支持列表支持的所有可选列表操作。<p>
+     *
      * Returns a view of the portion of this list between the specified
      * <tt>fromIndex</tt>, inclusive, and <tt>toIndex</tt>, exclusive.  (If
      * <tt>fromIndex</tt> and <tt>toIndex</tt> are equal, the returned list is
@@ -323,6 +317,7 @@ public interface List<E> extends Collection<E> {
      * The returned list supports all of the optional list operations supported
      * by this list.<p>
      *
+     * 此方法消除了对显式范围操作（数组通常存在的那种操作）的需要。 任何需要列表的操作都可以通过传递子列表视图而不是整个列表来用作范围操作。 例如，下面的习语从列表中删除了一系列元素：
      * This method eliminates the need for explicit range operations (of
      * the sort that commonly exist for arrays).  Any operation that expects
      * a list can be used as a range operation by passing a subList view
@@ -335,6 +330,8 @@ public interface List<E> extends Collection<E> {
      * <tt>lastIndexOf</tt>, and all of the algorithms in the
      * <tt>Collections</tt> class can be applied to a subList.<p>
      *
+     * The semantics of the list returned by this method become undefined if the backing list (i.e., this list) is <i>structurally modified</i> in any way other than via the returned list.  (Structural modifications are those that change the size of this list, or otherwise perturb it in such a fashion that iterations in progress may yield incorrect results.)
+     *
      * The semantics of the list returned by this method become undefined if
      * the backing list (i.e., this list) is <i>structurally modified</i> in
      * any way other than via the returned list.  (Structural modifications are
@@ -344,9 +341,7 @@ public interface List<E> extends Collection<E> {
      * @param fromIndex low endpoint (inclusive) of the subList
      * @param toIndex high endpoint (exclusive) of the subList
      * @return a view of the specified range within this list
-     * @throws IndexOutOfBoundsException for an illegal endpoint index value
-     *         (<tt>fromIndex &lt; 0 || toIndex &gt; size ||
-     *         fromIndex &gt; toIndex</tt>)
+     *
      */
     List<E> subList(int fromIndex, int toIndex);
 

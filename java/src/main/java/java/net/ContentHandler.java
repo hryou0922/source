@@ -25,6 +25,8 @@
 
 package java.net;
 
+import java.io.IOException;
+
 /**
  * The abstract class {@code ContentHandler} is the superclass
  * of all classes that read an {@code Object} from a
