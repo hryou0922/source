@@ -126,6 +126,7 @@ import java.util.Date;
 public interface Condition {
 
     /**
+     * 使得当前线程等待，直至线程被signalled或被Thread#interrupt中断
      *
      * 关联Condition的Lock会执行原子释放操作，并且当前线程因线程调度目的而被禁用，并且处于休眠状态，直到以下4种情况的任何一种：
      *  1. 其它线程调用这个Condtion调用#signal方法，当前线程恰好被唤醒
@@ -133,120 +134,55 @@ public interface Condition {
      *  3. 其它线程调用Thread#interrupt中断当前线程并且当前线程支持挂起线程中断
      *  4. "虚假唤醒"发生了
      *
+     * 在以上所有的情况下，在此方法返回前，当前线程会重新获取和此condition相关的锁。即当线程返回，保证已经获取此锁。
      *
-     * <p>In all cases, before this method can return the current thread must
-     * re-acquire the lock associated with this condition. When the
-     * thread returns it is <em>guaranteed</em> to hold this lock.
+     * 如当前的线程：
+     *  1. 在进入此方法时被设置了中断状态;
+     *  2. 或者此线程被执行Thread#interrupt，当它在等待时且系统支持对悬挂的线程执行中断
+     * 那么
+     *  会抛出InterruptedException异常，并且当前线程的中断状态被清除。
+     *  对于第一中情况，是不会详细说明中断是否发生在锁释放之前
      *
-     * <p>If the current thread:
-     * <ul>
-     * <li>has its interrupted status set on entry to this method; or
-     * <li>is {@linkplain Thread#interrupt interrupted} while waiting
-     * and interruption of thread suspension is supported,
-     * </ul>
-     * then {@link InterruptedException} is thrown and the current thread's
-     * interrupted status is cleared. It is not specified, in the first
-     * case, whether or not the test for interruption occurs before the lock
-     * is released.
-     *
-     * <p><b>Implementation Considerations</b>
-     *
-     * <p>The current thread is assumed to hold the lock associated with this
-     * {@code Condition} when this method is called.
-     * It is up to the implementation to determine if this is
-     * the case and if not, how to respond. Typically, an exception will be
-     * thrown (such as {@link IllegalMonitorStateException}) and the
-     * implementation must document that fact.
-     *
-     * <p>An implementation can favor responding to an interrupt over normal
-     * method return in response to a signal. In that case the implementation
-     * must ensure that the signal is redirected to another waiting thread, if
-     * there is one.
-     *
-     * @throws InterruptedException if the current thread is interrupted
-     *         (and interruption of thread suspension is supported)
      */
     void await() throws InterruptedException;
 
     /**
-     * Causes the current thread to wait until it is signalled.
+     * 使得当前的线程等待直到被signalled。此方法不会被中断唤醒
      *
-     * <p>The lock associated with this condition is atomically
-     * released and the current thread becomes disabled for thread scheduling
-     * purposes and lies dormant until <em>one</em> of three things happens:
-     * <ul>
-     * <li>Some other thread invokes the {@link #signal} method for this
-     * {@code Condition} and the current thread happens to be chosen as the
-     * thread to be awakened; or
-     * <li>Some other thread invokes the {@link #signalAll} method for this
-     * {@code Condition}; or
-     * <li>A &quot;<em>spurious wakeup</em>&quot; occurs.
-     * </ul>
+     * 关联Condition的Lock会执行原子释放操作，并且当前线程因线程调度目的而被禁用，并且处于休眠状态，直到以下3种情况的任何一种：
+     *  1. 其它线程调用这个Condtion调用#signal方法，当前线程恰好被唤醒
+     *  2. 其它线程调用#signalAll方法
+     *  3. "虚假唤醒"发生了
      *
-     * <p>In all cases, before this method can return the current thread must
-     * re-acquire the lock associated with this condition. When the
-     * thread returns it is <em>guaranteed</em> to hold this lock.
+     *  在以上所有的情况下，在此方法返回前，当前线程会重新获取和此condition相关的锁。即当线程返回，保证已经获取此锁。
      *
-     * <p>If the current thread's interrupted status is set when it enters
-     * this method, or it is {@linkplain Thread#interrupt interrupted}
-     * while waiting, it will continue to wait until signalled. When it finally
-     * returns from this method its interrupted status will still
-     * be set.
+     * 当进入此这个方法后，当前线程的被设置中断状态或线程在等待时被Thread#interrupt中断，
+     * 则此线程会挂断等待直到被signalled。当此线程最终从方法返回时，线程的中断会被设置
      *
-     * <p><b>Implementation Considerations</b>
-     *
-     * <p>The current thread is assumed to hold the lock associated with this
-     * {@code Condition} when this method is called.
-     * It is up to the implementation to determine if this is
-     * the case and if not, how to respond. Typically, an exception will be
-     * thrown (such as {@link IllegalMonitorStateException}) and the
-     * implementation must document that fact.
      */
     void awaitUninterruptibly();
 
     /**
-     * Causes the current thread to wait until it is signalled or interrupted,
-     * or the specified waiting time elapses.
+     * 使用当前线程等待直到被signalled或被Thread#interrupt中断或超时
      *
-     * <p>The lock associated with this condition is atomically
-     * released and the current thread becomes disabled for thread scheduling
-     * purposes and lies dormant until <em>one</em> of five things happens:
-     * <ul>
-     * <li>Some other thread invokes the {@link #signal} method for this
-     * {@code Condition} and the current thread happens to be chosen as the
-     * thread to be awakened; or
-     * <li>Some other thread invokes the {@link #signalAll} method for this
-     * {@code Condition}; or
-     * <li>Some other thread {@linkplain Thread#interrupt interrupts} the
-     * current thread, and interruption of thread suspension is supported; or
-     * <li>The specified waiting time elapses; or
-     * <li>A &quot;<em>spurious wakeup</em>&quot; occurs.
-     * </ul>
+     * * 关联Condition的Lock会执行原子释放操作，并且当前线程因线程调度目的而被禁用，并且处于休眠状态，直到以下5种情况的任何一种：
+     * 1.2.3.4. 前4种情况和await()方法相同
+     * 5. 等待的时间超时
      *
-     * <p>In all cases, before this method can return the current thread must
-     * re-acquire the lock associated with this condition. When the
-     * thread returns it is <em>guaranteed</em> to hold this lock.
+     * 在以上所有的情况下，在此方法返回前，当前线程会重新获取和此condition相关的锁。即当线程返回，保证已经获取此锁。
      *
-     * <p>If the current thread:
-     * <ul>
-     * <li>has its interrupted status set on entry to this method; or
-     * <li>is {@linkplain Thread#interrupt interrupted} while waiting
-     * and interruption of thread suspension is supported,
-     * </ul>
-     * then {@link InterruptedException} is thrown and the current thread's
-     * interrupted status is cleared. It is not specified, in the first
-     * case, whether or not the test for interruption occurs before the lock
-     * is released.
+     * 如当前的线程：
+     *  1. 在进入此方法时被设置了中断状态;
+     *  2. 或者此线程被执行Thread#interrupt，当它在等待时且系统支持对悬挂的线程执行中断
+     * 那么
+     *  会抛出InterruptedException异常，并且当前线程的中断状态被清除。
+     *  对于第一种情况，是不会详细说明中断是否发生在锁释放之前
      *
-     * <p>The method returns an estimate of the number of nanoseconds
-     * remaining to wait given the supplied {@code nanosTimeout}
-     * value upon return, or a value less than or equal to zero if it
-     * timed out. This value can be used to determine whether and how
-     * long to re-wait in cases where the wait returns but an awaited
-     * condition still does not hold. Typical uses of this method take
-     * the following form:
+     * 此方法返回预估的剩余的纳秒数或超时返回一个小于或等于零的值
+     * 此值用于确定是否需要或再重新等待多久以持有condition上的锁，如果方法返回时线程没有持有锁
      *
-     *  <pre> {@code
+     * 此方法的典型用法采用以下形式：
+     *  <pre>
      * boolean aMethod(long timeout, TimeUnit unit) {
      *   long nanos = unit.toNanos(timeout);
      *   lock.lock();
@@ -262,93 +198,34 @@ public interface Condition {
      *   }
      * }}</pre>
      *
-     * <p>Design note: This method requires a nanosecond argument so
-     * as to avoid truncation errors in reporting remaining times.
-     * Such precision loss would make it difficult for programmers to
-     * ensure that total waiting times are not systematically shorter
-     * than specified when re-waits occur.
-     *
-     * <p><b>Implementation Considerations</b>
-     *
-     * <p>The current thread is assumed to hold the lock associated with this
-     * {@code Condition} when this method is called.
-     * It is up to the implementation to determine if this is
-     * the case and if not, how to respond. Typically, an exception will be
-     * thrown (such as {@link IllegalMonitorStateException}) and the
-     * implementation must document that fact.
-     *
-     * <p>An implementation can favor responding to an interrupt over normal
-     * method return in response to a signal, or over indicating the elapse
-     * of the specified waiting time. In either case the implementation
-     * must ensure that the signal is redirected to another waiting thread, if
-     * there is one.
-     *
-     * @param nanosTimeout the maximum time to wait, in nanoseconds
-     * @return an estimate of the {@code nanosTimeout} value minus
-     *         the time spent waiting upon return from this method.
-     *         A positive value may be used as the argument to a
-     *         subsequent call to this method to finish waiting out
-     *         the desired time.  A value less than or equal to zero
-     *         indicates that no time remains.
-     * @throws InterruptedException if the current thread is interrupted
-     *         (and interruption of thread suspension is supported)
      */
     long awaitNanos(long nanosTimeout) throws InterruptedException;
 
     /**
-     * Causes the current thread to wait until it is signalled or interrupted,
-     * or the specified waiting time elapses. This method is behaviorally
-     * equivalent to:
-     *  <pre> {@code awaitNanos(unit.toNanos(time)) > 0}</pre>
-     *
-     * @param time the maximum time to wait
-     * @param unit the time unit of the {@code time} argument
-     * @return {@code false} if the waiting time detectably elapsed
-     *         before return from the method, else {@code true}
-     * @throws InterruptedException if the current thread is interrupted
-     *         (and interruption of thread suspension is supported)
+     * 使用当前线程等待直到被signalled或被Thread#interrupt中断或超时
+     * 和awaitNanos方法相同
      */
     boolean await(long time, TimeUnit unit) throws InterruptedException;
 
     /**
-     * Causes the current thread to wait until it is signalled or interrupted,
-     * or the specified deadline elapses.
+     * 使用当前线程等待直到被signalled或被Thread#interrupt中断或直到到达指定的截止时间。
+     * 关联Condition的Lock会执行原子释放操作，并且当前线程因线程调度目的而被禁用，并且处于休眠状态，直到以下5种情况的任何一种：
+     * 1.2.3.4. 前4种情况和await()方法相同
+     * 5. 到达指定的截止时间
      *
-     * <p>The lock associated with this condition is atomically
-     * released and the current thread becomes disabled for thread scheduling
-     * purposes and lies dormant until <em>one</em> of five things happens:
-     * <ul>
-     * <li>Some other thread invokes the {@link #signal} method for this
-     * {@code Condition} and the current thread happens to be chosen as the
-     * thread to be awakened; or
-     * <li>Some other thread invokes the {@link #signalAll} method for this
-     * {@code Condition}; or
-     * <li>Some other thread {@linkplain Thread#interrupt interrupts} the
-     * current thread, and interruption of thread suspension is supported; or
-     * <li>The specified deadline elapses; or
-     * <li>A &quot;<em>spurious wakeup</em>&quot; occurs.
-     * </ul>
+     * 在以上所有的情况下，在此方法返回前，当前线程会重新获取和此condition相关的锁。即当线程返回，保证已经获取此锁。
      *
-     * <p>In all cases, before this method can return the current thread must
-     * re-acquire the lock associated with this condition. When the
-     * thread returns it is <em>guaranteed</em> to hold this lock.
+     * 如当前的线程：
+     *  1. 在进入此方法时被设置了中断状态;
+     *  2. 或者此线程被执行Thread#interrupt，当它在等待时且系统支持对悬挂的线程执行中断
+     * 那么
+     *  会抛出InterruptedException异常，并且当前线程的中断状态被清除。
+     *  对于第一种情况，是不会详细说明中断是否发生在锁释放之前
      *
+     * 返回值指示截止日期是否已过：
+     *  true: 如果截止日期已经过去，则返回true
      *
-     * <p>If the current thread:
-     * <ul>
-     * <li>has its interrupted status set on entry to this method; or
-     * <li>is {@linkplain Thread#interrupt interrupted} while waiting
-     * and interruption of thread suspension is supported,
-     * </ul>
-     * then {@link InterruptedException} is thrown and the current thread's
-     * interrupted status is cleared. It is not specified, in the first
-     * case, whether or not the test for interruption occurs before the lock
-     * is released.
-     *
-     *
-     * <p>The return value indicates whether the deadline has elapsed,
-     * which can be used as follows:
-     *  <pre> {@code
+     * <pre>
      * boolean aMethod(Date deadline) {
      *   boolean stillWaiting = true;
      *   lock.lock();
@@ -364,62 +241,26 @@ public interface Condition {
      *   }
      * }}</pre>
      *
-     * <p><b>Implementation Considerations</b>
-     *
-     * <p>The current thread is assumed to hold the lock associated with this
-     * {@code Condition} when this method is called.
-     * It is up to the implementation to determine if this is
-     * the case and if not, how to respond. Typically, an exception will be
-     * thrown (such as {@link IllegalMonitorStateException}) and the
-     * implementation must document that fact.
-     *
-     * <p>An implementation can favor responding to an interrupt over normal
-     * method return in response to a signal, or over indicating the passing
-     * of the specified deadline. In either case the implementation
-     * must ensure that the signal is redirected to another waiting thread, if
-     * there is one.
-     *
-     * @param deadline the absolute time to wait until
-     * @return {@code false} if the deadline has elapsed upon return, else
-     *         {@code true}
-     * @throws InterruptedException if the current thread is interrupted
-     *         (and interruption of thread suspension is supported)
      */
     boolean awaitUntil(Date deadline) throws InterruptedException;
 
     /**
-     * Wakes up one waiting thread.
+     * 唤醒一个等待的线程
      *
-     * <p>If any threads are waiting on this condition then one
-     * is selected for waking up. That thread must then re-acquire the
-     * lock before returning from {@code await}.
+     * 如果有许多线程在等待在这个condition，则只选择一个进行唤醒。此线程会重新获取该锁在await方法返回执行
      *
-     * <p><b>Implementation Considerations</b>
-     *
-     * <p>An implementation may (and typically does) require that the
-     * current thread hold the lock associated with this {@code
-     * Condition} when this method is called. Implementations must
-     * document this precondition and any actions taken if the lock is
-     * not held. Typically, an exception such as {@link
-     * IllegalMonitorStateException} will be thrown.
+     * 此方法的一个可能的实现（并且通常会）会要求当前的线程在这个方法中，持有与这个{Condition}相关联的锁。
+     * 实现必须记录这个先决条件以及如果不锁定所采取的任何行动
      */
     void signal();
 
     /**
-     * Wakes up all waiting threads.
+     * 唤醒所有的等待线程
      *
-     * <p>If any threads are waiting on this condition then they are
-     * all woken up. Each thread must re-acquire the lock before it can
-     * return from {@code await}.
+     * 所有在这个 condition上等待的线程会被全部唤醒。每个线程会在从await方法返回之前会尝试重新获取锁
      *
-     * <p><b>Implementation Considerations</b>
-     *
-     * <p>An implementation may (and typically does) require that the
-     * current thread hold the lock associated with this {@code
-     * Condition} when this method is called. Implementations must
-     * document this precondition and any actions taken if the lock is
-     * not held. Typically, an exception such as {@link
-     * IllegalMonitorStateException} will be thrown.
+     * 此方法的一个可能的实现（并且通常会）会要求当前的线程在这个方法中，持有与这个{Condition}相关联的锁。
+     * 实现必须记录这个先决条件以及如果不锁定所采取的任何行动
      */
     void signalAll();
 }
