@@ -133,26 +133,11 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
 
     /**
      * 见 {@link java.util.List#listIterator }
-     * {@inheritDoc}
      *
-     * <p>This implementation returns a straightforward implementation of the
-     * {@code ListIterator} interface that extends the implementation of the
-     * {@code Iterator} interface returned by the {@code iterator()} method.
-     * The {@code ListIterator} implementation relies on the backing list's
-     * {@code get(int)}, {@code set(int, E)}, {@code add(int, E)}
-     * and {@code remove(int)} methods.
+     * 返回一个直接实现的ListIterator接口，ListIterator的实现依赖支持列表的{get（int）}，{set（int，E）}，{add（int，E）}和{remove（int） } 方法
      *
-     * <p>Note that the list iterator returned by this implementation will
-     * throw an {@link UnsupportedOperationException} in response to its
-     * {@code remove}, {@code set} and {@code add} methods unless the
-     * list's {@code remove(int)}, {@code set(int, E)}, and
-     * {@code add(int, E)} methods are overridden.
+     * 如果碰到并发的修改，则可能抛出runtime exceptions
      *
-     * <p>This implementation can be made to throw runtime exceptions in the
-     * face of concurrent modification, as described in the specification for
-     * the (protected) {@link #modCount} field.
-     *
-     * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public ListIterator<E> listIterator(final int index) {
         rangeCheckForAdd(index);
@@ -174,9 +159,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
         int lastRet = -1;
 
         /**
-         * The modCount value that the iterator believes that the backing
-         * List should have.  If this expectation is violated, the iterator
-         * has detected concurrent modification.
+         * 迭代器认为backing List应该具有的modCount值。 如果违反此期望，迭代器检测到并发修改。
          */
         int expectedModCount = modCount;
 
@@ -279,39 +262,21 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
     }
 
     /**
-     * {@inheritDoc}
+     * 返回一个list，是AbstractList的子类。
+     * 子类使用私有成员变量存储在backing list的子列表的偏移量，子列表的大小（其可以在其生命周期中改变）
+     * 以及支持列表的期望的{codeCodeCount}值
+     * 子类有两种变体，其中一种实现了RandomAccess。如果此列表实现RandomAccess，则返回的列表将是实现RandomAccess的子类的实例
      *
-     * <p>This implementation returns a list that subclasses
-     * {@code AbstractList}.  The subclass stores, in private fields, the
-     * offset of the subList within the backing list, the size of the subList
-     * (which can change over its lifetime), and the expected
-     * {@code modCount} value of the backing list.  There are two variants
-     * of the subclass, one of which implements {@code RandomAccess}.
-     * If this list implements {@code RandomAccess} the returned list will
-     * be an instance of the subclass that implements {@code RandomAccess}.
      *
-     * <p>The subclass's {@code set(int, E)}, {@code get(int)},
-     * {@code add(int, E)}, {@code remove(int)}, {@code addAll(int,
-     * Collection)} and {@code removeRange(int, int)} methods all
-     * delegate to the corresponding methods on the backing abstract list,
-     * after bounds-checking the index and adjusting for the offset.  The
-     * {@code addAll(Collection c)} method merely returns {@code addAll(size,
-     * c)}.
+     * 子类的{set（int，E）}，{get（int）}，{add（int，E）}，{remove（int）}，{addAll （int，Collection）}和{removeRange（int，int）}方法在边界检查索引并调整偏移量之后全部委托给支持抽象列表上的相应方法。
+     * {addAll（Collection c）}方法仅返回{addAll（size，c）}。
      *
-     * <p>The {@code listIterator(int)} method returns a "wrapper object"
-     * over a list iterator on the backing list, which is created with the
-     * corresponding method on the backing list.  The {@code iterator} method
-     * merely returns {@code listIterator()}, and the {@code size} method
-     * merely returns the subclass's {@code size} field.
+     * listIterator（int）返回一个“包装器对象”。此对象在backing list上的列表迭代器。
+     * 该支持列表是使用支持列表上的相应方法创建的。
+     * {iterator}方法仅返回{listIterator（）}，而{size}方法仅仅返回子类的{size}字段。
      *
-     * <p>All methods first check to see if the actual {@code modCount} of
-     * the backing list is equal to its expected value, and throw a
-     * {@code ConcurrentModificationException} if it is not.
+     * 所有的方法首先检查实际modCount和backing list的期望值是否相同，如果不同，则抛出ConcurrentModificationException异常
      *
-     * @throws IndexOutOfBoundsException if an endpoint index value is out of range
-     *         {@code (fromIndex < 0 || toIndex > size)}
-     * @throws IllegalArgumentException if the endpoint indices are out of order
-     *         {@code (fromIndex > toIndex)}
      */
     public List<E> subList(int fromIndex, int toIndex) {
         return (this instanceof RandomAccess ?
@@ -322,34 +287,26 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
     // Comparison and hashing
 
     /**
-     * Compares the specified object with this list for equality.  Returns
-     * {@code true} if and only if the specified object is also a list, both
-     * lists have the same size, and all corresponding pairs of elements in
-     * the two lists are <i>equal</i>.  (Two elements {@code e1} and
-     * {@code e2} are <i>equal</i> if {@code (e1==null ? e2==null :
-     * e1.equals(e2))}.)  In other words, two lists are defined to be
-     * equal if they contain the same elements in the same order.<p>
+     * 当前list和指定列表是否相同
      *
-     * This implementation first checks if the specified object is this
-     * list. If so, it returns {@code true}; if not, it checks if the
-     * specified object is a list. If not, it returns {@code false}; if so,
-     * it iterates over both lists, comparing corresponding pairs of elements.
-     * If any comparison returns {@code false}, this method returns
-     * {@code false}.  If either iterator runs out of elements before the
-     * other it returns {@code false} (as the lists are of unequal length);
-     * otherwise it returns {@code true} when the iterations complete.
-     *
-     * @param o the object to be compared for equality with this list
-     * @return {@code true} if the specified object is equal to this list
+     * 当且仅当指定的对象也是一个列表，两个列表具有相同的大小，并且两个列表中所有对应的元素对都相等时，才返回true。
+     * （如果两个元素e1和e2,{e1 == null？e2 == null：e1.equals（e2））}，则两个元素{e1}和{e2}是相等的。}.
+     * 即，如果两个列表按照相同的顺序包含相同的元素，则它们被定义为相等。<p>
      */
     public boolean equals(Object o) {
-        if (o == this)
+        if (o == this) // hecks if the specified object is this list
             return true;
-        if (!(o instanceof List))
+        if (!(o instanceof List)) /// it checks if the specified object is a list
             return false;
 
         ListIterator<E> e1 = listIterator();
         ListIterator<?> e2 = ((List<?>) o).listIterator();
+        /** it iterates over both lists, comparing corresponding pairs of elements.
+         * If any comparison returns false, this method returns false.
+         * If either iterator runs out of elements before the other it returns false(as the lists are of unequal length)
+         * otherwise it returns true when the iterations complete
+         *
+         */
         while (e1.hasNext() && e2.hasNext()) {
             E o1 = e1.next();
             Object o2 = e2.next();
@@ -360,13 +317,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
     }
 
     /**
-     * Returns the hash code value for this list.
-     *
-     * <p>This implementation uses exactly the code that is used to define the
-     * list hash function in the documentation for the {@link List#hashCode}
-     * method.
-     *
-     * @return the hash code value for this list
+     * 返回当前列表的hash code值
      */
     public int hashCode() {
         int hashCode = 1;
@@ -376,26 +327,13 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
     }
 
     /**
-     * Removes from this list all of the elements whose index is between
-     * {@code fromIndex}, inclusive, and {@code toIndex}, exclusive.
-     * Shifts any succeeding elements to the left (reduces their index).
-     * This call shortens the list by {@code (toIndex - fromIndex)} elements.
-     * (If {@code toIndex==fromIndex}, this operation has no effect.)
      *
-     * <p>This method is called by the {@code clear} operation on this list
-     * and its subLists.  Overriding this method to take advantage of
-     * the internals of the list implementation can <i>substantially</i>
-     * improve the performance of the {@code clear} operation on this list
-     * and its subLists.
+     * 从此列表中删除索引介于fromIndex（包含）和toIndex（不包含）之间的所有元素，将后续所有元素向左移
+     * 此调用删除{toIndex - fromIndex）}元素缩短列表。 （如果{toIndex == fromIndex}，则此操作无效。）
      *
-     * <p>This implementation gets a list iterator positioned before
-     * {@code fromIndex}, and repeatedly calls {@code ListIterator.next}
-     * followed by {@code ListIterator.remove} until the entire range has
-     * been removed.  <b>Note: if {@code ListIterator.remove} requires linear
-     * time, this implementation requires quadratic time.</b>
+     * 这个方法被这个列表及其子列表上的clear方法调用。
+     * 重写此方法以利用列表实现的内部功能可以显着提高此列表及其子列表上的clear操作的性能。
      *
-     * @param fromIndex index of first element to be removed
-     * @param toIndex index after last element to be removed
      */
     protected void removeRange(int fromIndex, int toIndex) {
         ListIterator<E> it = listIterator(fromIndex);
