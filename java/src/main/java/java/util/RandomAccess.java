@@ -26,11 +26,11 @@
 package java.util;
 
 /**
- * Marker interface used by <tt>List</tt> implementations to indicate that
- * they support fast (generally constant time) random access.  The primary
- * purpose of this interface is to allow generic algorithms to alter their
- * behavior to provide good performance when applied to either random or
- * sequential access lists.
+ * 标记接口，用于指示List支持快速（通常是恒定时间）的随机访问
+ * 接口的主要目的是允许通用算法改变其行为，以便在应用于随机或顺序访问列表时提供良好的性能。
+ *
+ *
+ * 当应用于顺序访问列表（如<tt> LinkedList </ tt>）时，处理随机访问列表的最佳算法（如ArrayList </ tt>）可产生二次行为。 我们鼓励通用列表算法检查给定列表是否为此接口的实例，然后应用算法，如果将其应用于顺序访问列表时将提供较差的性能，并在必要时更改其行为 保证合格的性能。
  *
  * <p>The best algorithms for manipulating random access lists (such as
  * <tt>ArrayList</tt>) can produce quadratic behavior when applied to

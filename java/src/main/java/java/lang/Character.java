@@ -4528,11 +4528,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
     private static final long serialVersionUID = 3786198910865385080L;
 
     /**
-     * Constructs a newly allocated {@code Character} object that
-     * represents the specified {@code char} value.
-     *
-     * @param  value   the value to be represented by the
-     *                  {@code Character} object.
+     * 根据char值创建Character对象
      */
     public Character(char value) {
         this.value = value;
@@ -4550,20 +4546,10 @@ class Character implements java.io.Serializable, Comparable<Character> {
     }
 
     /**
-     * Returns a <tt>Character</tt> instance representing the specified
-     * <tt>char</tt> value.
-     * If a new <tt>Character</tt> instance is not required, this method
-     * should generally be used in preference to the constructor
-     * {@link #Character(char)}, as this method is likely to yield
-     * significantly better space and time performance by caching
-     * frequently requested values.
+     * 返回表示指定char值的Character的实例
      *
-     * This method will always cache values in the range {@code
-     * '\u005Cu0000'} to {@code '\u005Cu007F'}, inclusive, and may
-     * cache other values outside of this range.
+     * 对于'\u005Cu0000'至'\u005Cu007F'会进行缓存
      *
-     * @param  c a char value.
-     * @return a <tt>Character</tt> instance representing <tt>c</tt>.
      * @since  1.5
      */
     public static Character valueOf(char c) {
@@ -4574,9 +4560,8 @@ class Character implements java.io.Serializable, Comparable<Character> {
     }
 
     /**
-     * Returns the value of this {@code Character} object.
-     * @return  the primitive {@code char} value represented by
-     *          this object.
+     * 返回Character对象对应的值
+     *
      */
     public char charValue() {
         return value;
@@ -4594,27 +4579,18 @@ class Character implements java.io.Serializable, Comparable<Character> {
     }
 
     /**
-     * Returns a hash code for a {@code char} value; compatible with
-     * {@code Character.hashCode()}.
+     * 返回char的hash值
      *
      * @since 1.8
-     *
-     * @param value The {@code char} for which to return a hash code.
-     * @return a hash code value for a {@code char} value.
      */
     public static int hashCode(char value) {
         return (int)value;
     }
 
     /**
-     * Compares this object against the specified object.
-     * The result is {@code true} if and only if the argument is not
-     * {@code null} and is a {@code Character} object that
-     * represents the same {@code char} value as this object.
+     * 比较值
+     * 只有传入的参数非空且Character对象里char值相同
      *
-     * @param   obj   the object to compare with.
-     * @return  {@code true} if the objects are the same;
-     *          {@code false} otherwise.
      */
     public boolean equals(Object obj) {
         if (obj instanceof Character) {
@@ -4624,13 +4600,8 @@ class Character implements java.io.Serializable, Comparable<Character> {
     }
 
     /**
-     * Returns a {@code String} object representing this
-     * {@code Character}'s value.  The result is a string of
-     * length 1 whose sole component is the primitive
-     * {@code char} value represented by this
-     * {@code Character} object.
+     * 使用返回字符串
      *
-     * @return  a string representation of this object.
      */
     public String toString() {
         char buf[] = {value};
@@ -4638,12 +4609,8 @@ class Character implements java.io.Serializable, Comparable<Character> {
     }
 
     /**
-     * Returns a {@code String} object representing the
-     * specified {@code char}.  The result is a string of length
-     * 1 consisting solely of the specified {@code char}.
+     * 使用字符串表示char值
      *
-     * @param c the {@code char} to be converted
-     * @return the string representation of the specified {@code char}
      * @since 1.4
      */
     public static String toString(char c) {
@@ -4651,29 +4618,25 @@ class Character implements java.io.Serializable, Comparable<Character> {
     }
 
     /**
-     * Determines whether the specified code point is a valid
-     * <a href="http://www.unicode.org/glossary/#code_point">
-     * Unicode code point value</a>.
+     * 判断指定的codePoint是合法的Unicode code point值
+     * 如果指定的codePoint值位于#MIN_CODE_POINT和#MAX_CODE_POINT之间，则返回true
      *
-     * @param  codePoint the Unicode code point to be tested
-     * @return {@code true} if the specified code point value is between
-     *         {@link #MIN_CODE_POINT} and
-     *         {@link #MAX_CODE_POINT} inclusive;
-     *         {@code false} otherwise.
+     * <a href="http://www.unicode.org/glossary/#code_point">
+     *
      * @since  1.5
      */
     public static boolean isValidCodePoint(int codePoint) {
         // Optimized form of:
         //     codePoint >= MIN_CODE_POINT && codePoint <= MAX_CODE_POINT
         int plane = codePoint >>> 16;
-        return plane < ((MAX_CODE_POINT + 1) >>> 16);
+        return plane < ((MAX_CODE_POINT + 1) >>> 16); // (MAX_CODE_POINT + 1) >>> 16 = 0x11 = 3
     }
 
     /**
-     * Determines whether the specified character (Unicode code point)
-     * is in the <a href="#BMP">Basic Multilingual Plane (BMP)</a>.
-     * Such code points can be represented using a single {@code char}.
+     * 判断指定的codePoint是否位于为<a href="#BMP">Basic Multilingual Plane (BMP)</a>中
+     * 如果codePoint是BMP，则此值可以被表示为单个char值
      *
+     * 如果codePoint位于
      * @param  codePoint the character (Unicode code point) to be tested
      * @return {@code true} if the specified code point is between
      *         {@link #MIN_VALUE} and {@link #MAX_VALUE} inclusive;
@@ -4689,14 +4652,10 @@ class Character implements java.io.Serializable, Comparable<Character> {
     }
 
     /**
-     * Determines whether the specified character (Unicode code point)
-     * is in the <a href="#supplementary">supplementary character</a> range.
+     * 判定指定的Unicode code point是否在supplementary character范围内
      *
-     * @param  codePoint the character (Unicode code point) to be tested
-     * @return {@code true} if the specified code point is between
-     *         {@link #MIN_SUPPLEMENTARY_CODE_POINT} and
-     *         {@link #MAX_CODE_POINT} inclusive;
-     *         {@code false} otherwise.
+     * 如果指定的code point在 0x010000 <= N < 0X10FFFF+1 之间，则返回true
+     *
      * @since  1.5
      */
     public static boolean isSupplementaryCodePoint(int codePoint) {
@@ -4705,23 +4664,15 @@ class Character implements java.io.Serializable, Comparable<Character> {
     }
 
     /**
-     * Determines if the given {@code char} value is a
-     * <a href="http://www.unicode.org/glossary/#high_surrogate_code_unit">
+     * 判断指定的char是否是
+     *  <a href="http://www.unicode.org/glossary/#high_surrogate_code_unit">
      * Unicode high-surrogate code unit</a>
      * (also known as <i>leading-surrogate code unit</i>).
      *
-     * <p>Such values do not represent characters by themselves,
-     * but are used in the representation of
-     * <a href="#supplementary">supplementary characters</a>
-     * in the UTF-16 encoding.
+     * 这些char值不是用来表示字符自身，而是用于在UTF-16表示supplementary characters
      *
-     * @param  ch the {@code char} value to be tested.
-     * @return {@code true} if the {@code char} value is between
-     *         {@link #MIN_HIGH_SURROGATE} and
-     *         {@link #MAX_HIGH_SURROGATE} inclusive;
-     *         {@code false} otherwise.
-     * @see    Character#isLowSurrogate(char)
-     * @see    UnicodeBlock#of(int)
+     * 如果值位于 '\uD800' <= char < '\uDC00'+1;之间，则返回true
+     *
      * @since  1.5
      */
     public static boolean isHighSurrogate(char ch) {
@@ -4730,22 +4681,14 @@ class Character implements java.io.Serializable, Comparable<Character> {
     }
 
     /**
-     * Determines if the given {@code char} value is a
-     * <a href="http://www.unicode.org/glossary/#low_surrogate_code_unit">
+     *  判断指定的char是否是
+     *  <a href="http://www.unicode.org/glossary/#low_surrogate_code_unit">
      * Unicode low-surrogate code unit</a>
      * (also known as <i>trailing-surrogate code unit</i>).
      *
-     * <p>Such values do not represent characters by themselves,
-     * but are used in the representation of
-     * <a href="#supplementary">supplementary characters</a>
-     * in the UTF-16 encoding.
+     * 这些char值不是用来表示字符自身，而是用于在UTF-16表示supplementary characters
+     * 如果值位于 '\uDC00' <= char <  '\uDFFF'+1;之间，则返回true
      *
-     * @param  ch the {@code char} value to be tested.
-     * @return {@code true} if the {@code char} value is between
-     *         {@link #MIN_LOW_SURROGATE} and
-     *         {@link #MAX_LOW_SURROGATE} inclusive;
-     *         {@code false} otherwise.
-     * @see    Character#isHighSurrogate(char)
      * @since  1.5
      */
     public static boolean isLowSurrogate(char ch) {
@@ -4753,23 +4696,14 @@ class Character implements java.io.Serializable, Comparable<Character> {
     }
 
     /**
-     * Determines if the given {@code char} value is a Unicode
+     * 判断指定char是否是 Unicode
      * <i>surrogate code unit</i>.
      *
-     * <p>Such values do not represent characters by themselves,
-     * but are used in the representation of
-     * <a href="#supplementary">supplementary characters</a>
-     * in the UTF-16 encoding.
+     * 这些char值不是用来表示字符自身，而是用于在UTF-16表示supplementary characters
      *
-     * <p>A char value is a surrogate code unit if and only if it is either
-     * a {@linkplain #isLowSurrogate(char) low-surrogate code unit} or
-     * a {@linkplain #isHighSurrogate(char) high-surrogate code unit}.
+     * 如果char的值在 '\uD800' <= char <  '\uDFFF'+1 之间
+     *  (即 char是 #isLowSurrogate或#isHighSurrogate方法返回true)
      *
-     * @param  ch the {@code char} value to be tested.
-     * @return {@code true} if the {@code char} value is between
-     *         {@link #MIN_SURROGATE} and
-     *         {@link #MAX_SURROGATE} inclusive;
-     *         {@code false} otherwise.
      * @since  1.7
      */
     public static boolean isSurrogate(char ch) {
@@ -4777,15 +4711,9 @@ class Character implements java.io.Serializable, Comparable<Character> {
     }
 
     /**
-     * Determines whether the specified pair of {@code char}
-     * values is a valid
+     * 判断指定char是否是
      * <a href="http://www.unicode.org/glossary/#surrogate_pair">
      * Unicode surrogate pair</a>.
-
-     * <p>This method is equivalent to the expression:
-     * <blockquote><pre>{@code
-     * isHighSurrogate(high) && isLowSurrogate(low)
-     * }</pre></blockquote>
      *
      * @param  high the high-surrogate code value to be tested
      * @param  low the low-surrogate code value to be tested
