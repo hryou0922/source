@@ -344,30 +344,19 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
     }
 
     /**
-     * The number of times this list has been <i>structurally modified</i>.
-     * Structural modifications are those that change the size of the
-     * list, or otherwise perturb it in such a fashion that iterations in
-     * progress may yield incorrect results.
+     * 此属性表示列表被结构修改的次数
+     * 结构修改批指定变列表大小或以其他方式扰乱它的方式，这些会正在进行的迭代可能产生不正确的结果
      *
-     * <p>This field is used by the iterator and list iterator implementation
-     * returned by the {@code iterator} and {@code listIterator} methods.
-     * If the value of this field changes unexpectedly, the iterator (or list
-     * iterator) will throw a {@code ConcurrentModificationException} in
-     * response to the {@code next}, {@code remove}, {@code previous},
-     * {@code set} or {@code add} operations.  This provides
-     * <i>fail-fast</i> behavior, rather than non-deterministic behavior in
-     * the face of concurrent modification during iteration.
+     * 此字段被iterator和listIterator方法返回的迭代器和列表迭代器使用
+     * 如果此字段的值被意外更改，则迭代器（或列表迭代器）在响应next、remove、previous、set、add方法时会抛出ConcurrentModificationException异常
+     * 这提供了fail-fast行为。
      *
-     * <p><b>Use of this field by subclasses is optional.</b> If a subclass
-     * wishes to provide fail-fast iterators (and list iterators), then it
-     * merely has to increment this field in its {@code add(int, E)} and
-     * {@code remove(int)} methods (and any other methods that it overrides
-     * that result in structural modifications to the list).  A single call to
-     * {@code add(int, E)} or {@code remove(int)} must add no more than
-     * one to this field, or the iterators (and list iterators) will throw
-     * bogus {@code ConcurrentModificationExceptions}.  If an implementation
-     * does not wish to provide fail-fast iterators, this field may be
-     * ignored.
+     * 在子类使用此字段是可选的。
+     * 如果一个子类希望提供快速失败迭代器（和列表迭代器），则子类只需要在它的{add（ int，E）}和
+     *  {remove（int）}方法（以及任何其他覆盖它的方法都会导致对列表进行结构修改）中将此值加1
+     *
+     * 一次调用{@code add（int，E）}或{remove（int）}}必须在此字段中增加的值不超过1，否则迭代器（和列表迭代器）将抛出ConcurrentModificationExceptions异常。 如果实现不希望提供快速失败迭代器，则该字段可能会被忽略。
+     *
      */
     protected transient int modCount = 0;
 
