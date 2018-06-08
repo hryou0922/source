@@ -834,7 +834,7 @@ public abstract class AbstractQueuedSynchronizer
      *
      */
     final boolean acquireQueued(final Node node, int arg) {
-        boolean failed = true; // 标记是否成功拿到资源
+        boolean failed = true; // 标记是否没有拿到资源
         try {
             boolean interrupted = false; // 标记线程等待过程中是否被中断过
             for (;;) {
@@ -1523,6 +1523,10 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
+     * 自己的理解：
+     *  转移节点，如果节点状态为CONDITION且设置节点的状态为0，如果成功，则将节点插入到同步队列中。（后续condition队列会删除状态为0的记录）
+     *  如果执行了将节点插入到同步队列中，则返回true.
+     *
      * Transfers node, if necessary, to sync queue after a cancelled wait.
      * Returns true if thread was cancelled before being signalled.
      *
@@ -1536,7 +1540,6 @@ public abstract class AbstractQueuedSynchronizer
             return true;
         }
         /*
-         *
          * 如果我们失去了一个signal()，那么我们就不能继续下去，直到它完成它的enq()。
          * 在incomplete transfer过程中执行取消既罕见又短暂，所以使用自旋
          *
@@ -1547,8 +1550,9 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
+     * 对当前的锁进行释放，如果失败，则设置当前节点状态为CANCELLED，并抛出异常
      * 使用当前的state值调用release方法，如果成功此方法会返回保存的state值
-     * 如果失败，则设置取消节点，并抛出异常
+     * 如果失败，设置当前节点状态为CANCELLED，并抛出异常
      *
      * @param node the condition node for this wait
      * @return previous sync state
@@ -1638,7 +1642,7 @@ public abstract class AbstractQueuedSynchronizer
         // Internal methods
 
         /**
-         * 添加一个新的等待节点到condition等待队列中
+         * 添加一个新的等待节点到condition等待队列中末尾，并返回这个节点
          *
          */
         private Node addConditionWaiter() {
@@ -1792,9 +1796,10 @@ public abstract class AbstractQueuedSynchronizer
         private static final int THROW_IE    = -1;
 
         /**
-         * Checks for interrupt, returning THROW_IE if interrupted
-         * before signalled, REINTERRUPT if after signalled, or
-         * 0 if not interrupted.
+         * 检查中断：
+         *  如果在signal之前被中断，则返回THROW_IE
+         *  如果在signal之后被中断，则返回REINTERRUPT
+         *  如果没有被中断，则返回0
          */
         private int checkInterruptWhileWaiting(Node node) {
             return Thread.interrupted() ?
@@ -1803,8 +1808,8 @@ public abstract class AbstractQueuedSynchronizer
         }
 
         /**
-         * Throws InterruptedException, reinterrupts current thread, or
-         * does nothing, depending on mode.
+         * 如果中断模式为THROW_IE，则抛出InterruptedException
+         * 如果中断模式为REINTERRUPT，则线程执行自己中断自己
          */
         private void reportInterruptAfterWait(int interruptMode)
             throws InterruptedException {
@@ -1815,59 +1820,67 @@ public abstract class AbstractQueuedSynchronizer
         }
 
         /**
-         * Implements interruptible condition wait.
+         * 实现可中断的condition wait.
          * <ol>
-         * <li> If current thread is interrupted, throw InterruptedException.
-         * <li> Save lock state returned by {@link #getState}.
-         * <li> Invoke {@link #release} with saved state as argument,
-         *      throwing IllegalMonitorStateException if it fails.
-         * <li> Block until signalled or interrupted.
-         * <li> Reacquire by invoking specialized version of
-         *      {@link #acquire} with saved state as argument.
-         * <li> If interrupted while blocked in step 4, throw InterruptedException.
+         * <li> 如果当前的线程被中断，则抛出throw InterruptedException.
+         * <li> 保存由#getState方法返回的锁state.
+         * <li> 使用上面的锁state作为参数调用#release方法，如果失败，则返回IllegalMonitorStateException
+         * <li> 阻塞当前线程直到线程被唤醒或中断
+         * <li> 使用上面的锁state作为参数调用#acquire方法重新获取锁
+         * <li> 在第四步，在阻塞时被中断，则抛出 InterruptedException.
          * </ol>
          */
         public final void await() throws InterruptedException {
+            // 如果当前的线程被中断，则抛出throw InterruptedException.
             if (Thread.interrupted())
                 throw new InterruptedException();
+            // 添加一个新的等待节点到condition等待队列中
             Node node = addConditionWaiter();
+            // 对当前的锁进行释放，如果失败，则设置当前节点状态为CANCELLED，并抛出异常
             int savedState = fullyRelease(node);
             int interruptMode = 0;
-            while (!isOnSyncQueue(node)) {
-                LockSupport.park(this);
+
+            while (!isOnSyncQueue(node)) {  // 如果指定节点不在同步队列，则进入循环。直到当前当前节点被放入等待队列
+                LockSupport.park(this); // 阻塞当前线程
+                // 线程被唤醒后检查中断的状态，如果发到节点已经被中断，则break
                 if ((interruptMode = checkInterruptWhileWaiting(node)) != 0)
                     break;
             }
+
             if (acquireQueued(node, savedState) && interruptMode != THROW_IE)
-                interruptMode = REINTERRUPT;
+                interruptMode = REINTERRUPT;  // 获取资源失败，则返回false,表示线程被中断
             if (node.nextWaiter != null) // clean up if cancelled
-                unlinkCancelledWaiters();
+                unlinkCancelledWaiters(); // 从condition队列中删除状态为cancelled的等待节点
             if (interruptMode != 0)
-                reportInterruptAfterWait(interruptMode);
+                reportInterruptAfterWait(interruptMode); // 对两种中断的情况进行处理
         }
 
         /**
+         * 超时版本的await
          * Implements timed condition wait.
          * <ol>
-         * <li> If current thread is interrupted, throw InterruptedException.
-         * <li> Save lock state returned by {@link #getState}.
-         * <li> Invoke {@link #release} with saved state as argument,
-         *      throwing IllegalMonitorStateException if it fails.
-         * <li> Block until signalled, interrupted, or timed out.
-         * <li> Reacquire by invoking specialized version of
-         *      {@link #acquire} with saved state as argument.
-         * <li> If interrupted while blocked in step 4, throw InterruptedException.
+         * <li> 如果当前的线程被中断，则抛出throw InterruptedException.
+         * <li> 保存由#getState方法返回的锁state.
+         * <li> 使用上面的锁state作为参数调用#release方法，如果失败，则返回IllegalMonitorStateException
+         * <li> 阻塞当前线程直到线程被唤醒或中断或超时
+         * <li> 使用上面的锁state作为参数调用#acquire方法重新获取锁
+         * <li> 在第四步，在阻塞时被中断，则抛出 InterruptedException.
          * </ol>
+         * 返回值为剩余的等待时间
+         *
          */
         public final long awaitNanos(long nanosTimeout)
                 throws InterruptedException {
+            // 如果当前的线程被中断，则抛出throw InterruptedException.
             if (Thread.interrupted())
                 throw new InterruptedException();
+            // 添加一个新的等待节点到condition等待队列中
             Node node = addConditionWaiter();
+            // 对当前的锁进行释放，如果失败，则设置当前节点状态为CANCELLED，并抛出异常
             int savedState = fullyRelease(node);
             final long deadline = System.nanoTime() + nanosTimeout;
             int interruptMode = 0;
-            while (!isOnSyncQueue(node)) {
+            while (!isOnSyncQueue(node)) {   // 如果指定节点不在同步队列，则进入循环。直到当前当前节点被放入等待队列或超时
                 if (nanosTimeout <= 0L) {
                     transferAfterCancelledWait(node);
                     break;
@@ -1888,18 +1901,19 @@ public abstract class AbstractQueuedSynchronizer
         }
 
         /**
+         * 直到指定时间超时版本的await
+         *
          * Implements absolute timed condition wait.
          * <ol>
-         * <li> If current thread is interrupted, throw InterruptedException.
-         * <li> Save lock state returned by {@link #getState}.
-         * <li> Invoke {@link #release} with saved state as argument,
-         *      throwing IllegalMonitorStateException if it fails.
-         * <li> Block until signalled, interrupted, or timed out.
-         * <li> Reacquire by invoking specialized version of
-         *      {@link #acquire} with saved state as argument.
-         * <li> If interrupted while blocked in step 4, throw InterruptedException.
-         * <li> If timed out while blocked in step 4, return false, else true.
+         * <li> 如果当前的线程被中断，则抛出throw InterruptedException.
+         * <li> 保存由#getState方法返回的锁state.
+         * <li> 使用上面的锁state作为参数调用#release方法，如果失败，则返回IllegalMonitorStateException
+         * <li> 阻塞当前线程直到线程被唤醒或中断或超时
+         * <li> 使用上面的锁state作为参数调用#acquire方法重新获取锁
+         * <li> 在第四步，在阻塞时被中断，则抛出 InterruptedException.
+         * <li> 在第四步，在阻塞时被超时，则返回 false，否则返回true
          * </ol>
+         *
          */
         public final boolean awaitUntil(Date deadline)
                 throws InterruptedException {
@@ -1997,13 +2011,10 @@ public abstract class AbstractQueuedSynchronizer
         }
 
         /**
-         * Returns an estimate of the number of threads waiting on
-         * this condition.
+         * 获取在condition中等待节点数量的估值
+         *
          * Implements {@link AbstractQueuedSynchronizer#getWaitQueueLength(ConditionObject)}.
          *
-         * @return the estimated number of waiting threads
-         * @throws IllegalMonitorStateException if {@link #isHeldExclusively}
-         *         returns {@code false}
          */
         protected final int getWaitQueueLength() {
             if (!isHeldExclusively())
@@ -2017,13 +2028,8 @@ public abstract class AbstractQueuedSynchronizer
         }
 
         /**
-         * Returns a collection containing those threads that may be
-         * waiting on this Condition.
-         * Implements {@link AbstractQueuedSynchronizer#getWaitingThreads(ConditionObject)}.
+         * 返回所有可能在condition队列上等待的节点
          *
-         * @return the collection of threads
-         * @throws IllegalMonitorStateException if {@link #isHeldExclusively}
-         *         returns {@code false}
          */
         protected final Collection<Thread> getWaitingThreads() {
             if (!isHeldExclusively())
