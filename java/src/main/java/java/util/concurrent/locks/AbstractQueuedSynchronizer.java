@@ -41,74 +41,45 @@ import java.util.Date;
 import sun.misc.Unsafe;
 
 /**
- * Provides a framework for implementing blocking locks and related
- * synchronizers (semaphores, events, etc) that rely on
- * first-in-first-out (FIFO) wait queues.  This class is designed to
- * be a useful basis for most kinds of synchronizers that rely on a
- * single atomic {@code int} value to represent state. Subclasses
- * must define the protected methods that change this state, and which
- * define what that state means in terms of this object being acquired
- * or released.  Given these, the other methods in this class carry
- * out all queuing and blocking mechanics. Subclasses can maintain
- * other state fields, but only the atomically updated {@code int}
- * value manipulated using methods {@link #getState}, {@link
- * #setState} and {@link #compareAndSetState} is tracked with respect
- * to synchronization.
+ * 为实现依赖于先进先出（FIFO）等待队列的阻塞锁和相关同步器（信号量，事件等）提供框架
+ * 此类对大多数依赖于单个原子{int}值来表示状态的同步器非常有用
+ * 子类需要重新实现修改类state值的protectd方法以及获取或释放此状态的方法
+ * 鉴于这些，本类中其它方法实现了所有的排队和阻塞机制。
+ * 子类可以维护其他状态字段，但是只能通过{#getState}，{#setState}和{#compareAndSetState}原子更新{int}值。
  *
+ *  <p>应将子类定义为用于实现其封闭类的同步属性的非公共内部辅助类。
  * <p>Subclasses should be defined as non-public internal helper
  * classes that are used to implement the synchronization properties
- * of their enclosing class.  Class
- * {@code AbstractQueuedSynchronizer} does not implement any
- * synchronization interface.  Instead it defines methods such as
- * {@link #acquireInterruptibly} that can be invoked as
- * appropriate by concrete locks and related synchronizers to
- * implement their public methods.
+ * of their enclosing class.
+ * 类AbstractQueuedSynchronizer不实现任何同步接口。 相反，它定义了诸如{#acquireInterruptibly}之类的方法，这此方法用于实现具体锁和相关同步器的公共方法。
  *
- * <p>This class supports either or both a default <em>exclusive</em>
- * mode and a <em>shared</em> mode. When acquired in exclusive mode,
- * attempted acquires by other threads cannot succeed. Shared mode
- * acquires by multiple threads may (but need not) succeed. This class
- * does not &quot;understand&quot; these differences except in the
- * mechanical sense that when a shared mode acquire succeeds, the next
- * waiting thread (if one exists) must also determine whether it can
- * acquire as well. Threads waiting in the different modes share the
- * same FIFO queue. Usually, implementation subclasses support only
- * one of these modes, but both can come into play for example in a
- * {@link ReadWriteLock}. Subclasses that support only exclusive or
- * only shared modes need not define the methods supporting the unused mode.
+ * 此方法可以单个或同时支持独占（exclusive）模式和共享模式，默认为独占模式。
+ * 在独占模式下，如果锁已经被获取，则其他线程尝试获取不成功。而在共享模式，多个线程可能（但不一定）同时获取锁成功
+ * 共享模式获取成功时，下一个等待线程（如果存在的话）还必须确定它是否也可以获取。 在不同模式下等待的线程共享相同的FIFO队列。
+ * 通常，实现子类只支持这些模式中的一种，但在{ReadWriteLock}中同时支持两者模式。
+ * 仅支持独占模式或仅共享模式的子类不需要定义支持未使用模式的方法。
  *
- * <p>This class defines a nested {@link ConditionObject} class that
- * can be used as a {@link Condition} implementation by subclasses
- * supporting exclusive mode for which method {@link
- * #isHeldExclusively} reports whether synchronization is exclusively
- * held with respect to the current thread, method {@link #release}
- * invoked with the current {@link #getState} value fully releases
- * this object, and {@link #acquire}, given this saved state value,
- * eventually restores this object to its previous acquired state.  No
- * {@code AbstractQueuedSynchronizer} method otherwise creates such a
+ * 此类中定义一个内部类ConditionObject，它是Condition的实现类。
+ * 它用于哪些需要支持独占模式的子类：
+ *  方法{#isHeldExclusively}报告同步器是否被当前线程独占
+ *  方法{#release}使用{#getState}值做为参数，会完全释放此对象，并且方法{#acquire}使用{#getState}值做为参数会下最终将此对象恢复到其先前获取的状态
+ *
+ *  否则{AbstractQueueQueuedSynchronizer}方法会创建这样一个条件，所以如果不能满足这个约束，就不要使用它。 {@link ConditionObject}的行为当然取决于其同步器实现的语义。
+ *  No {@code AbstractQueuedSynchronizer} method otherwise creates such a
  * condition, so if this constraint cannot be met, do not use it.  The
  * behavior of {@link ConditionObject} depends of course on the
  * semantics of its synchronizer implementation.
  *
- * <p>This class provides inspection, instrumentation, and monitoring
- * methods for the internal queue, as well as similar methods for
- * condition objects. These can be exported as desired into classes
+ * 此类为内部队列提供检查，检测和监视方法，以及condition object的类似提供类似的方法。
+ *
+ * 这些可以根据需要导出到类中，使用AbstractQueuedSynchronizer作为它们的同步机制。
+ * These can be exported as desired into classes
  * using an {@code AbstractQueuedSynchronizer} for their
  * synchronization mechanics.
  *
- * <p>Serialization of this class stores only the underlying atomic
- * integer maintaining state, so deserialized objects have empty
- * thread queues. Typical subclasses requiring serializability will
- * define a {@code readObject} method that restores this to a known
- * initial state upon deserialization.
  *
- * <h3>Usage</h3>
- *
- * <p>To use this class as the basis of a synchronizer, redefine the
- * following methods, as applicable, by inspecting and/or modifying
- * the synchronization state using {@link #getState}, {@link
- * #setState} and/or {@link #compareAndSetState}:
- *
+ * 使用场景：
+ * 此类为同步器的基础，需要重新如下方法，另外可以使用{#getState}，{#setState}和{#compareAndSetState}来检查和/或修改同步状态来
  * <ul>
  * <li> {@link #tryAcquire}
  * <li> {@link #tryRelease}
@@ -116,23 +87,12 @@ import sun.misc.Unsafe;
  * <li> {@link #tryReleaseShared}
  * <li> {@link #isHeldExclusively}
  * </ul>
+ * 以上方法中都默认抛出{@link UnsupportedOperationException}。
+ * 实现这些方法的必须保证是内部线程安全的，并且通常应该是短而不是阻塞的。所有其他方法都声明为final final，因为它们不能独立变化。
  *
- * Each of these methods by default throws {@link
- * UnsupportedOperationException}.  Implementations of these methods
- * must be internally thread-safe, and should in general be short and
- * not block. Defining these methods is the <em>only</em> supported
- * means of using this class. All other methods are declared
- * {@code final} because they cannot be independently varied.
+ * 您还可以从{@link AbstractOwnableSynchronizer}中找到继承的方法，以便跟踪拥有独占同步器的线程。
  *
- * <p>You may also find the inherited methods from {@link
- * AbstractOwnableSynchronizer} useful to keep track of the thread
- * owning an exclusive synchronizer.  You are encouraged to use them
- * -- this enables monitoring and diagnostic tools to assist users in
- * determining which threads hold locks.
- *
- * <p>Even though this class is based on an internal FIFO queue, it
- * does not automatically enforce FIFO acquisition policies.  The core
- * of exclusive synchronization takes the form:
+ * 尽管此类基于内部FIFO队列，但不会自动执行FIFO采集策略。 独占同步的核心形式如下：
  *
  * <pre>
  * Acquire:
@@ -146,18 +106,18 @@ import sun.misc.Unsafe;
  *        <em>unblock the first queued thread</em>;
  * </pre>
  *
- * (Shared mode is similar but may involve cascading signals.)
+ * (共享模式也是类似，但是可能涉及级联signal.)
  *
- * <p id="barging">Because checks in acquire are invoked before
- * enqueuing, a newly acquiring thread may <em>barge</em> ahead of
- * others that are blocked and queued.  However, you can, if desired,
- * define {@code tryAcquire} and/or {@code tryAcquireShared} to
- * disable barging by internally invoking one or more of the inspection
- * methods, thereby providing a <em>fair</em> FIFO acquisition order.
- * In particular, most fair synchronizers can define {@code tryAcquire}
- * to return {@code false} if {@link #hasQueuedPredecessors} (a method
- * specifically designed to be used by fair synchronizers) returns
- * {@code true}.  Other variations are possible.
+ *  因为获取中的检查在节点入队之前被调用，所以新的竞争线程可能会先于其他被阻塞和排队的线程获取锁。
+ *  但是，您可以定义tryAcquire和/或tryAcquireShared方法，然后内部调用一个或多个检查方法，从而提供一个公平的FIFO获取顺序""
+         * However, you can, if desired,
+         * define {@code tryAcquire} and/or {@code tryAcquireShared} to
+         * disable barging by internally invoking one or more of the inspection
+         * methods, thereby providing a <em>fair</em> FIFO acquisition order.
+ *  特别是，如果{#hasQueuedPredecessors}（专为公平同步器使用的方法）返回{true}，则大多数公平同步器可以定义{tryAcquire}以返回{false}。"
+ *
+ *  默认的barging的吞吐量和可扩展性（也称为greedy，renouncement和convoy-avoidance）通常是最高的。
+ *  虽然这不能保证公平或无饥饿，但可以在稍后排队的线程之前重新排队早期排队的线程，并且每次调整都有一个无偏于的机会来抵御传入的线程。""而且，虽然获取不“旋转”""在通常意义上，它们可能会在阻塞之前执行多次调用{@code tryAcquire}以及其他计算。""当独占同步只是简单地进行时，这提供了自旋的大部分好处，而当没有大部分的责任时，则没有大部分的责任。""如果需要的话，您可以通过前面的调用来获取这些信息，以获取具有“快速路径”检查的方法，可能会预先检查{@link #hasContended}和/或{@link #hasQueuedThreads}，只有在同步器可能不会""被争辩。"
  *
  * <p>Throughput and scalability are generally highest for the
  * default barging (also known as <em>greedy</em>,
@@ -176,6 +136,8 @@ import sun.misc.Unsafe;
  * and/or {@link #hasQueuedThreads} to only do so if the synchronizer
  * is likely not to be contended.
  *
+ * 这个类为部分同步提供了一个高效的和可扩展的基础，通过将它的使用范围专门化到可以依赖于状态，获取和释放参数的同步器以及一个内部FIFO等待队列中。""当这还不够时，您可以使用{@link java.util.concurrent.atomic原子}类，您自己的自定义{@link java.util.Queue}类和{@link LockSupport}阻塞从较低级别构建同步器""支持
+ *
  * <p>This class provides an efficient and scalable basis for
  * synchronization in part by specializing its range of use to
  * synchronizers that can rely on {@code int} state, acquire, and
@@ -187,6 +149,7 @@ import sun.misc.Unsafe;
  *
  * <h3>Usage Examples</h3>
  *
+ * 这是一个不可重入的互斥锁类，它使用零值表示解锁状态，一个表示锁定状态。""尽管非重入锁并不严格要求记录当前所有者线程，但该类无论如何都会这样做，以便更易于监视使用。""它还支持条件并公开其中一种工具方法："
  * <p>Here is a non-reentrant mutual exclusion lock class that uses
  * the value zero to represent the unlocked state, and one to
  * represent the locked state. While a non-reentrant lock
@@ -253,6 +216,7 @@ import sun.misc.Unsafe;
  *   }
  * }}</pre>
  *
+ * <p>这是一个闩锁类，就像一个{@link java.util.concurrent.CountDownLatch CountDownLatch}，只不过它只需要一个{@code signal}来触发。""因为锁存器是非排他性的，所以它使用{@code shared}获取和释放方法。
  * <p>Here is a latch class that is like a
  * {@link java.util.concurrent.CountDownLatch CountDownLatch}
  * except that it only requires a single {@code signal} to
@@ -297,6 +261,8 @@ public abstract class AbstractQueuedSynchronizer
     /**
      * 等待队列节点类
      *
+     * "等待队列是“CLH”（Craig，Landin和Hagersten）锁队列的变体。 ""CLH锁通常用于自旋锁。""我们将它们用于阻止同步器，但使用相同的基本策略来保存其节点前驱中某个线程的某些控制信息。""每个节点中的“状态”字段会跟踪线程是否应该被阻塞。""节点在其前一版本发布时发出信号。""队列中的每个节点都作为一个特定通知样式的监视器，持有一个等待线程。""状态字段不控制线程是否被授予锁等。""线程可能会尝试获取它是否在队列中第一个。""但首先并不能保证成功;""它只会给予抗争的权利。""所以当前发布的竞争者线程可能需要重新等待。"
+     *
      * <p>The wait queue is a variant of a "CLH" (Craig, Landin, and
      * Hagersten) lock queue. CLH locks are normally used for
      * spinlocks.  We instead use them for blocking synchronizers, but
@@ -311,6 +277,8 @@ public abstract class AbstractQueuedSynchronizer
      * first in the queue. But being first does not guarantee success;
      * it only gives the right to contend.  So the currently released
      * contender thread may need to rewait.
+     *
+     * 为了排队进入CLH锁，你可以将它原子级地拼接成新的尾部。""为了出队，您只需设置头部字段
      *
      * <p>To enqueue into a CLH lock, you atomically splice it in as new
      * tail. To dequeue, you just set the head field.
