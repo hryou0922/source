@@ -155,8 +155,8 @@ public final class Unsafe {
     public native Object getObject(Object o, long offset);
 
     /**
-     * Stores a reference value into a given Java variable.
-     * <p>
+     * 存储引用变量值到指定的java变量中
+     *
      * Unless the reference <code>x</code> being stored is either null
      * or matches the field type, the results are undefined.
      * If the reference <code>o</code> is non-null, car marks or
@@ -707,9 +707,9 @@ public final class Unsafe {
     public native void    putOrderedLong(Object o, long offset, long x);
 
     /**
-     * Unblock the given thread blocked on <tt>park</tt>, or, if it is
-     * not blocked, cause the subsequent call to <tt>park</tt> not to
-     * block.  Note: this operation is "unsafe" solely because the
+     * 释放被park阻塞的指定线程；如果指定线程没有被阻塞，则会导致接下来调用park不会阻塞线程
+     *
+     * Note: this operation is "unsafe" solely because the
      * caller must somehow ensure that the thread has not been
      * destroyed. Nothing special is usually required to ensure this
      * when called from Java (in which there will ordinarily be a live
@@ -721,13 +721,16 @@ public final class Unsafe {
     public native void unpark(Object thread);
 
     /**
-     * Block current thread, returning when a balancing
-     * <tt>unpark</tt> occurs, or a balancing <tt>unpark</tt> has
-     * already occurred, or the thread is interrupted, or, if not
-     * absolute and time is not zero, the given time nanoseconds have
-     * elapsed, or if absolute, the given deadline in milliseconds
-     * since Epoch has passed, or spuriously (i.e., returning for no
-     * "reason"). Note: This operation is in the Unsafe class only
+     * 阻塞当前线程
+     * 当发生以下任一情况时，方法才返回
+     *  a.对应的线程的unpark发生或者对应线程的unpark已经发生
+     *  b.线程被中断
+     *  c.超时
+     *  d.其它意外情况
+     *
+     * 第一个参数isAbsolute是表示用绝对时间还是相对事件，如果是绝对时间，就等待直到time，比如Condition接口的awaitUntil(Date deadline)。isAbsolute为false时，等待一个时间间隔
+     *
+     * Note: This operation is in the Unsafe class only
      * because <tt>unpark</tt> is, so it would be strange to place it
      * elsewhere.
      */

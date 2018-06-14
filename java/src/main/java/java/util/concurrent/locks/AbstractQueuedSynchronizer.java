@@ -136,7 +136,8 @@ import sun.misc.Unsafe;
  * and/or {@link #hasQueuedThreads} to only do so if the synchronizer
  * is likely not to be contended.
  *
- * 这个类为部分同步提供了一个高效的和可扩展的基础，通过将它的使用范围专门化到可以依赖于状态，获取和释放参数的同步器以及一个内部FIFO等待队列中。""当这还不够时，您可以使用{@link java.util.concurrent.atomic原子}类，您自己的自定义{@link java.util.Queue}类和{@link LockSupport}阻塞从较低级别构建同步器""支持
+ * 这个类为部分同步提供了一个高效的和可扩展的基础，通过将它的使用范围专门化到可以依赖于状态，获取和释放参数的同步器以及一个内部FIFO等待队列中。""当这还不够时，您可以使用{@link
+ *  java.util.concurrent.atomic 原子类，您自己的自定义{@link java.util.Queue}类和{@link LockSupport}阻塞从较低级别构建同步器""支持
  *
  * <p>This class provides an efficient and scalable basis for
  * synchronization in part by specializing its range of use to
@@ -543,7 +544,7 @@ public abstract class AbstractQueuedSynchronizer
         for (;;) {
             Node t = tail;
             if (t == null) { // Must initialize
-                if (compareAndSetHead(new Node()))
+                if (compareAndSetHead(new Node())) // 头节点是空节点，不是有线程等待的节点
                     tail = head;
             } else {
                 node.prev = t;
@@ -859,6 +860,9 @@ public abstract class AbstractQueuedSynchronizer
      * 排他定时模式获取锁
      * 如果获取成功，则返回true
      *
+     * 相对于tryAcquire，此方法会阻塞当前线程进行等待。
+     * 此方法实际也是调用tryAcquire来获取锁
+     *
      */
     private boolean doAcquireNanos(int arg, long nanosTimeout)
             throws InterruptedException {
@@ -895,7 +899,7 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * 共享非叫断模式获取锁
+     * 共享非中断模式获取锁
      *   和doAcquireSharedInterruptibly不同之处，如果被中断，则自己中断自己
      */
     private void doAcquireShared(int arg) {
@@ -1320,6 +1324,9 @@ public abstract class AbstractQueuedSynchronizer
      * 此类同步器的{#tryAcquire}方法应返回false代码，并且其{#tryAcquireShared}方法应返回一个负值。
      * 只有这是一个可重入获取，此方法返回{true}
      *
+     * 返回值:
+     *  true：表示在等待队列中有比当前线程排在更前面的线程
+     *  false: 当前线程排在队列的头位置或队列为空
      * @return {@code true} if there is a queued thread preceding the
      *         current thread, and {@code false} if the current thread
      *         is at the head of the queue or the queue is empty
@@ -1428,10 +1435,8 @@ public abstract class AbstractQueuedSynchronizer
     // Internal support methods for Conditions
 
     /**
-     *
      *  如果指定节点正在同步队列并等待重新获取，则返回true。
      *  这个节点最初总是放在条件队列(a condition queue)中
-     *
      */
     final boolean isOnSyncQueue(Node node) {
         if (node.waitStatus == Node.CONDITION || node.prev == null)
@@ -1641,8 +1646,8 @@ public abstract class AbstractQueuedSynchronizer
                 if ( (firstWaiter = first.nextWaiter) == null) // 将头节点的下一个节点设置为头节点
                     lastWaiter = null; // 如果firstWaiter节点为null，则lastWaiter肯定也为空
                 first.nextWaiter = null; //　设置一下节点的字段为空
-            } while (!transferForSignal(first) && // 将节点从条件队列转移到同步队列，如果成功，则返回true
-                     (first = firstWaiter) != null); // 循环唤醒一下头节点
+            } while (!transferForSignal(first) && // 将节点从条件队列转移到同步队列，如果成功，则结束
+                     (first = firstWaiter) != null); // 如果队列为空，则结束
         }
 
         /**
@@ -1811,10 +1816,10 @@ public abstract class AbstractQueuedSynchronizer
             while (!isOnSyncQueue(node)) {  // 如果指定节点不在同步队列，则进入循环。直到当前当前节点被放入等待队列
                 LockSupport.park(this); // 阻塞当前线程
                 // 线程被唤醒后检查中断的状态，如果发到节点已经被中断，则break
-                if ((interruptMode = checkInterruptWhileWaiting(node)) != 0)
+                if ((interruptMode = checkInterruptWhileWaiting(node)) != 0) // 如果没有被中断，则返回0
                     break;
             }
-
+            // 开始在等待队列中排除,并进行抢锁
             if (acquireQueued(node, savedState) && interruptMode != THROW_IE)
                 interruptMode = REINTERRUPT;  // 获取资源失败，则返回false,表示线程被中断
             if (node.nextWaiter != null) // clean up if cancelled
