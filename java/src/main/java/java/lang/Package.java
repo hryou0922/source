@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import java.io.IOException;
 import java.lang.reflect.AnnotatedElement;
 
 import java.io.File;

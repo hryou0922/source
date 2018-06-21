@@ -6,8 +6,12 @@
     
 - 源码阅读
 - 工具类：学习用法
-     - java.lang
+    - java.io
+        - 不需要看源码的类: ObjectInputStream
+    - java.lang
         - Math.java: 数学类
+        - 不需要看源码的类
+            - 
     - java.util
         - Collections：集合工具类
         - 以下类不看源码，只关心用法：Calendar、Date

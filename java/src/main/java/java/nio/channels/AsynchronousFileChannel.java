@@ -25,6 +25,7 @@
 
 package java.nio.channels;
 
+import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.spi.*;
@@ -379,7 +380,7 @@ public abstract class AsynchronousFileChannel
      * @throws  ClosedChannelException
      *          If this channel is closed
      *
-     * @throws  IOException
+     * @throws IOException
      *          If some other I/O error occurs
      */
     public abstract void force(boolean metaData) throws IOException;

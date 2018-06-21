@@ -25,6 +25,7 @@
 
 package java.nio.channels;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 
@@ -96,7 +97,7 @@ public interface WritableByteChannel
      *          closing the channel and setting the current thread's
      *          interrupt status
      *
-     * @throws  IOException
+     * @throws IOException
      *          If some other I/O error occurs
      */
     public int write(ByteBuffer src) throws IOException;

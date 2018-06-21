@@ -13,4 +13,10 @@ public class ArraysTest {
         System.arraycopy(a,0, b, 0, 3);
     }
 
+    @Test
+    public void a(){
+        java.io.File file = new java.io.File("/");
+        System.out.println(file.getAbsoluteFile());
+    }
+
 }

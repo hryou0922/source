@@ -486,18 +486,18 @@ public class ReentrantReadWriteLock
             if (!readerShouldBlock() &&  // 当前线程试图获取读锁定并且有资格这样做，如果不被阻塞，则继续()条件后续判断
                 r < MAX_COUNT &&
                 compareAndSetState(c, c + SHARED_UNIT)) { // 设置新的读锁次数
-                if (r == 0) {
+                if (r == 0) { // 如果当前为第一个读，则设置firstReader和firstReaderHoldCount值
                     firstReader = current;
                     firstReaderHoldCount = 1;
-                } else if (firstReader == current) {
+                } else if (firstReader == current) { // 如果当前为第一个
                     firstReaderHoldCount++;
                 } else {
-                    HoldCounter rh = cachedHoldCounter;
+                    HoldCounter rh = cachedHoldCounter; // 获取缓存中的第一个
                     if (rh == null || rh.tid != getThreadId(current))
-                        cachedHoldCounter = rh = readHolds.get();
+                        cachedHoldCounter = rh = readHolds.get(); //　如果当前不是缓存中的值，则将当前的访问HoldCounter设置为缓存值
                     else if (rh.count == 0)
-                        readHolds.set(rh);
-                    rh.count++;
+                        readHolds.set(rh); //
+                    rh.count++; // 设置读次数加1
                 }
                 return 1;
             }
@@ -505,6 +505,7 @@ public class ReentrantReadWriteLock
         }
 
         /**
+         * 完全版本读获取:处理CAS和可重复读没有被tryAcquireShared处理的部分
          * Full version of acquire for reads, that handles CAS misses
          * and reentrant reads not dealt with in tryAcquireShared.
          */
@@ -518,20 +519,20 @@ public class ReentrantReadWriteLock
             HoldCounter rh = null;
             for (;;) {
                 int c = getState();
-                if (exclusiveCount(c) != 0) {
-                    if (getExclusiveOwnerThread() != current)
+                if (exclusiveCount(c) != 0) { // 如果已经加了写锁,则进入
+                    if (getExclusiveOwnerThread() != current) // 非锁的拥有者,退出方法
                         return -1;
                     // else we hold the exclusive lock; blocking here
                     // would cause deadlock.
-                } else if (readerShouldBlock()) {
+                } else if (readerShouldBlock()) { // 当前线程试图获取读锁定并且有资格这样做，如果可以被阻塞，则返回true
                     // Make sure we're not acquiring read lock reentrantly
-                    if (firstReader == current) {
+                    if (firstReader == current) { // 当前锁为第一个获取锁的线程，则执行后续的操作
                         // assert firstReaderHoldCount > 0;
                     } else {
-                        if (rh == null) {
-                            rh = cachedHoldCounter;
+                        if (rh == null) { //
+                            rh = cachedHoldCounter; // 从缓存获取值
                             if (rh == null || rh.tid != getThreadId(current)) {
-                                rh = readHolds.get();
+                                rh = readHolds.get(); // 如果缓存值和当前值不同，则使用当前线程值
                                 if (rh.count == 0)
                                     readHolds.remove();
                             }
@@ -542,8 +543,8 @@ public class ReentrantReadWriteLock
                 }
                 if (sharedCount(c) == MAX_COUNT)
                     throw new Error("Maximum lock count exceeded");
-                if (compareAndSetState(c, c + SHARED_UNIT)) {
-                    if (sharedCount(c) == 0) {
+                if (compareAndSetState(c, c + SHARED_UNIT)) { // 设置当前锁的读部分+1
+                    if (sharedCount(c) == 0) {  // 如果当前为第一个读，则设置firstReader和firstReaderHoldCount值，这里同tryAcquireShared部分代码
                         firstReader = current;
                         firstReaderHoldCount = 1;
                     } else if (firstReader == current) {
@@ -556,7 +557,7 @@ public class ReentrantReadWriteLock
                         else if (rh.count == 0)
                             readHolds.set(rh);
                         rh.count++;
-                        cachedHoldCounter = rh; // cache for release
+                        cachedHoldCounter = rh; // cache for release 设置当前获取锁的线程信息
                     }
                     return 1;
                 }
