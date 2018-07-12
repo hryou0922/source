@@ -565,7 +565,7 @@ public class ReentrantReadWriteLock
         }
 
         /**
-         * Performs tryLock for write, enabling barging in both modes.
+         * 尝试获取写锁, enabling barging in both modes.
          * This is identical in effect to tryAcquire except for lack
          * of calls to writerShouldBlock.
          */
@@ -573,20 +573,20 @@ public class ReentrantReadWriteLock
             Thread current = Thread.currentThread();
             int c = getState();
             if (c != 0) {
-                int w = exclusiveCount(c);
+                int w = exclusiveCount(c); // 获取当前写锁被写的次数
                 if (w == 0 || current != getExclusiveOwnerThread())
-                    return false;
+                    return false; // 如果已经加了读锁或已经被其它线程加了写锁，则返回
                 if (w == MAX_COUNT)
                     throw new Error("Maximum lock count exceeded");
             }
             if (!compareAndSetState(c, c + 1))
                 return false;
-            setExclusiveOwnerThread(current);
+            setExclusiveOwnerThread(current); // 获取写锁成功
             return true;
         }
 
         /**
-         * Performs tryLock for read, enabling barging in both modes.
+         * 尝试获取读锁, enabling barging in both modes.
          * This is identical in effect to tryAcquireShared except for
          * lack of calls to readerShouldBlock.
          */
@@ -596,15 +596,15 @@ public class ReentrantReadWriteLock
                 int c = getState();
                 if (exclusiveCount(c) != 0 &&
                     getExclusiveOwnerThread() != current)
-                    return false;
+                    return false; // 如果锁已经被其它线程的获取写锁，则返回false
                 int r = sharedCount(c);
                 if (r == MAX_COUNT)
                     throw new Error("Maximum lock count exceeded");
-                if (compareAndSetState(c, c + SHARED_UNIT)) {
-                    if (r == 0) {
+                if (compareAndSetState(c, c + SHARED_UNIT)) { // 尝试获取读锁
+                    if (r == 0) { // 第一次获取读锁
                         firstReader = current;
                         firstReaderHoldCount = 1;
-                    } else if (firstReader == current) {
+                    } else if (firstReader == current) { // 第一次获取读锁的线程再次获取读锁
                         firstReaderHoldCount++;
                     } else {
                         HoldCounter rh = cachedHoldCounter;
@@ -631,6 +631,7 @@ public class ReentrantReadWriteLock
             return new ConditionObject();
         }
 
+        // 如果锁的写锁没有被获取，则锁的拥有者为null，否则返回为锁的写锁拥有者线程
         final Thread getOwner() {
             // Must read state before owner to ensure memory consistency
             return ((exclusiveCount(getState()) == 0) ?
@@ -638,18 +639,22 @@ public class ReentrantReadWriteLock
                     getExclusiveOwnerThread());
         }
 
+        // 返回读锁的次数
         final int getReadLockCount() {
             return sharedCount(getState());
         }
 
+        // 是否被加了写锁
         final boolean isWriteLocked() {
             return exclusiveCount(getState()) != 0;
         }
 
+        // 返回当前线程写锁的拥有次数
         final int getWriteHoldCount() {
             return isHeldExclusively() ? exclusiveCount(getState()) : 0;
         }
 
+        // 返回当前线程读锁的拥有次数
         final int getReadHoldCount() {
             if (getReadLockCount() == 0)
                 return 0;
@@ -681,7 +686,7 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * Nonfair version of Sync
+     * 非公平锁版本同步器
      */
     static final class NonfairSync extends Sync {
         private static final long serialVersionUID = -8159625535654395037L;
@@ -696,19 +701,23 @@ public class ReentrantReadWriteLock
              * block if there is a waiting writer behind other enabled
              * readers that have not yet drained from the queue.
              */
+            // 第一个结点存在且正在独占模式下等待，返回true
             return apparentlyFirstQueuedIsExclusive();
         }
     }
 
     /**
+     * 公平锁版本同步器
      * Fair version of Sync
      */
     static final class FairSync extends Sync {
         private static final long serialVersionUID = -2274990926593161451L;
         final boolean writerShouldBlock() {
+            // 查询队列中是否有比当前线程等待时间更长的线程，如果是，则返回true
             return hasQueuedPredecessors();
         }
         final boolean readerShouldBlock() {
+            // 查询队列中是否有比当前线程等待时间更长的线程，如果是，则返回true
             return hasQueuedPredecessors();
         }
     }
