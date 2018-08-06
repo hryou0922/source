@@ -1024,13 +1024,9 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * Returns a collection containing threads that may be waiting to
-     * acquire the write lock.  Because the actual set of threads may
-     * change dynamically while constructing this result, the returned
-     * collection is only a best-effort estimate.  The elements of the
-     * returned collection are in no particular order.  This method is
-     * designed to facilitate construction of subclasses that provide
-     * more extensive lock monitoring facilities.
+     * 返回可能在等待获取写锁的线程集合
+     *
+     * 此方法用于监视系统，不做同步控制
      *
      * @return the collection of threads
      */
@@ -1039,13 +1035,10 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * Returns a collection containing threads that may be waiting to
-     * acquire the read lock.  Because the actual set of threads may
-     * change dynamically while constructing this result, the returned
-     * collection is only a best-effort estimate.  The elements of the
-     * returned collection are in no particular order.  This method is
-     * designed to facilitate construction of subclasses that provide
-     * more extensive lock monitoring facilities.
+     *
+     * 返回可能在等待获取读锁的线程集合
+     *
+     * 此方法用于监视系统，不做同步控制
      *
      * @return the collection of threads
      */
@@ -1054,11 +1047,9 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * Queries whether any threads are waiting to acquire the read or
-     * write lock. Note that because cancellations may occur at any
-     * time, a {@code true} return does not guarantee that any other
-     * thread will ever acquire a lock.  This method is designed
-     * primarily for use in monitoring of the system state.
+     * 查询是否有线程在等待获取读锁或写锁
+     *
+     * 此方法用于监视系统，不做同步控制
      *
      * @return {@code true} if there may be other threads waiting to
      *         acquire the lock
@@ -1068,27 +1059,21 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * Queries whether the given thread is waiting to acquire either
-     * the read or write lock. Note that because cancellations may
-     * occur at any time, a {@code true} return does not guarantee
-     * that this thread will ever acquire a lock.  This method is
-     * designed primarily for use in monitoring of the system state.
+     * 查询指定的线程是否在等待获取读锁或写锁
+     *
+     * 此方法用于监视系统，不做同步控制
      *
      * @param thread the thread
      * @return {@code true} if the given thread is queued waiting for this lock
-     * @throws NullPointerException if the thread is null
      */
     public final boolean hasQueuedThread(Thread thread) {
         return sync.isQueued(thread);
     }
 
     /**
-     * Returns an estimate of the number of threads waiting to acquire
-     * either the read or write lock.  The value is only an estimate
-     * because the number of threads may change dynamically while this
-     * method traverses internal data structures.  This method is
-     * designed for use in monitoring of the system state, not for
-     * synchronization control.
+     * 查询等待获取读锁或写锁的线程的数量
+     *
+     * 此方法用于监视系统，不做同步控制
      *
      * @return the estimated number of threads waiting for this lock
      */
@@ -1097,13 +1082,9 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * Returns a collection containing threads that may be waiting to
-     * acquire either the read or write lock.  Because the actual set
-     * of threads may change dynamically while constructing this
-     * result, the returned collection is only a best-effort estimate.
-     * The elements of the returned collection are in no particular
-     * order.  This method is designed to facilitate construction of
-     * subclasses that provide more extensive monitoring facilities.
+     * 查询等待获取读锁或写锁的线程的集合
+     *
+     * 此方法用于监视系统，不做同步控制
      *
      * @return the collection of threads
      */
@@ -1112,19 +1093,13 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * Queries whether any threads are waiting on the given condition
-     * associated with the write lock. Note that because timeouts and
-     * interrupts may occur at any time, a {@code true} return does
-     * not guarantee that a future {@code signal} will awaken any
-     * threads.  This method is designed primarily for use in
-     * monitoring of the system state.
+     * 查询是否有线程在指定的Condition上等待
+     *
+     * 此方法用于监视系统，不做同步控制
      *
      * @param condition the condition
      * @return {@code true} if there are any waiting threads
-     * @throws IllegalMonitorStateException if this lock is not held
-     * @throws IllegalArgumentException if the given condition is
-     *         not associated with this lock
-     * @throws NullPointerException if the condition is null
+     *
      */
     public boolean hasWaiters(Condition condition) {
         if (condition == null)
@@ -1135,19 +1110,13 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * Returns an estimate of the number of threads waiting on the
-     * given condition associated with the write lock. Note that because
-     * timeouts and interrupts may occur at any time, the estimate
-     * serves only as an upper bound on the actual number of waiters.
-     * This method is designed for use in monitoring of the system
-     * state, not for synchronization control.
+     * 查询在指定的Condition上等待线程的数量
+     *
+     * 此方法用于监视系统，不做同步控制
      *
      * @param condition the condition
      * @return the estimated number of waiting threads
-     * @throws IllegalMonitorStateException if this lock is not held
-     * @throws IllegalArgumentException if the given condition is
-     *         not associated with this lock
-     * @throws NullPointerException if the condition is null
+     *
      */
     public int getWaitQueueLength(Condition condition) {
         if (condition == null)
@@ -1158,21 +1127,11 @@ public class ReentrantReadWriteLock
     }
 
     /**
-     * Returns a collection containing those threads that may be
-     * waiting on the given condition associated with the write lock.
-     * Because the actual set of threads may change dynamically while
-     * constructing this result, the returned collection is only a
-     * best-effort estimate. The elements of the returned collection
-     * are in no particular order.  This method is designed to
-     * facilitate construction of subclasses that provide more
-     * extensive condition monitoring facilities.
+     * 查询在指定的Condition上等待线程的集合
+     * 此方法用于监视系统，不做同步控制
      *
      * @param condition the condition
      * @return the collection of threads
-     * @throws IllegalMonitorStateException if this lock is not held
-     * @throws IllegalArgumentException if the given condition is
-     *         not associated with this lock
-     * @throws NullPointerException if the condition is null
      */
     protected Collection<Thread> getWaitingThreads(Condition condition) {
         if (condition == null)
