@@ -51,18 +51,19 @@ import java.lang.annotation.Native;
  */
 public final class Integer extends Number implements Comparable<Integer> {
     /**
-     * A constant holding the minimum value an {@code int} can
-     * have, -2<sup>31</sup>.
+     * 定义最小的int值 ：-2<sup>31</sup>
      */
     @Native public static final int   MIN_VALUE = 0x80000000;
 
     /**
+     * 定义最大的int值：  2<sup>31</sup> -1
      * A constant holding the maximum value an {@code int} can
      * have, 2<sup>31</sup>-1.
      */
     @Native public static final int   MAX_VALUE = 0x7fffffff;
 
     /**
+     * Class实例表示私有的类型int
      * The {@code Class} instance representing the primitive type
      * {@code int}.
      *
@@ -72,6 +73,7 @@ public final class Integer extends Number implements Comparable<Integer> {
     public static final Class<Integer>  TYPE = (Class<Integer>) Class.getPrimitiveClass("int");
 
     /**
+     * 所有可能用来表示数字字段串的字符
      * All possible chars for representing a number as a String
      */
     final static char[] digits = {
@@ -84,50 +86,18 @@ public final class Integer extends Number implements Comparable<Integer> {
     };
 
     /**
-     * Returns a string representation of the first argument in the
-     * radix specified by the second argument.
+     * 用指定的基数表示int值，并返回结果
      *
-     * <p>If the radix is smaller than {@code Character.MIN_RADIX}
-     * or larger than {@code Character.MAX_RADIX}, then the radix
-     * {@code 10} is used instead.
+     * 如果基数值不在 2-36之前，则使用 10 替换
+     * 如果int值为负数，则在返回结果前面加负号"-"; 如果是非负数，则结果中没有符号字符
      *
-     * <p>If the first argument is negative, the first element of the
-     * result is the ASCII minus character {@code '-'}
-     * ({@code '\u005Cu002D'}). If the first argument is not
-     * negative, no sign character appears in the result.
-     *
-     * <p>The remaining characters of the result represent the magnitude
-     * of the first argument. If the magnitude is zero, it is
-     * represented by a single zero character {@code '0'}
-     * ({@code '\u005Cu0030'}); otherwise, the first character of
-     * the representation of the magnitude will not be the zero
-     * character.  The following ASCII characters are used as digits:
-     *
-     * <blockquote>
-     *   {@code 0123456789abcdefghijklmnopqrstuvwxyz}
-     * </blockquote>
-     *
-     * These are {@code '\u005Cu0030'} through
-     * {@code '\u005Cu0039'} and {@code '\u005Cu0061'} through
-     * {@code '\u005Cu007A'}. If {@code radix} is
-     * <var>N</var>, then the first <var>N</var> of these characters
-     * are used as radix-<var>N</var> digits in the order shown. Thus,
-     * the digits for hexadecimal (radix 16) are
-     * {@code 0123456789abcdef}. If uppercase letters are
-     * desired, the {@link String#toUpperCase()} method may
-     * be called on the result:
-     *
-     * <blockquote>
-     *  {@code Integer.toString(n, 16).toUpperCase()}
-     * </blockquote>
-     *
+     *  del ...
      * @param   i       an integer to be converted to a string.
      * @param   radix   the radix to use in the string representation.
      * @return  a string representation of the argument in the specified radix.
-     * @see     Character#MAX_RADIX
-     * @see     Character#MIN_RADIX
      */
     public static String toString(int i, int radix) {
+        // 合法值在 2进制 和 36进制 之间
         if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX)
             radix = 10;
 
@@ -136,51 +106,35 @@ public final class Integer extends Number implements Comparable<Integer> {
             return toString(i);
         }
 
-        char buf[] = new char[33];
-        boolean negative = (i < 0);
+        char buf[] = new char[33]; // 由于基数最小是2，那么int值共4字节32位，再加上符号位，则使用33字符数组就够了
+        boolean negative = (i < 0); // 是否是负数
         int charPos = 32;
 
         if (!negative) {
-            i = -i;
+            i = -i; // 如果是正数，则取负值
         }
 
         while (i <= -radix) {
+            // i%radix：获取余数值，由于i统一处理为负数，所以前面需要加负号
+            // 得到的余数，从char数组的最高索引开始存储，循环向前移动
             buf[charPos--] = digits[-(i % radix)];
             i = i / radix;
         }
-        buf[charPos] = digits[-i];
+        buf[charPos] = digits[-i]; // 上面的循环结束后，还有一个值没有处理，存储到列表中
 
         if (negative) {
-            buf[--charPos] = '-';
+            buf[--charPos] = '-'; // 如果int值原来是负数，则前面+1
         }
-
+        // 最后生成的打印字符串时： 高位的索引输出在前面，低位的后面。所以低位的值存在的数组的高位是正确的
         return new String(buf, charPos, (33 - charPos));
     }
 
     /**
-     * Returns a string representation of the first argument as an
-     * unsigned integer value in the radix specified by the second
-     * argument.
-     *
-     * <p>If the radix is smaller than {@code Character.MIN_RADIX}
-     * or larger than {@code Character.MAX_RADIX}, then the radix
-     * {@code 10} is used instead.
-     *
-     * <p>Note that since the first argument is treated as an unsigned
-     * value, no leading sign character is printed.
-     *
-     * <p>If the magnitude is zero, it is represented by a single zero
-     * character {@code '0'} ({@code '\u005Cu0030'}); otherwise,
-     * the first character of the representation of the magnitude will
-     * not be the zero character.
-     *
-     * <p>The behavior of radixes and the characters used as digits
-     * are the same as {@link #toString(int, int) toString}.
+     * 用指定的基数表示无符号int值，并返回结果
+     * 如果基数值不在 2-36之前，则使用 10 替换
      *
      * @param   i       an integer to be converted to an unsigned string.
      * @param   radix   the radix to use in the string representation.
-     * @return  an unsigned string representation of the argument in the specified radix.
-     * @see     #toString(int, int)
      * @since 1.8
      */
     public static String toUnsignedString(int i, int radix) {

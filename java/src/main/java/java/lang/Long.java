@@ -74,48 +74,17 @@ public final class Long extends Number implements Comparable<Long> {
     public static final Class<Long>     TYPE = (Class<Long>) Class.getPrimitiveClass("long");
 
     /**
-     * Returns a string representation of the first argument in the
-     * radix specified by the second argument.
      *
-     * <p>If the radix is smaller than {@code Character.MIN_RADIX}
-     * or larger than {@code Character.MAX_RADIX}, then the radix
-     * {@code 10} is used instead.
+     * 用指定的基数表示long值，并返回结果
      *
-     * <p>If the first argument is negative, the first element of the
-     * result is the ASCII minus sign {@code '-'}
-     * ({@code '\u005Cu002d'}). If the first argument is not
-     * negative, no sign character appears in the result.
+     * 如果基数值不在 2-36之前，则使用 10 替换
+     * 如果int值为负数，则在返回结果前面加负号"-"; 如果是非负数，则结果中没有符号字符
      *
-     * <p>The remaining characters of the result represent the magnitude
-     * of the first argument. If the magnitude is zero, it is
-     * represented by a single zero character {@code '0'}
-     * ({@code '\u005Cu0030'}); otherwise, the first character of
-     * the representation of the magnitude will not be the zero
-     * character.  The following ASCII characters are used as digits:
+     *  此方法的算法和@link{@link java.lang.Integer#toString}相同，可以看这个方法的注解
      *
-     * <blockquote>
-     *   {@code 0123456789abcdefghijklmnopqrstuvwxyz}
-     * </blockquote>
-     *
-     * These are {@code '\u005Cu0030'} through
-     * {@code '\u005Cu0039'} and {@code '\u005Cu0061'} through
-     * {@code '\u005Cu007a'}. If {@code radix} is
-     * <var>N</var>, then the first <var>N</var> of these characters
-     * are used as radix-<var>N</var> digits in the order shown. Thus,
-     * the digits for hexadecimal (radix 16) are
-     * {@code 0123456789abcdef}. If uppercase letters are
-     * desired, the {@link String#toUpperCase()} method may
-     * be called on the result:
-     *
-     * <blockquote>
-     *  {@code Long.toString(n, 16).toUpperCase()}
-     * </blockquote>
-     *
-     * @param   i       a {@code long} to be converted to a string.
+     *  @param   i       a {@code long} to be converted to a string.
      * @param   radix   the radix to use in the string representation.
      * @return  a string representation of the argument in the specified radix.
-     * @see     Character#MAX_RADIX
-     * @see     Character#MIN_RADIX
      */
     public static String toString(long i, int radix) {
         if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX)
@@ -144,29 +113,11 @@ public final class Long extends Number implements Comparable<Long> {
     }
 
     /**
-     * Returns a string representation of the first argument as an
-     * unsigned integer value in the radix specified by the second
-     * argument.
-     *
-     * <p>If the radix is smaller than {@code Character.MIN_RADIX}
-     * or larger than {@code Character.MAX_RADIX}, then the radix
-     * {@code 10} is used instead.
-     *
-     * <p>Note that since the first argument is treated as an unsigned
-     * value, no leading sign character is printed.
-     *
-     * <p>If the magnitude is zero, it is represented by a single zero
-     * character {@code '0'} ({@code '\u005Cu0030'}); otherwise,
-     * the first character of the representation of the magnitude will
-     * not be the zero character.
-     *
-     * <p>The behavior of radixes and the characters used as digits
-     * are the same as {@link #toString(long, int) toString}.
+     * 使用指定的基数表示无符号long，并返回字符串结果
+     * 基数合法值在 2 - 36 之间，如果是其他值则设置为10
      *
      * @param   i       an integer to be converted to an unsigned string.
      * @param   radix   the radix to use in the string representation.
-     * @return  an unsigned string representation of the argument in the specified radix.
-     * @see     #toString(long, int)
      * @since 1.8
      */
     public static String toUnsignedString(long i, int radix) {
@@ -400,17 +351,10 @@ public final class Long extends Number implements Comparable<Long> {
     }
 
     /**
-     * Returns a string representation of the argument as an unsigned
-     * decimal value.
-     *
-     * The argument is converted to unsigned decimal representation
-     * and returned as a string exactly as if the argument and radix
-     * 10 were given as arguments to the {@link #toUnsignedString(long,
-     * int)} method.
+     * 使用无符号十进制值表示long值
      *
      * @param   i  an integer to be converted to an unsigned string.
      * @return  an unsigned string representation of the argument.
-     * @see     #toUnsignedString(long, int)
      * @since 1.8
      */
     public static String toUnsignedString(long i) {
