@@ -7,11 +7,13 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="java" />
+        <module name="springboot" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="1.8">
       <module name="java" target="1.8" />
       <module name="source" target="1.8" />
+      <module name="springboot" target="1.6" />
       <module name="tets" target="1.8" />
     </bytecodeTargetLevel>
   </component>

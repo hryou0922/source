@@ -268,7 +268,7 @@ public class StampedLock implements java.io.Serializable {
 
     private static final long serialVersionUID = -6001602636862214147L;
 
-    /** Number of processors, for spin control */
+    /** CPU的数量，用于自旋控制 */
     private static final int NCPU = Runtime.getRuntime().availableProcessors();
 
     /** Maximum number of retries before enqueuing on acquisition */
@@ -287,15 +287,16 @@ public class StampedLock implements java.io.Serializable {
     private static final int LG_READERS = 7;
 
     // Values for lock state and stamp operations
-    private static final long RUNIT = 1L;
-    private static final long WBIT  = 1L << LG_READERS;
-    private static final long RBITS = WBIT - 1L;
-    private static final long RFULL = RBITS - 1L;
-    private static final long ABITS = RBITS | WBIT;
-    private static final long SBITS = ~RBITS; // note overlap with ABITS
+    private static final long RUNIT = 1L;               // 0000 0001
+    private static final long WBIT  = 1L << LG_READERS; // 1000 0000
+    private static final long RBITS = WBIT - 1L;        // 0111 1111
+    private static final long RFULL = RBITS - 1L;       // 0111 1110
+    private static final long ABITS = RBITS | WBIT;     // 1111 1111
+    // note overlap with ABITS
+    private static final long SBITS = ~RBITS;  // 1111 ... 1000 0000
 
     // Initial value for lock state; avoid failure value zero
-    private static final long ORIGIN = WBIT << 1;
+    private static final long ORIGIN = WBIT << 1;    // 1 0000 0000
 
     // Special value from cancelled acquire methods so caller can throw IE
     private static final long INTERRUPTED = 1L;
@@ -319,9 +320,9 @@ public class StampedLock implements java.io.Serializable {
         WNode(int m, WNode p) { mode = m; prev = p; }
     }
 
-    /** Head of CLH queue */
+    /** CLH 队列的头节点 */
     private transient volatile WNode whead;
-    /** Tail (last) of CLH queue */
+    /** CLH 队列的尾节点 */
     private transient volatile WNode wtail;
 
     // views
@@ -342,29 +343,28 @@ public class StampedLock implements java.io.Serializable {
     }
 
     /**
-     * Exclusively acquires the lock, blocking if necessary
-     * until available.
+     * 获取写锁，阻塞线程直到获取锁
      *
      * @return a stamp that can be used to unlock or convert mode
      */
     public long writeLock() {
         long s, next;  // bypass acquireWrite in fully unlocked case only
-        return ((((s = state) & ABITS) == 0L &&
-                 U.compareAndSwapLong(this, STATE, s, next = s + WBIT)) ?
-                next : acquireWrite(false, 0L));
+        return ((((s = state) & ABITS) == 0L && // 当status=0时，才会是true
+                 U.compareAndSwapLong(this, STATE, s, next = s + WBIT)) ? // 设置status值，将status值第7位设置为1，如果成功，则返回 1000 0000
+                next : acquireWrite(false, 0L)); // 否则则进入acquireWrite
     }
 
     /**
-     * Exclusively acquires the lock if it is immediately available.
+     * 尝试获取写锁,
+     * 如果成功，则返回用于unlock或convert mode的值
+     * 如果成功，则返回0
      *
-     * @return a stamp that can be used to unlock or convert mode,
-     * or zero if the lock is not available
      */
     public long tryWriteLock() {
         long s, next;
-        return ((((s = state) & ABITS) == 0L &&
-                 U.compareAndSwapLong(this, STATE, s, next = s + WBIT)) ?
-                next : 0L);
+        return ((((s = state) & ABITS) == 0L && // 当status=0时，才会是true
+                 U.compareAndSwapLong(this, STATE, s, next = s + WBIT)) ? // 设置status值，将status值第7位设置为1，如果成功，则返回 1000 0000
+                next : 0L); // 否则返回0
     }
 
     /**
