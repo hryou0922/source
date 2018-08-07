@@ -60,6 +60,12 @@ import org.springframework.web.util.NestedServletException;
 import org.springframework.web.util.WebUtils;
 
 /**
+ * link:
+ *  Spring之SpringMVC前端控制器DispatcherServlet（源码）分析
+ *      https://www.bbsmax.com/A/n2d9pGNQ5D/
+ *  第三章 DispatcherServlet详解 ——跟开涛学SpringMVC
+ *      http://jinnianshilongnian.iteye.com/blog/1602617
+ *
  * Central dispatcher for HTTP request handlers/controllers, e.g. for web UI controllers
  * or HTTP-based remote service exporters. Dispatches to registered handlers for processing
  * a web request, providing convenient mapping and exception handling facilities.
@@ -279,6 +285,7 @@ public class DispatcherServlet extends FrameworkServlet {
         // This is currently strictly internal and not meant to be customized
         // by application developers.
         try {
+            // 加载配置文当前目录下的DispatcherServlet.properties文件
             ClassPathResource resource = new ClassPathResource(DEFAULT_STRATEGIES_PATH, DispatcherServlet.class);
             defaultStrategies = PropertiesLoaderUtils.loadProperties(resource);
         }
