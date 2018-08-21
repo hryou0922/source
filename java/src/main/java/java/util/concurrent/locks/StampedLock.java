@@ -42,6 +42,9 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.LockSupport;
 
 /**
+ * 源码阅读：
+ *  JUC源码分析-JUC锁（六）：StampedLock： https://www.jianshu.com/p/bfd5d2321cc0
+ *
  * A capability-based lock with three modes for controlling read/write
  * access.  The state of a StampedLock consists of a version and mode.
  * Lock acquisition methods return a stamp that represents and
@@ -368,10 +371,7 @@ public class StampedLock implements java.io.Serializable {
     }
 
     /**
-     * Exclusively acquires the lock if it is available within the
-     * given time and the current thread has not been interrupted.
-     * Behavior under timeout and interruption matches that specified
-     * for method {@link Lock#tryLock(long,TimeUnit)}.
+     * 在指定的时间内且当前线程没有被中断，尝试获取定锁
      *
      * @param time the maximum time to wait for the lock
      * @param unit the time unit of the {@code time} argument
@@ -385,7 +385,7 @@ public class StampedLock implements java.io.Serializable {
         long nanos = unit.toNanos(time);
         if (!Thread.interrupted()) {
             long next, deadline;
-            if ((next = tryWriteLock()) != 0L)
+            if ((next = tryWriteLock()) != 0L) // 尝试获取锁
                 return next;
             if (nanos <= 0L)
                 return 0L;
@@ -1027,8 +1027,7 @@ public class StampedLock implements java.io.Serializable {
     /**
      * See above for explanation.
      *
-     * @param interruptible true if should check interrupts and if so
-     * return INTERRUPTED
+     * @param interruptible if 如果此值为true，则需要判断当前线程是否中断，如果是，则返回INTERRUPTED
      * @param deadline if nonzero, the System.nanoTime value to timeout
      * at (and return zero)
      * @return next state, or INTERRUPTED

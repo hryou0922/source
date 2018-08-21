@@ -48,6 +48,10 @@ import sun.misc.Unsafe;
  * {@code Number} to allow uniform access by tools and utilities that
  * deal with numerically-based classes.
  *
+ * 除了属性VM_SUPPORTS_LONG_CAS：
+ *  其它跟AtomicInteger方法相同
+ *
+ *
  * @since 1.5
  * @author Doug Lea
  */

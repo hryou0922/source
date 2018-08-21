@@ -67,32 +67,23 @@ public class AtomicInteger extends Number implements java.io.Serializable {
 
     private volatile int value;
 
-    /**
-     * Creates a new AtomicInteger with the given initial value.
-     *
-     * @param initialValue the initial value
-     */
     public AtomicInteger(int initialValue) {
         value = initialValue;
     }
 
-    /**
-     * Creates a new AtomicInteger with initial value {@code 0}.
-     */
     public AtomicInteger() {
     }
 
     /**
-     * Gets the current value.
+     * 返回当前的值
      *
-     * @return the current value
      */
     public final int get() {
         return value;
     }
 
     /**
-     * Sets to the given value.
+     * 设置指定的值
      *
      * @param newValue the new value
      */
@@ -111,7 +102,7 @@ public class AtomicInteger extends Number implements java.io.Serializable {
     }
 
     /**
-     * Atomically sets to the given value and returns the old value.
+     * 原子设置给定的值并返回旧值
      *
      * @param newValue the new value
      * @return the previous value
@@ -121,8 +112,7 @@ public class AtomicInteger extends Number implements java.io.Serializable {
     }
 
     /**
-     * Atomically sets the value to the given updated value
-     * if the current value {@code ==} the expected value.
+     * 如果当前的值 == 预期的值,原子设置值为给定的值
      *
      * @param expect the expected value
      * @param update the new value
@@ -150,8 +140,7 @@ public class AtomicInteger extends Number implements java.io.Serializable {
     }
 
     /**
-     * Atomically increments by one the current value.
-     *
+     * 原子为当前值+1，并返回之前的值
      * @return the previous value
      */
     public final int getAndIncrement() {
@@ -159,8 +148,7 @@ public class AtomicInteger extends Number implements java.io.Serializable {
     }
 
     /**
-     * Atomically decrements by one the current value.
-     *
+     * 原子为当前值-1，并返回之前的值
      * @return the previous value
      */
     public final int getAndDecrement() {
@@ -168,7 +156,7 @@ public class AtomicInteger extends Number implements java.io.Serializable {
     }
 
     /**
-     * Atomically adds the given value to the current value.
+     * 原子为当前值+给定值，并返回之前的值
      *
      * @param delta the value to add
      * @return the previous value
@@ -178,8 +166,7 @@ public class AtomicInteger extends Number implements java.io.Serializable {
     }
 
     /**
-     * Atomically increments by one the current value.
-     *
+     * 原子为当前值+1，并返回更新后的值
      * @return the updated value
      */
     public final int incrementAndGet() {
@@ -187,8 +174,7 @@ public class AtomicInteger extends Number implements java.io.Serializable {
     }
 
     /**
-     * Atomically decrements by one the current value.
-     *
+     * 原子为当前值-1，并返回更新后的值
      * @return the updated value
      */
     public final int decrementAndGet() {
@@ -196,8 +182,7 @@ public class AtomicInteger extends Number implements java.io.Serializable {
     }
 
     /**
-     * Atomically adds the given value to the current value.
-     *
+     * 原子为当前值+给定值，并返回更新后的值
      * @param delta the value to add
      * @return the updated value
      */
@@ -206,6 +191,7 @@ public class AtomicInteger extends Number implements java.io.Serializable {
     }
 
     /**
+     *
      * Atomically updates the current value with the results of
      * applying the given function, returning the previous value. The
      * function should be side-effect-free, since it may be re-applied

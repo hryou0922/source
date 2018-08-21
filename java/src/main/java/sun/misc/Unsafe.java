@@ -71,6 +71,8 @@ public final class Unsafe {
     // They will not work on elements of packed arrays.
 
     /**
+     * 从给定的java变量上获取值
+     *
      * Fetches a value from a given Java variable.
      * More specifically, fetches a field or array element within the given
      * object <code>o</code> at the given offset, or (if <code>o</code> is
@@ -127,7 +129,8 @@ public final class Unsafe {
     public native int getInt(Object o, long offset);
 
     /**
-     * Stores a value into a given Java variable.
+     * 为给定的值存入Java变量中
+     *  putOrderedXXX方法是putXXXVolatile方法的延迟实现，不保证值的改变被其他线程立即看到
      * <p>
      * The first two parameters are interpreted exactly as with
      * {@link #getInt(Object, long)} to refer to a specific
@@ -700,7 +703,7 @@ public final class Unsafe {
      */
     public native void    putOrderedObject(Object o, long offset, Object x);
 
-    /** Ordered/Lazy version of {@link #putIntVolatile(Object, long, int)}  */
+    /** Ordered/Lazy version of {@link #putIntVolatile(Object, long, int)} : putOrderedXXX方法是putXXXVolatile方法的延迟实现，不保证值的改变被其他线程立即看到 */
     public native void    putOrderedInt(Object o, long offset, int x);
 
     /** Ordered/Lazy version of {@link #putLongVolatile(Object, long, long)} */
@@ -757,6 +760,8 @@ public final class Unsafe {
     // platforms not supporting native instructions
 
     /**
+     * 对于给它的对象o在指定的offset上的变量值或数组值，原子地增加指定的值
+     *
      * Atomically adds the given value to the current value of a field
      * or array element within the given object <code>o</code>
      * at the given <code>offset</code>.
