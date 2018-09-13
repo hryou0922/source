@@ -38,6 +38,20 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
+ * 参考文献：
+ *  深入浅出java CyclicBarrier：https://www.jianshu.com/p/424374d71b67
+ *
+ * CyclicBarrier和CountDownLatch不可重用区别：
+ *  CyclicBarrier：
+ *      1. 主线程等所有的线程准备完毕，才让线程去执行自己的逻辑
+ *      2. 可重用
+ *      比喻：军训集合。当集合令吹响了，同学们（子线程）起床后马上到操场集合（线程创建后，马上执行自己的任务），同学们到的速度有快有慢，等所有人到齐了，教官（主线程）才开始训话（开始后续的工作）
+ *
+ *  CountDownLatch：
+ *      1. 主线程等待所有的线程执行完毕，才执行自己的逻辑
+ *      2. 一次性使用，不可重用
+ *      比喻：100米赛跑。比赛时，所有的运动员（子线程）准备完毕（线程已经创建完毕，但是未执行），裁判（主线程）等所有的运动员准备完毕，鸣枪，运动员开始跑步（子线程开始执行任务）
+ *
  * A synchronization aid that allows a set of threads to all wait for
  * each other to reach a common barrier point.  CyclicBarriers are
  * useful in programs involving a fixed sized party of threads that

@@ -37,8 +37,10 @@ package java.util.concurrent;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
 /**
- * A synchronization aid that allows one or more threads to wait until
- * a set of operations being performed in other threads completes.
+ * 此同步器的目标：允许一个或多个线程等待另外的线程完成后才执行后续操作
+ *
+ *
+ *  CountDownLatch不可重用，但是Barrier可以被重用
  *
  * <p>A {@code CountDownLatch} is initialized with a given <em>count</em>.
  * The {@link #await await} methods block until the current count reaches
@@ -189,11 +191,7 @@ public class CountDownLatch {
     private final Sync sync;
 
     /**
-     * Constructs a {@code CountDownLatch} initialized with the given count.
-     *
-     * @param count the number of times {@link #countDown} must be invoked
-     *        before threads can pass through {@link #await}
-     * @throws IllegalArgumentException if {@code count} is negative
+     * @param count 等待的数量，值> 0
      */
     public CountDownLatch(int count) {
         if (count < 0) throw new IllegalArgumentException("count < 0");
@@ -201,76 +199,20 @@ public class CountDownLatch {
     }
 
     /**
-     * Causes the current thread to wait until the latch has counted down to
-     * zero, unless the thread is {@linkplain Thread#interrupt interrupted}.
+     * 等待获取锁
+     * 使当前线程等待直到latch的值被countDown()方法减到0或者线程被中断
+     * 如果当前的count的值为0，则立即返回
      *
-     * <p>If the current count is zero then this method returns immediately.
+     * 详细见：{@link AbstractQueuedSynchronizer#acquireSharedInterruptibly(int)}
      *
-     * <p>If the current count is greater than zero then the current
-     * thread becomes disabled for thread scheduling purposes and lies
-     * dormant until one of two things happen:
-     * <ul>
-     * <li>The count reaches zero due to invocations of the
-     * {@link #countDown} method; or
-     * <li>Some other thread {@linkplain Thread#interrupt interrupts}
-     * the current thread.
-     * </ul>
-     *
-     * <p>If the current thread:
-     * <ul>
-     * <li>has its interrupted status set on entry to this method; or
-     * <li>is {@linkplain Thread#interrupt interrupted} while waiting,
-     * </ul>
-     * then {@link InterruptedException} is thrown and the current thread's
-     * interrupted status is cleared.
-     *
-     * @throws InterruptedException if the current thread is interrupted
-     *         while waiting
      */
     public void await() throws InterruptedException {
         sync.acquireSharedInterruptibly(1);
     }
 
     /**
-     * Causes the current thread to wait until the latch has counted down to
-     * zero, unless the thread is {@linkplain Thread#interrupt interrupted},
-     * or the specified waiting time elapses.
-     *
-     * <p>If the current count is zero then this method returns immediately
-     * with the value {@code true}.
-     *
-     * <p>If the current count is greater than zero then the current
-     * thread becomes disabled for thread scheduling purposes and lies
-     * dormant until one of three things happen:
-     * <ul>
-     * <li>The count reaches zero due to invocations of the
-     * {@link #countDown} method; or
-     * <li>Some other thread {@linkplain Thread#interrupt interrupts}
-     * the current thread; or
-     * <li>The specified waiting time elapses.
-     * </ul>
-     *
-     * <p>If the count reaches zero then the method returns with the
-     * value {@code true}.
-     *
-     * <p>If the current thread:
-     * <ul>
-     * <li>has its interrupted status set on entry to this method; or
-     * <li>is {@linkplain Thread#interrupt interrupted} while waiting,
-     * </ul>
-     * then {@link InterruptedException} is thrown and the current thread's
-     * interrupted status is cleared.
-     *
-     * <p>If the specified waiting time elapses then the value {@code false}
-     * is returned.  If the time is less than or equal to zero, the method
-     * will not wait at all.
-     *
-     * @param timeout the maximum time to wait
-     * @param unit the time unit of the {@code timeout} argument
-     * @return {@code true} if the count reached zero and {@code false}
-     *         if the waiting time elapsed before the count reached zero
-     * @throws InterruptedException if the current thread is interrupted
-     *         while waiting
+     * 超时版本获取锁
+     * 详细见：{@link AbstractQueuedSynchronizer#tryAcquireSharedNanos(int, long)}
      */
     public boolean await(long timeout, TimeUnit unit)
         throws InterruptedException {
@@ -278,23 +220,21 @@ public class CountDownLatch {
     }
 
     /**
-     * Decrements the count of the latch, releasing all waiting threads if
-     * the count reaches zero.
+     * 释放一个锁的资源
+     *  如果当前的值 > 0，则值-1
+     *  如果当前的值 = 0，则不变。
      *
-     * <p>If the current count is greater than zero then it is decremented.
-     * If the new count is zero then all waiting threads are re-enabled for
-     * thread scheduling purposes.
+     *  当变成0后，其它等待线程可以去竞争锁
      *
-     * <p>If the current count equals zero then nothing happens.
+     * 详细见：{@link AbstractQueuedSynchronizer#releaseShared(int)}
+     *
      */
     public void countDown() {
         sync.releaseShared(1);
     }
 
     /**
-     * Returns the current count.
-     *
-     * <p>This method is typically used for debugging and testing purposes.
+     * 返回当前持有锁的资源
      *
      * @return the current count
      */
@@ -302,13 +242,7 @@ public class CountDownLatch {
         return sync.getCount();
     }
 
-    /**
-     * Returns a string identifying this latch, as well as its state.
-     * The state, in brackets, includes the String {@code "Count ="}
-     * followed by the current count.
-     *
-     * @return a string identifying this latch, as well as its state
-     */
+
     public String toString() {
         return super.toString() + "[Count = " + sync.getCount() + "]";
     }
