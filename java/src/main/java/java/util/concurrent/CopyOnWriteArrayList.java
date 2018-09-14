@@ -52,6 +52,8 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 /**
+ *
+ *
  * A thread-safe variant of {@link java.util.ArrayList} in which all mutative
  * operations ({@code add}, {@code set}, and so on) are implemented by
  * making a fresh copy of the underlying array.
@@ -83,6 +85,32 @@ import java.util.function.UnaryOperator;
  * <p>This class is a member of the
  * <a href="{@docRoot}/../technotes/guides/collections/index.html">
  * Java Collections Framework</a>.
+ *
+ * 重点：
+ *   1. 保存元素使用Object[]保存，使用volatile标记（当一个共享变量被volatile修饰时，它会保证修改的值会立即被更新到主存，当有其他线程需要读取时，它会去内存中读取新值）
+ *      private transient volatile Object[] array;
+ *   2. 在执行修改操作时前ReentrantLock lock 加锁，将中间的数组元素变更存在到临时数据中，最后使用setArray()方法，使用临时数组替换旧的数组
+ *
+ *   写操作在可重入锁的保护下在内部数组的拷贝上进行，操作完成后将内部数组换成最新的数组。这样读操作就不许要进行同步，避免了直接同步ArrayList<E>时对读操作带来的开销。
+ *
+ *  优点：
+ *      1. 读不需要加锁
+ *      2. 写需要加锁，使用临时数组保存元素。写的操作话费时间比较多
+ *
+ *  任何改变数组的操作都是在内部数组的一个新的拷贝上进行的。这样的实现对于写来说代价很大，但如果多线程环境下遍历的操作，读操作远远多于写操作来说就比较高效了。
+ *  因此应用的场景就是：在多线程环境下一个读操作远远多于写操作的列表。
+ *
+ *  == https://blog.csdn.net/luotuomianyang/article/details/52092811
+ *   1. 它最适合于具有以下特征的应用程序：List 大小通常保持很小，只读操作远多于可变操作，需要在遍历期间防止线程间的冲突。
+     2. 它是线程安全的。
+     3. 因为通常需要复制整个基础数组，所以可变操作（add()、set() 和 remove() 等等）的开销很大。
+     4. 迭代器支持hasNext(), next()等不可变操作，但不支持可变 remove(),set,add等操作。
+     5. 使用迭代器进行遍历的速度很快，并且不会与其他线程发生冲突。在构造迭代器时，迭代器依赖于不变的数组快照。
+
+    CopyOnWriteArrayList的“动态数组”机制--它内部有个“volatile数组”(array)来保持数据:在“添加/修改/删除”数据时，都会新建一个数组，并将更新后的数据拷贝到新建的数组中，最后再将该数组赋值给“volatile数组”
+    CopyOnWriteArrayList的“线程安全”机制 --是通过volatile和互斥锁来实现的。
+        a. CopyOnWriteArrayList是通过“volatile数组”来保存数据的。一个线程读取volatile数组时，总能看到其它线程对该volatile变量最后的写入；就这样，通过volatile提供了“读取到的数据总是最新的”这个机制的保证
+        b. CopyOnWriteArrayList通过互斥锁来保护数据。在“添加/修改/删除”数据时，会先“获取互斥锁”，再修改完毕之后，先将数据更新到“volatile数组”中，然后再“释放互斥锁”；这样，就达到了保护数据的目的
  *
  * @since 1.5
  * @author Doug Lea
@@ -603,6 +631,8 @@ public class CopyOnWriteArrayList<E>
     }
 
     /**
+     * 添加元素
+     *  如果将要添加的元素在集合中不存在，则添加，否则忽略
      * Appends the element, if not present.
      *
      * @param e element to be added to this list, if absent
@@ -749,6 +779,7 @@ public class CopyOnWriteArrayList<E>
     }
 
     /**
+     * 将指定集合里的元素添加到成员变量集合，且添加的元素不能已经存在成员变量集合
      * Appends all of the elements in the specified collection that
      * are not already contained in this list, to the end of
      * this list, in the order that they are returned by the
@@ -756,7 +787,6 @@ public class CopyOnWriteArrayList<E>
      *
      * @param c collection containing elements to be added to this list
      * @return the number of elements added
-     * @throws NullPointerException if the specified collection is null
      * @see #addIfAbsent(Object)
      */
     public int addAllAbsent(Collection<? extends E> c) {

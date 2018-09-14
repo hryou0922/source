@@ -11,6 +11,7 @@
     <modules>
         <module>java</module>
         <module>springboot</module>
+        <module>cat</module>
     </modules>
 
     <properties>

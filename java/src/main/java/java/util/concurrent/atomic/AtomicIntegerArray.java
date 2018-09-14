@@ -39,6 +39,13 @@ import java.util.function.IntBinaryOperator;
 import sun.misc.Unsafe;
 
 /**
+ * 使用unsafe实现对数组的原子操作：
+ *  unsafe的数组操作方法：getIntVolatile，putIntVolatile，putOrderedInt，
+ *  unsafe方法：getAndSetInt，compareAndSwapInt
+ *
+ * 类似有：
+ *  AtomicLongArray：不过使用unsafe的long的unsafe方法
+ *
  * An {@code int} array in which elements may be updated atomically.
  * See the {@link java.util.concurrent.atomic} package
  * specification for description of the properties of atomic

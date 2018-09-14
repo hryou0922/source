@@ -37,13 +37,10 @@ package java.util.concurrent.atomic;
 import sun.misc.Unsafe;
 
 /**
- * A {@code boolean} value that may be updated atomically. See the
- * {@link java.util.concurrent.atomic} package specification for
- * description of the properties of atomic variables. An
- * {@code AtomicBoolean} is used in applications such as atomically
- * updated flags, and cannot be used as a replacement for a
- * {@link Boolean}.
- *
+ * 原子地更新boolean值
+ *     关键属性：
+ *      value: volatile修复，1为true，0为false
+ *      unsafe的CAS方法
  * @since 1.5
  * @author Doug Lea
  */
@@ -60,35 +57,26 @@ public class AtomicBoolean implements java.io.Serializable {
         } catch (Exception ex) { throw new Error(ex); }
     }
 
+    // volatile修饰类
     private volatile int value;
 
-    /**
-     * Creates a new {@code AtomicBoolean} with the given initial value.
-     *
-     * @param initialValue the initial value
-     */
     public AtomicBoolean(boolean initialValue) {
         value = initialValue ? 1 : 0;
     }
 
-    /**
-     * Creates a new {@code AtomicBoolean} with initial value {@code false}.
-     */
     public AtomicBoolean() {
     }
 
     /**
-     * Returns the current value.
+     * 返回当前值
      *
-     * @return the current value
      */
     public final boolean get() {
         return value != 0;
     }
 
     /**
-     * Atomically sets the value to the given updated value
-     * if the current value {@code ==} the expected value.
+     * 当前当前值 == 预期值，则原子地将指定的值设置为新值
      *
      * @param expect the expected value
      * @param update the new value
@@ -120,7 +108,11 @@ public class AtomicBoolean implements java.io.Serializable {
     }
 
     /**
-     * Unconditionally sets to the given value.
+     * 无条件设置给定的值
+     *  set和lazySet见文章：https://stackoverflow.com/questions/1468007/atomicinteger-lazyset-vs-set
+     *  set()和volatile具有一样的效果(能够保证内存可见性，能够避免指令重排序)，但是使用lazySet不能保证其他线程能立刻看到修改后的值(有可能发生指令重排序)。
+     *  简单点理解：lazySet比set()具有性能优势，但是使用场景很有限。在网上没有找到lazySet和set的性能数据对比，而且CPU的速度很快的，应用的瓶颈往往不在CPU，而是在IO、网络、数据库等。
+     *  对于并发程序要优先保证正确性，然后出现性能瓶颈的时候再去解决。因为定位并发导致的问题，往往要比定位性能问题困难很多
      *
      * @param newValue the new value
      */
@@ -140,7 +132,7 @@ public class AtomicBoolean implements java.io.Serializable {
     }
 
     /**
-     * Atomically sets to the given value and returns the previous value.
+     * 原子设置给定的值，并返回之前的值
      *
      * @param newValue the new value
      * @return the previous value

@@ -88,6 +88,14 @@ import java.util.function.Consumer;
  * <a href="{@docRoot}/../technotes/guides/collections/index.html">
  * Java Collections Framework</a>.
  *
+ * 重点：
+ *  1. 内部有个成功变量 CopyOnWriteArrayList<E> al 对象， 除了添加操作（如add调用al.addIfAbsent(e)，addAll调用al.addAllAbsent(c)，用于保证集合中数据不重复）外，其它的公共方法基础调用CopyOnWriteArrayList的同名方法
+ *  2. CopyOnWriteArraySet<E>内部的本质使用的就是CopyOnWriteArrayList<E>再实现java.util.Set接口来实现Set的操作，因此同样CopyOnWriteArrayList的优点缺点
+ *
+ *
+ *
+ *
+ *
  * @see CopyOnWriteArrayList
  * @since 1.5
  * @author Doug Lea
