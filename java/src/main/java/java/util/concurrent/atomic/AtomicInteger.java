@@ -39,6 +39,11 @@ import java.util.function.IntBinaryOperator;
 import sun.misc.Unsafe;
 
 /**
+ * 使用unsafe的方法达到原子操作的目的
+ *
+ * 类似的实现还有：
+ *  AtomicLong
+ *
  * An {@code int} value that may be updated atomically.  See the
  * {@link java.util.concurrent.atomic} package specification for
  * description of the properties of atomic variables. An
