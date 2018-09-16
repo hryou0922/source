@@ -58,15 +58,16 @@ public class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
         WebcatLog.setStarttime(starttime);
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE);
         try {
+            // 获取IP
             String ip = RequestUtil.getRealIp(request, ctx);
             WebcatLog.setIp(ip);
-            if (!request.decoderResult().isSuccess()) {
+            if (!request.decoderResult().isSuccess()) { // 请求处理失败
                 ResponseUtil.status(response, HttpResponseStatus.BAD_REQUEST, "request decode failed.");
             } else {
-                if (isSupport(request.method())) {
+                if (isSupport(request.method())) { // 是否支持方法
                     URI uri = URI.create(request.uri());
                     WebcatLog.setPath(uri.getPath());
-                    invoke(uri.getPath(), request, response, ip);
+                    invoke(uri.getPath(), request, response, ip); // 调用真正的方法
                 } else {
                     ResponseUtil.status(response, HttpResponseStatus.FORBIDDEN, "http method not support");
                 }
@@ -84,7 +85,7 @@ public class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
 
     private void invoke(String path, FullHttpRequest request, FullHttpResponse response, String ip) {
         try {
-            if (httpRequestInvoker.validPath(path)) {
+            if (httpRequestInvoker.validPath(path)) {  // url 是否在请求中
                 HttpRequestData data = RequestUtil.parseRequest(request);
                 data.setIp(ip);
                 httpRequestInvoker.invoke(path, data, request, response);

@@ -39,7 +39,7 @@ public class WsPacketDispatcher extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         try {
-            if (msg instanceof WebSocketFrame) {
+            if (msg instanceof WebSocketFrame) { // 这是websocket协议的请求
                 WebSocketFrame frame = (WebSocketFrame) msg;
                 if (frame instanceof BinaryWebSocketFrame) {
                     ByteBuf byteBuf = frame.content();
@@ -52,7 +52,7 @@ public class WsPacketDispatcher extends ChannelInboundHandlerAdapter {
                 } else {
                     // ws protocol auto handle
                 }
-            } else if (msg instanceof FullHttpRequest) {
+            } else if (msg instanceof FullHttpRequest) { // 如果类型是http，则返回错误码403
                 NettyHttpUtil.errorResponse(ctx, (FullHttpRequest) msg, HttpResponseStatus.FORBIDDEN);
             } else {
                 logger.warn("unknow request protocol msg, close channel");
@@ -96,6 +96,7 @@ public class WsPacketDispatcher extends ChannelInboundHandlerAdapter {
             logger.error(e.getMessage(), e);
             response.code(WsCode.INTERNAL_ERROR);
         } finally {
+            // 刷新数据到通道中
             NettyWsUtil.sendWsResponse(ctx.channel(), response);
             WebcatLog.setRetcode(response.getCode());
             WebcatLog.setSpendtime(System.currentTimeMillis() - starttime);

@@ -104,13 +104,14 @@ public class HttpRequestInvoker {
     }
 
     public void invoke(String path, HttpRequestData data, FullHttpRequest request, FullHttpResponse response) {
-        Method method = methodMap.get(path);
+        Method method = methodMap.get(path); // 根据path获取要处理的方法
         WebcatLog.setMethod(method.getName());
-        String controllerName = pathMapping.get(path);
-        Object controller = controllerMap.get(controllerName);
+        String controllerName = pathMapping.get(path); // 根据path获取controllerName
+        Object controller = controllerMap.get(controllerName); // 根据controllerName获取controller的对象
         try {
             HttpRequestMapping mapping = requesAnnotMap.get(path);
             assert mapping != null;
+            // 检查请求是否可行
             if (!checkRequest(mapping, request, response)) {
                 return;
             }
@@ -120,7 +121,9 @@ public class HttpRequestInvoker {
                 return;
             }
 
+            // 真正的方法调用
             Object result = method.invoke(controller, convertedArgs.toArray(new Object[convertedArgs.size()]));
+            // 生成返回contentType的值
             if (mapping.produces().length > 0) {
                 ResponseUtil.contentType(response, Joiner.on(",").join(mapping.produces()));
             } else {
@@ -138,8 +141,10 @@ public class HttpRequestInvoker {
                     WebcatLog.setResponse(result);
                 }
                 if (String.class.isAssignableFrom(result.getClass())) {
+                    // 如果类型为String，则直接写内部
                     ResponseUtil.content(response, (String) result);
                 } else {
+                    // 如果类型为非String，则先转json，再写json
                     ResponseUtil.content(response, JsonUtil.toJson(result));
                 }
 
@@ -151,15 +156,20 @@ public class HttpRequestInvoker {
     }
 
     private static boolean checkRequest(HttpRequestMapping mapping, FullHttpRequest request, FullHttpResponse response) {
+        // 检查当前请求的method是否被支持
         if (!RequestUtil.supportMethod(mapping.method(), request.method().name())) {
             ResponseUtil.notSupportMehotd(response, request.method().name());
             return false;
         }
+
+        // 当前的contentType是否支持
         String contentType = request.headers().get(HttpHeaderNames.CONTENT_TYPE);
         if (!RequestUtil.supportContentType(mapping.consumes(), contentType)) {
             ResponseUtil.notSupportContentType(response, contentType);
             return false;
         }
+
+        // 检查当前请求的header是否全部包含
         String missHeader = RequestUtil.checkHeaders(mapping.headers(), request.headers());
         if (missHeader != null) {
             ResponseUtil.missHeader(response, missHeader);
