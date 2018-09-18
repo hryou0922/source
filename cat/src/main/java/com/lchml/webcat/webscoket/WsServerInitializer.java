@@ -38,7 +38,9 @@ public class WsServerInitializer extends ChannelInitializer<SocketChannel> {
             pipeline.addLast(
                 ChannelConnectListenerHandler.NAME, new ChannelConnectListenerHandler(webcatWsServer.getChannelConnectListener()));
         }
+        // 处理websocket的请求
         pipeline.addLast(new WebSocketServerCompressionHandler());
+        // 处理websocket的 这个处理程序为您运行websocket服务器做了所有繁重的工作。
         pipeline.addLast(new WebSocketServerProtocolHandler(webcatWsConf.getWsPath(), null, true, webcatWsConf.getMaxPayload()));
         pipeline.addLast(
             WsPacketDispatcher.NAME, beanFactory.getBean(WsPacketDispatcher.class));

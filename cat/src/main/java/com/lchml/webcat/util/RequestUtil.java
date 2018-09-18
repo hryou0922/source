@@ -33,17 +33,28 @@ public class RequestUtil {
             ipDigitPattern, ipDigitPattern, ipDigitPattern, ipDigitPattern));
 
 
+    /**
+     * 向url请求或post的body中解析出参数
+     * 解析出post的内容值
+     *
+     * @param request
+     * @return
+     * @throws IOException
+     */
     public static HttpRequestData parseRequest(FullHttpRequest request) throws
         IOException {
         HttpRequestData data = new HttpRequestData();
         Map<String, String> params = new HashMap<String, String>();
+        // 从请求url中解析出参数
         QueryStringDecoder urlDecoder = new QueryStringDecoder(request.uri());
         for (Map.Entry<String, List<String>> entry : urlDecoder.parameters().entrySet()) {
             params.put(entry.getKey(), entry.getValue().get(0));
         }
         if (request.method() == HttpMethod.POST || request.method() == HttpMethod.PUT) {
+            // 获取请求内容
             String body = request.content().toString(CharsetUtil.UTF_8);
             data.setBody(body);
+            // 解码post的body内容
             HttpPostRequestDecoder decoder = new HttpPostRequestDecoder(request);
             decoder.offer(request);
             List<InterfaceHttpData> parmList = decoder.getBodyHttpDatas();

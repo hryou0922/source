@@ -37,13 +37,56 @@ public class HttpRequestInvoker {
     @Autowired
     private WebcatHttpConf webcatHttpConf;
 
-    private Map<String, Object> controllerMap; // controllerName - bean
-    private Map<String, Method> methodMap; // path - method
-    private Map<String, HttpRequestMapping> requesAnnotMap; // path - requestAnno
-    private Map<String, Map<Integer, String>> methodParamIndexMap;
-    private Map<String, Map<Integer, ReqParam>> methodParamAnnoMap;
-    private Map<String, Map<Integer, ReqBody>> methodBodyAnnoMap;
+    /**
+     * Controller名称 和 对应的 controller对象
+     * testHttpController - TestHttpController对象
+     */
+    private Map<String, Object> controllerMap; // controllerName - bean :
+
+    /**
+     * 请求url -  对应的Controller名称
+     * "/test/redirect" -> "testHttpController"
+     * "/test/body" -> "testHttpController"
+     * "/test/hello" -> "testHttpController"
+     */
     private Map<String, String> pathMapping; // path - controllerName
+
+    /**
+     * 请求url - 对应的执行方法Method
+     *
+     * "/test/redirect" -> "public void com.lchml.test.controller.TestHttpController.testRedirect(io.netty.handler.codec.http.FullHttpResponse)"
+     * "/test/body" -> "public java.lang.String com.lchml.test.controller.TestHttpController.testBody(java.lang.String)"
+     * "/test/hello" -> "public java.lang.Object com.lchml.test.controller.TestHttpController.testHello()"
+     */
+    private Map<String, Method> methodMap; // path - method:
+    /**
+     * 请求url - 对应的方法注解
+     * "/test/redirect" -> "@com.lchml.webcat.annotation.HttpRequestMapping(produces=[], path=/redirect, headers=[], method=[GET], consumes=[])"
+     * "/test/body" -> "@com.lchml.webcat.annotation.HttpRequestMapping(produces=[], path=/body, headers=[], method=[POST], consumes=[])"
+     * "/test/hello" -> "@com.lchml.webcat.annotation.HttpRequestMapping(produces=[], path=/hello, headers=[], method=[], consumes=[])"
+     */
+    private Map<String, HttpRequestMapping> requesAnnotMap; // path - requestAnno
+    /**
+     * 请求url - 方法的参数列表（索引 - 方法的参数的名称）
+     * "/test/redirect" -> " size = 1" ("0" -> "response")
+     *
+     * "/test/body" -> " size = 1" ("0" -> "body")
+     * "/test/hello" -> " size = 0"
+     */
+    private Map<String, Map<Integer, String>> methodParamIndexMap;
+    /**
+     * 请求url - ReqParam
+     */
+    private Map<String, Map<Integer, ReqParam>> methodParamAnnoMap;
+    /**
+     *  请求url - 注解中方法参数上的ReqBody注解
+     *  "/test/redirect" -> " size = 0"
+     *  "/test/body" -> " size = 1" ( "0" -> "@com.lchml.webcat.annotation.ReqBody(required=true)")
+     *  "/test/hello" -> " size = 0"
+     */
+    private Map<String, Map<Integer, ReqBody>> methodBodyAnnoMap;
+
+
 
     @PostConstruct
     public void init() {
@@ -67,17 +110,19 @@ public class HttpRequestInvoker {
         while (clazz != Object.class) {
             Method[] methods = clazz.getDeclaredMethods();
             for (final Method method : methods) {
+                // 查找 公共方法 和 被HttpRequestMapping注解的 方法
                 if (method.getModifiers() == Modifier.PUBLIC && method.isAnnotationPresent(HttpRequestMapping.class)) {
                     HttpRequestMapping methodAnno = method.getAnnotation(HttpRequestMapping.class);
-                    if (Strings.isNullOrEmpty(methodAnno.path())) {
+                    if (Strings.isNullOrEmpty(methodAnno.path())) { // url 非空
                         throw new WebcatInitException("HttpRequestMapping path can't be empty");
                     }
+                    // 将HttpController注解上的path和HttpRequestMapping注解上的path 合并在一起组成新的path
                     String fullPath = UrlUtil.resolveUrlPath(controllerAnno.path()) + UrlUtil.resolveUrlPath(methodAnno.path());
-                    if (methodMap.containsKey(fullPath)) {
+                    if (methodMap.containsKey(fullPath)) { //
                         throw new WebcatInitException("HttpRequestMapping path must be unique");
                     }
-                    requesAnnotMap.put(fullPath, methodAnno);
-                    methodMap.put(fullPath, method);
+                    requesAnnotMap.put(fullPath, methodAnno); // 请求url - 对应的方法注解
+                    methodMap.put(fullPath, method); // 请求url - 对应的执行方法Method
                     try {
                         Map<Integer, String> paramIndex = Maps.newHashMap();
                         Map<Integer, ReqParam> paramAnno = Maps.newHashMap();
@@ -95,7 +140,7 @@ public class HttpRequestInvoker {
                     pathMapping.put(fullPath, controllerName);
                 }
             }
-            clazz = clazz.getSuperclass();
+            clazz = clazz.getSuperclass(); // 循环查询它的父类
         }
     }
 
@@ -104,6 +149,7 @@ public class HttpRequestInvoker {
     }
 
     public void invoke(String path, HttpRequestData data, FullHttpRequest request, FullHttpResponse response) {
+        // 根据path获取可以处理这个请求Method和Object controller
         Method method = methodMap.get(path);
         WebcatLog.setMethod(method.getName());
         String controllerName = pathMapping.get(path);
@@ -111,16 +157,21 @@ public class HttpRequestInvoker {
         try {
             HttpRequestMapping mapping = requesAnnotMap.get(path);
             assert mapping != null;
+            // 查询请求是否符合要求
             if (!checkRequest(mapping, request, response)) {
                 return;
             }
             List<Object> convertedArgs = Lists.newArrayList();
+            // 解析出请求中的参数，并将参数封装到convertedArgs中
             if (!assembleParam(convertedArgs, data, method.getParameterTypes(), methodParamIndexMap.get(path),
                 methodParamAnnoMap.get(path), methodBodyAnnoMap.get(path), request, response)) {
                 return;
             }
 
+            // 执行真实的方法
             Object result = method.invoke(controller, convertedArgs.toArray(new Object[convertedArgs.size()]));
+
+            // 配置返回的content type值
             if (mapping.produces().length > 0) {
                 ResponseUtil.contentType(response, Joiner.on(",").join(mapping.produces()));
             } else {
@@ -151,15 +202,18 @@ public class HttpRequestInvoker {
     }
 
     private static boolean checkRequest(HttpRequestMapping mapping, FullHttpRequest request, FullHttpResponse response) {
+        // Http方法是否支持
         if (!RequestUtil.supportMethod(mapping.method(), request.method().name())) {
             ResponseUtil.notSupportMehotd(response, request.method().name());
             return false;
         }
+        // 对应的content type是否支持
         String contentType = request.headers().get(HttpHeaderNames.CONTENT_TYPE);
         if (!RequestUtil.supportContentType(mapping.consumes(), contentType)) {
             ResponseUtil.notSupportContentType(response, contentType);
             return false;
         }
+        // 必须的header头是否存在
         String missHeader = RequestUtil.checkHeaders(mapping.headers(), request.headers());
         if (missHeader != null) {
             ResponseUtil.missHeader(response, missHeader);
@@ -173,9 +227,11 @@ public class HttpRequestInvoker {
         assert paramsIndex != null && paramsAnno != null;
         Map<String, String> args = data.getParams();
         for (Integer i = 0; i < parameterTypes.length; i++) {
+            // 处理Long
             if (Long.class.isAssignableFrom(parameterTypes[i]) || long.class.isAssignableFrom(parameterTypes[i])) {
-                String arg = args.get(paramsIndex.get(i));
+                String arg = args.get(paramsIndex.get(i)); // 先从获取变量名称，然后再根据名称从请求参数中获取值
                 if (arg == null) {
+                    // 如果没有，则查询ReqParam注解：如果有配置ReqParam且参数非必须，则设置默认值; 否则报错
                     ReqParam anno = paramsAnno.get(i);
                     if (anno != null && !anno.required()) {
                         convertedArgs.add(Long.parseLong(anno.defaultValue()));

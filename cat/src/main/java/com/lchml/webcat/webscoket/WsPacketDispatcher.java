@@ -53,7 +53,10 @@ public class WsPacketDispatcher extends ChannelInboundHandlerAdapter {
                     // ws protocol auto handle
                 }
             } else if (msg instanceof FullHttpRequest) {
-                NettyHttpUtil.errorResponse(ctx, (FullHttpRequest) msg, HttpResponseStatus.FORBIDDEN);
+                // 以下一行暂时注释掉
+            //    NettyHttpUtil.errorResponse(ctx, (FullHttpRequest) msg, HttpResponseStatus.FORBIDDEN);
+                WsResponse response = WsResponse.create();
+                NettyWsUtil.sendWsResponse(ctx.channel(), response);
             } else {
                 logger.warn("unknow request protocol msg, close channel");
                 ctx.channel().close();

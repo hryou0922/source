@@ -9,6 +9,8 @@ import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.util.CharsetUtil;
 
 /**
+ * 返回处理结果工作类
+ *
  * Created by lc on 11/14/17.
  */
 public class ResponseUtil {

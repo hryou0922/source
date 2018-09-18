@@ -61,6 +61,7 @@ public class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
             String ip = RequestUtil.getRealIp(request, ctx);
             WebcatLog.setIp(ip);
             if (!request.decoderResult().isSuccess()) {
+                // 解析失败，返回异常
                 ResponseUtil.status(response, HttpResponseStatus.BAD_REQUEST, "request decode failed.");
             } else {
                 if (isSupport(request.method())) {
@@ -72,6 +73,7 @@ public class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
                 }
             }
         } finally {
+            // 返回成功结果
             NettyHttpUtil.succResponse(ctx, request, response);
             WebcatLog.setRetcode(response.status().code());
             WebcatLog.setSpendtime(System.currentTimeMillis() - starttime);
@@ -85,6 +87,7 @@ public class HttpRequestDispatcher extends ChannelInboundHandlerAdapter {
     private void invoke(String path, FullHttpRequest request, FullHttpResponse response, String ip) {
         try {
             if (httpRequestInvoker.validPath(path)) {
+                // 将请求的url中的参数和body中的参数解析出来
                 HttpRequestData data = RequestUtil.parseRequest(request);
                 data.setIp(ip);
                 httpRequestInvoker.invoke(path, data, request, response);
