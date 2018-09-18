@@ -32,8 +32,11 @@ public class WsServerInitializer extends ChannelInitializer<SocketChannel> {
         pipeline.addLast(HeartbeatHandler.NAME, new HeartbeatHandler(webcatWsConf.getHeartbeat()));
         pipeline.addLast(new HttpServerCodec());
         pipeline.addLast(new HttpObjectAggregator(webcatWsConf.getMaxPayload()));
+        // 在通道中存储ChannelInfo对象，用于后续的操作
         pipeline.addLast(WsChannelInitHandler.NAME, beanFactory.getBean(WsChannelInitHandler.class));
+        // 为ChannelInfo设置ip
         pipeline.addLast(ProxyIPHandler.NAME, new ProxyIPHandler(webcatWsConf.isUseProxy()));
+        // 增加插入连接的监听器
         if (webcatWsServer.getChannelConnectListener() != null) {
             pipeline.addLast(
                 ChannelConnectListenerHandler.NAME, new ChannelConnectListenerHandler(webcatWsServer.getChannelConnectListener()));

@@ -54,66 +54,45 @@ package java.lang;
  */
 public abstract class Number implements java.io.Serializable {
     /**
-     * Returns the value of the specified number as an {@code int},
-     * which may involve rounding or truncation.
-     *
-     * @return  the numeric value represented by this object after conversion
-     *          to type {@code int}.
+     * 返回用int表示指定的数字
+     * 这里可能发生截断或舍入
      */
     public abstract int intValue();
 
     /**
-     * Returns the value of the specified number as a {@code long},
-     * which may involve rounding or truncation.
-     *
-     * @return  the numeric value represented by this object after conversion
-     *          to type {@code long}.
+     * 返回用long表示指定的数字
+     * 这里可能发生截断或舍入
      */
     public abstract long longValue();
 
     /**
-     * Returns the value of the specified number as a {@code float},
-     * which may involve rounding.
-     *
-     * @return  the numeric value represented by this object after conversion
-     *          to type {@code float}.
+     * 返回用float表示指定的数字
+     * 这里可能发生截断或舍入
      */
     public abstract float floatValue();
 
     /**
-     * Returns the value of the specified number as a {@code double},
-     * which may involve rounding.
+     * 返回用double表示指定的数字
+     * 这里可能发生截断或舍入
      *
-     * @return  the numeric value represented by this object after conversion
-     *          to type {@code double}.
      */
     public abstract double doubleValue();
 
     /**
-     * Returns the value of the specified number as a {@code byte},
-     * which may involve rounding or truncation.
+     * 返回用int表示指定的数字
+     * 这里可能发生截断或舍入
+     * 这里的实现使用 #intValue 转化为bye
      *
-     * <p>This implementation returns the result of {@link #intValue} cast
-     * to a {@code byte}.
-     *
-     * @return  the numeric value represented by this object after conversion
-     *          to type {@code byte}.
-     * @since   JDK1.1
      */
     public byte byteValue() {
         return (byte)intValue();
     }
 
     /**
-     * Returns the value of the specified number as a {@code short},
-     * which may involve rounding or truncation.
+     * 返回用int表示指定的数字
+     * 这里可能发生截断或舍入
      *
-     * <p>This implementation returns the result of {@link #intValue} cast
-     * to a {@code short}.
-     *
-     * @return  the numeric value represented by this object after conversion
-     *          to type {@code short}.
-     * @since   JDK1.1
+     * 这里的实现实现使用 #invalue 转化为 short
      */
     public short shortValue() {
         return (short)intValue();
