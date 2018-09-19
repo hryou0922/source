@@ -5,6 +5,9 @@
     - 一般对于异常和标志为@Deprecated类或方法不进行学习、很明显不会使用到的类（如JapaneseImperialCalendar）从本工程中删除
     
 - 源码阅读
+- cat: 别人使用netty实现http/websocket的服务器
+- netty-all:
+    - netty源码
 - 工具类：学习用法
     - java.io
         - 不需要看源码的类: ObjectInputStream

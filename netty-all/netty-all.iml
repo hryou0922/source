@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/buffer/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/buffer/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/codec/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/codec/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/codec/src/test/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/common/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/common/src/main/templates" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/common/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/common/src/test/templates" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/example/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/example/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/transport/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/transport/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/transport-native-epoll/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/transport-native-epoll/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/handler/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/handler/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/handler/src/test/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/resolver/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/resolver/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/resolver/src/test/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/resolver-dns/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/resolver-dns/src/test/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/resolver-dns/src/test/resources" type="java-resource" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>
