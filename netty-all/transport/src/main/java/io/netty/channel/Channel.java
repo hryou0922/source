@@ -28,113 +28,52 @@ import java.net.SocketAddress;
 
 
 /**
- * A nexus to a network socket or a component which is capable of I/O
- * operations such as read, write, connect, and bind.
- * <p>
- * A channel provides a user:
- * <ul>
- * <li>the current state of the channel (e.g. is it open? is it connected?),</li>
- * <li>the {@linkplain ChannelConfig configuration parameters} of the channel (e.g. receive buffer size),</li>
- * <li>the I/O operations that the channel supports (e.g. read, write, connect, and bind), and</li>
- * <li>the {@link ChannelPipeline} which handles all I/O events and requests
- *     associated with the channel.</li>
- * </ul>
- *
- * <h3>All I/O operations are asynchronous.</h3>
- * <p>
- * All I/O operations in Netty are asynchronous.  It means any I/O calls will
- * return immediately with no guarantee that the requested I/O operation has
- * been completed at the end of the call.  Instead, you will be returned with
- * a {@link ChannelFuture} instance which will notify you when the requested I/O
- * operation has succeeded, failed, or canceled.
- *
- * <h3>Channels are hierarchical</h3>
- * <p>
- * A {@link Channel} can have a {@linkplain #parent() parent} depending on
- * how it was created.  For instance, a {@link SocketChannel}, that was accepted
- * by {@link ServerSocketChannel}, will return the {@link ServerSocketChannel}
- * as its parent on {@link #parent()}.
- * <p>
- * The semantics of the hierarchical structure depends on the transport
- * implementation where the {@link Channel} belongs to.  For example, you could
- * write a new {@link Channel} implementation that creates the sub-channels that
- * share one socket connection, as <a href="http://beepcore.org/">BEEP</a> and
- * <a href="http://en.wikipedia.org/wiki/Secure_Shell">SSH</a> do.
- *
- * <h3>Downcast to access transport-specific operations</h3>
- * <p>
- * Some transports exposes additional operations that is specific to the
- * transport.  Down-cast the {@link Channel} to sub-type to invoke such
- * operations.  For example, with the old I/O datagram transport, multicast
- * join / leave operations are provided by {@link DatagramChannel}.
- *
- * <h3>Release resources</h3>
- * <p>
- * It is important to call {@link #close()} or {@link #close(ChannelPromise)} to release all
- * resources once you are done with the {@link Channel}. This ensures all resources are
- * released in a proper way, i.e. filehandles.
+
+ Netty网络操作抽象类，它聚合了以下功能：
+ 1. 提供chanel当前的状态（channel打开、连接）
+ 2. channel的配置参数ChannelConfig(如接收buffer大小)
+ 3. 支持通道I/O操作，如读、写、连接和绑定
+ 4. ChannelPipeline处理所有和channel相关所有的I/O事件
+
+ 所有的I/O操作都是异步：这意味所有的I/O调用会立刻返回并且不保证I/O操作已经完成当方法返回时。建议开发者方法返回ChannelFutrue实例用于通知I/O操作的是否成功、失败或取消
+
+ Chaneels是分层次的：Channel可以有一个parent。对于SocketChannel，如果被ServerSockerChannel创建，则parent是ServerSockerChannel
+ 释放资源：调用Channel的close()释放资源
+
  */
 public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparable<Channel> {
 
-    /**
-     * Returns the globally unique identifier of this {@link Channel}.
-     */
+    // 返回全球唯一Channel id
     ChannelId id();
 
-    /**
-     * Return the {@link EventLoop} this {@link Channel} was registered to.
-     */
+    // 返回Channel注册的EventLoop
     EventLoop eventLoop();
 
-    /**
-     * Returns the parent of this channel.
-     *
-     * @return the parent channel.
-     *         {@code null} if this channel does not have a parent channel.
-     */
+    // 返回channel的parent.Channel可以有一个parent。对于SocketChannel，如果被ServerSockerChannel创建，则parent是ServerSockerChannel
     Channel parent();
 
-    /**
-     * Returns the configuration of this channel.
-     */
+    // 返回channel的配置对象
     ChannelConfig config();
 
-    /**
-     * Returns {@code true} if the {@link Channel} is open and may get active later
-     */
+    // 如果Channel打开，则返回true
     boolean isOpen();
 
-    /**
-     * Returns {@code true} if the {@link Channel} is registered with an {@link EventLoop}.
-     */
+    // 如果Channel被注册到EventLoop，则返回true
     boolean isRegistered();
 
-    /**
-     * Return {@code true} if the {@link Channel} is active and so connected.
-     */
+    // 如果Channel处于活动状态且有连接，则返回true
     boolean isActive();
 
-    /**
-     * Return the {@link ChannelMetadata} of the {@link Channel} which describe the nature of the {@link Channel}.
-     */
+    // 返回Channel上的ChannelMetadata，ChannelMetadata用于描述Channel
     ChannelMetadata metadata();
 
-    /**
-     * Returns the local address where this channel is bound to.  The returned
-     * {@link SocketAddress} is supposed to be down-cast into more concrete
-     * type such as {@link InetSocketAddress} to retrieve the detailed
-     * information.
-     *
-     * @return the local address of this channel.
-     *         {@code null} if this channel is not bound.
-     */
+    // 返回绑定在本channel上的local address（如果channel绑定，则返回null）
+    // 返回的SocketAddress可以向下转化为InetSocketAddress对象，从而获取更详细信息
     SocketAddress localAddress();
 
+    // 返回绑定在本Channel上的remote address（如果channel绑定，则返回null。）
+    // 返回的SocketAddress可以向下转化为InetSocketAddress对象，从而获取更详细信息
     /**
-     * Returns the remote address where this channel is connected to.  The
-     * returned {@link SocketAddress} is supposed to be down-cast into more
-     * concrete type such as {@link InetSocketAddress} to retrieve the detailed
-     * information.
      *
      * @return the remote address of this channel.
      *         {@code null} if this channel is not connected.
@@ -146,10 +85,8 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
      */
     SocketAddress remoteAddress();
 
-    /**
-     * Returns the {@link ChannelFuture} which will be notified when this
-     * channel is closed.  This method always returns the same future instance.
-     */
+    // 返回ChannelFuture，当channel被关闭时，此ChannelFuture会被通知
+    // This method always returns the same future instance.
     ChannelFuture closeFuture();
 
     /**
