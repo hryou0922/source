@@ -26,6 +26,7 @@
 package java.nio.channels;
 
 import java.io.Closeable;
+import java.io.IOException;
 
 
 /**

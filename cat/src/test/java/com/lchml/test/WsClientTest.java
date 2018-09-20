@@ -1,20 +1,22 @@
 package com.lchml.test;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.http.*;
-import io.netty.handler.codec.http.websocketx.*;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.FutureListener;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -25,21 +27,13 @@ import java.util.concurrent.Executors;
 public class WsClientTest {
 
     public static void main(String[] args) {
-        Executor executor = Executors.newCachedThreadPool();
-        int num = 1;
-        while(num-- > 0) {
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    staticWsclient();
-                }
-            });
-        }
+       staticWsclient();
     }
 
     private static void staticWsclient() {
+        Executor executor = Executors.newCachedThreadPool();
         EventLoopGroup group = new NioEventLoopGroup();
-        Bootstrap boot = new Bootstrap();
+        final Bootstrap boot = new Bootstrap();
         try {
             boot.option(ChannelOption.SO_KEEPALIVE, true)
                     .option(ChannelOption.TCP_NODELAY, true)
@@ -60,15 +54,22 @@ public class WsClientTest {
 
                         }
                     });
-            URI websocketURI = new URI("ws://127.0.0.1:8081/test/hello");
+        //    final URI websocketURI = new URI("ws://127.0.0.1:8081/test/hello");
+            final URI websocketURI = new URI("wss://testws.ecplive.cn:7443/");
             HttpHeaders httpHeaders = new DefaultHttpHeaders();
             //进行握手
             //   WebSocketClientHandshaker handshaker = WebSocketClientHandshakerFactory.newHandshaker(websocketURI, WebSocketVersion.V13, (String)null, true,httpHeaders);
             System.out.println("connect");
 
-            int num = 10;
+            int num = 10000;
             while(num-- > 0) {
-                a(boot, websocketURI);
+                executor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        a(boot, websocketURI);
+                    }
+                });
+
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -76,20 +77,29 @@ public class WsClientTest {
         }
     }
 
-    public static void a(Bootstrap boot,URI websocketURI) throws InterruptedException {
-        ChannelFuture channelFuture = boot.connect(websocketURI.getHost(), websocketURI.getPort()).sync();
-        channelFuture.addListener(new FutureListener<Void>() {
-            @Override
-            public void operationComplete(Future future)
-                    throws Exception {
-                if (future.isSuccess()) {
-                    System.out.println("webcat ws server started listening at {} ");
-                } else {
-                    System.out.println("webcat ws server started fail! port={}, cause={}");
+    public static void a(Bootstrap boot,URI websocketURI){
+        ChannelFuture channelFuture = null;
+        try {
+            channelFuture = boot.connect(websocketURI.getHost(), websocketURI.getPort()).sync();
+
+            channelFuture.addListener(new FutureListener<Void>() {
+                @Override
+                public void operationComplete(Future future)
+                        throws Exception {
+                    if (future.isSuccess()) {
+                        System.out.println("webcat ws server started listening at {} ");
+                    } else {
+                        System.out.println("webcat ws server started fail! port={}, cause={}");
+                    }
                 }
-            }
-        });
-        channelFuture.channel().closeFuture().sync();
+            });
+            Channel channel = channelFuture.channel();
+            channel.writeAndFlush("{'json':1}");
+            channel.closeFuture().sync();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
 
     static class WsChannelInboundHandler extends ChannelInboundHandlerAdapter{

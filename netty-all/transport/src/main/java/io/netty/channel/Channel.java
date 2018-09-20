@@ -89,17 +89,13 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
     // This method always returns the same future instance.
     ChannelFuture closeFuture();
 
-    /**
-     * Returns {@code true} if and only if the I/O thread will perform the
-     * requested write operation immediately.  Any write requests made when
-     * this method returns {@code false} are queued until the I/O thread is
-     * ready to process the queued write requests.
-     */
+    // 当且仅当I / O线程立即执行请求的写操作时，返回true。
+    // 当此方法返回false时发出的任何写入请求都会排队，直到I / O线程准备好处理排队的写入请求。
     boolean isWritable();
 
     /**
-     * Get how many bytes can be written until {@link #isWritable()} returns {@code false}.
-     * This quantity will always be non-negative. If {@link #isWritable()} is {@code false} then 0.
+     * 返回在调用isWritable()返回false，之前最多可以写入多少字节，返回值为非负数
+     * 如果isWritable()为false，此值返回0
      */
     long bytesBeforeUnwritable();
 
@@ -109,19 +105,13 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
      */
     long bytesBeforeWritable();
 
-    /**
-     * Returns an <em>internal-use-only</em> object that provides unsafe operations.
-     */
+    // 返回一个内部专用对象，用于提供unsafe操作
     Unsafe unsafe();
 
-    /**
-     * Return the assigned {@link ChannelPipeline}.
-     */
+    // 返回关联的ChannelPipeline
     ChannelPipeline pipeline();
 
-    /**
-     * Return the assigned {@link ByteBufAllocator} which will be used to allocate {@link ByteBuf}s.
-     */
+    // 返回指定的{@link ByteBufAllocator}，用于分配ByteBuf。
     ByteBufAllocator alloc();
 
     @Override
@@ -131,9 +121,9 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
     Channel flush();
 
     /**
-     * <em>Unsafe</em> operations that should <em>never</em> be called from user-code. These methods
-     * are only provided to implement the actual transport, and must be invoked from an I/O thread except for the
-     * following methods:
+     * Unsafe操作不允许被用户的代码调用.
+     * 这些方法只用于实现实际的transport,必须被IO线程调用.
+     * 以下方法是例外
      * <ul>
      *   <li>{@link #localAddress()}</li>
      *   <li>{@link #remoteAddress()}</li>
@@ -145,34 +135,23 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
      */
     interface Unsafe {
 
-        /**
-         * Return the assigned {@link RecvByteBufAllocator.Handle} which will be used to allocate {@link ByteBuf}'s when
-         * receiving data.
-         */
+        // 返回指定的RecvByteBufAllocator.Handle,用于分配接收数据的ByteBuf
         RecvByteBufAllocator.Handle recvBufAllocHandle();
 
-        /**
-         * Return the {@link SocketAddress} to which is bound local or
-         * {@code null} if none.
-         */
+        // 返回本地的SocketAddress,如果没有则为null
         SocketAddress localAddress();
 
-        /**
-         * Return the {@link SocketAddress} to which is bound remote or
-         * {@code null} if none is bound yet.
-         */
+        // 返回远端的SocketAddress,如果没有则为null
         SocketAddress remoteAddress();
 
-        /**
-         * Register the {@link Channel} of the {@link ChannelPromise} and notify
-         * the {@link ChannelFuture} once the registration was complete.
-         */
+        // 注册ChannelPromise上的Channel，并在注册完成后通知ChannelFuture。
         void register(EventLoop eventLoop, ChannelPromise promise);
 
         /**
          * Bind the {@link SocketAddress} to the {@link Channel} of the {@link ChannelPromise} and notify
          * it once its done.
          */
+        // 绑定SocketAddress到ChannelPromise的Channel上，完成后并通知它
         void bind(SocketAddress localAddress, ChannelPromise promise);
 
         /**
@@ -184,39 +163,26 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
          */
         void connect(SocketAddress remoteAddress, SocketAddress localAddress, ChannelPromise promise);
 
-        /**
-         * Disconnect the {@link Channel} of the {@link ChannelFuture} and notify the {@link ChannelPromise} once the
-         * operation was complete.
-         */
+        // 断开ChannelPromise的Channel,当完成后需要通知ChannelPromise
         void disconnect(ChannelPromise promise);
 
-        /**
-         * Close the {@link Channel} of the {@link ChannelPromise} and notify the {@link ChannelPromise} once the
-         * operation was complete.
-         */
+        // 关闭ChannelPromise的Channel,当完成后通知ChannelPromise
         void close(ChannelPromise promise);
 
-        /**
-         * Closes the {@link Channel} immediately without firing any events.  Probably only useful
-         * when registration attempt failed.
-         */
+        // 立即关闭Channel,并且不触发任务事件.可能只在注册失败有用
         void closeForcibly();
 
-        /**
-         * Deregister the {@link Channel} of the {@link ChannelPromise} from {@link EventLoop} and notify the
-         * {@link ChannelPromise} once the operation was complete.
-         */
+        // 将ChannelPromise上的Channel从EventLoop上反注册,当完成后,通知ChannelPromise
         void deregister(ChannelPromise promise);
 
         /**
          * Schedules a read operation that fills the inbound buffer of the first {@link ChannelInboundHandler} in the
          * {@link ChannelPipeline}.  If there's already a pending read operation, this method does nothing.
          */
+        // 安排ChannelPipeline里的第一个ChannelInboundHandler填
         void beginRead();
 
-        /**
-         * Schedules a write operation.
-         */
+        // 安排写操作
         void write(Object msg, ChannelPromise promise);
 
         /**
