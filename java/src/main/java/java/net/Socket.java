@@ -25,6 +25,7 @@
 
 package java.net;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.SocketChannel;
@@ -33,20 +34,16 @@ import java.security.PrivilegedExceptionAction;
 import java.security.PrivilegedAction;
 
 /**
- * This class implements client sockets (also called just
- * "sockets"). A socket is an endpoint for communication
- * between two machines.
+ * 此类实现客户端套接字，实现两台服务器通信
+ *
+ * 套接字实际的工作由SocketImpl的实例实现
+ *
  * <p>
- * The actual work of the socket is performed by an instance of the
- * {@code SocketImpl} class. An application, by changing
+ * An application, by changing
  * the socket factory that creates the socket implementation,
  * can configure itself to create sockets appropriate to the local
  * firewall.
  *
- * @author  unascribed
- * @see     Socket#setSocketImplFactory(SocketImplFactory)
- * @see     SocketImpl
- * @see     SocketChannel
  * @since   JDK1.0
  */
 public
@@ -62,19 +59,14 @@ class Socket implements java.io.Closeable {
     private boolean shutIn = false;
     private boolean shutOut = false;
 
-    /**
-     * The implementation of this Socket.
-     */
+    // 此Socket的实现类
     SocketImpl impl;
 
-    /**
-     * Are we using an older SocketImpl?
-     */
+    // 是否使用旧的SocketImpl实现
     private boolean oldImpl = false;
 
     /**
-     * Creates an unconnected socket, with the
-     * system-default type of SocketImpl.
+     * 使用系统默认的SocketImpl类型创建未连接的socket
      *
      * @since   JDK1.1
      * @revised 1.4
@@ -357,7 +349,7 @@ class Socket implements java.io.Closeable {
      * @param      port     the port number.
      * @param      stream   a {@code boolean} indicating whether this is
      *                      a stream socket or a datagram socket.
-     * @exception  IOException  if an I/O error occurs when creating the socket.
+     * @exception IOException  if an I/O error occurs when creating the socket.
      * @exception  SecurityException  if a security manager exists and its
      *             {@code checkConnect} method doesn't allow the operation.
      * @exception  IllegalArgumentException if the port parameter is outside

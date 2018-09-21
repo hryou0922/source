@@ -22,7 +22,7 @@ import io.netty.channel.ChannelPromise;
 import java.net.Socket;
 
 /**
- * A duplex {@link Channel} that has two sides that can be shutdown independently.
+ * 双工Channel: that has two sides that can be shutdown independently.
  */
 public interface DuplexChannel extends Channel {
     /**

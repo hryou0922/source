@@ -23,7 +23,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * A {@link ThreadFactory} implementation with a simple naming rule.
+ * 默认ThreadFactory实现，使用简单的命令规则
  */
 public class DefaultThreadFactory implements ThreadFactory {
 
@@ -63,6 +63,7 @@ public class DefaultThreadFactory implements ThreadFactory {
         this(toPoolName(poolType), daemon, priority);
     }
 
+    // 返回poolType的class简单名称
     public static String toPoolName(Class<?> poolType) {
         if (poolType == null) {
             throw new NullPointerException("poolType");

@@ -16,47 +16,38 @@
 package io.netty.util.concurrent;
 
 /**
- * Special {@link Future} which is writable.
+ * 特殊的Future，支持writable
  */
 public interface Promise<V> extends Future<V> {
 
     /**
-     * Marks this future as a success and notifies all
-     * listeners.
-     *
-     * If it is success or failed already it will throw an {@link IllegalStateException}.
+     * 标记futrue成功并且通知所有的监听者
+     * 如果future已经被标记成功或失败，则会抛出异常IllegalStateException
      */
     Promise<V> setSuccess(V result);
 
     /**
-     * Marks this future as a success and notifies all
-     * listeners.
-     *
-     * @return {@code true} if and only if successfully marked this future as
-     *         a success. Otherwise {@code false} because this future is
-     *         already marked as either a success or a failure.
+     * 标记futrue成功并且通知所有的监听者
+     * 有且只能标记此future为成功，才返回true。其它返回false: 包括futrue已经标记过了（失败或成功）
      */
     boolean trySuccess(V result);
 
     /**
-     * Marks this future as a failure and notifies all
-     * listeners.
-     *
-     * If it is success or failed already it will throw an {@link IllegalStateException}.
+     * 标记futrue失败并且通知所有的监听者
+     * 如果future已经被标记成功或失败，则会抛出异常IllegalStateException
      */
     Promise<V> setFailure(Throwable cause);
 
     /**
-     * Marks this future as a failure and notifies all
-     * listeners.
-     *
-     * @return {@code true} if and only if successfully marked this future as
-     *         a failure. Otherwise {@code false} because this future is
-     *         already marked as either a success or a failure.
+     * 标记futrue失败并且通知所有的监听者
+     * 有且只能标记此future为失败，才返回true。其它返回false: 包括futrue已经标记过了（失败或成功）
      */
     boolean tryFailure(Throwable cause);
 
     /**
+     * 标记此future无法被取消
+     * 如果此future成功被标记无法被取消或已经被标记为无法被取消，则返回true
+     * 如果此future已经被取消，则返回false
      * Make this future impossible to cancel.
      *
      * @return {@code true} if and only if successfully marked this future as uncancellable or it is already done
