@@ -25,7 +25,7 @@
 package java.net;
 
 /**
- * Constants used by the SOCKS protocol implementation.
+ * SOCKS 协议 使用的常量
  */
 
 interface SocksConsts {

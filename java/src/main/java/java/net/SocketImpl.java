@@ -25,14 +25,14 @@
 
 package java.net;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.FileDescriptor;
 
 /**
- * The abstract class {@code SocketImpl} is a common superclass
- * of all classes that actually implement sockets. It is used to
- * create both client and server sockets.
+ * 抽象类：它是所有真正实现sockets的类的父类，它可以用于创建客户端和服务端的sockets
+ *
  * <p>
  * A "plain" socket implements these methods exactly as
  * described, without attempting to go through a firewall or proxy.
@@ -42,7 +42,7 @@ import java.io.FileDescriptor;
  */
 public abstract class SocketImpl implements SocketOptions {
     /**
-     * The actual Socket object.
+     * 真正的Socket对象.
      */
     Socket socket = null;
     ServerSocket serverSocket = null;

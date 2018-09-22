@@ -24,13 +24,14 @@
  */
 package java.net;
 
+import sun.net.idn.Punycode;
+import sun.net.idn.StringPrep;
+import sun.text.normalizer.UCharacterIterator;
+
+import java.io.IOException;
 import java.io.InputStream;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-
-import sun.net.idn.StringPrep;
-import sun.net.idn.Punycode;
-import sun.text.normalizer.UCharacterIterator;
 
 /**
  * Provides methods to convert internationalized domain names (IDNs) between

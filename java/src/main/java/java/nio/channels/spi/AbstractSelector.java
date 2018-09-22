@@ -25,6 +25,7 @@
 
 package java.nio.channels.spi;
 
+import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.HashSet;

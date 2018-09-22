@@ -27,12 +27,11 @@ package java.net;
 
 /**
  *
- * This class represents a Socket Address with no protocol attachment.
- * As an abstract class, it is meant to be subclassed with a specific,
- * protocol dependent, implementation.
- * <p>
- * It provides an immutable object used by sockets for binding, connecting, or
- * as returned values.
+ * 此类表示没有协议附件的套接字地址
+ * 此类是抽象类，子类需要根据指定的协议进行实现
+ *
+ * 此类提供一个可变的对象被 sockets 用于绑定、连接或返回值
+ *
  *
  * @see Socket
  * @see ServerSocket

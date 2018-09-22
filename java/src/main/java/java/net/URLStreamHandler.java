@@ -27,6 +27,8 @@ package java.net;
 
 import sun.net.util.IPAddressUtil;
 
+import java.io.IOException;
+
 /**
  * The abstract class {@code URLStreamHandler} is the common
  * superclass for all stream protocol handlers. A stream protocol

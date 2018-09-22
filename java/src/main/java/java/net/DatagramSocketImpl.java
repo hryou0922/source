@@ -26,6 +26,7 @@
 package java.net;
 
 import java.io.FileDescriptor;
+import java.io.IOException;
 
 /**
  * Abstract datagram and multicast socket implementation base class.

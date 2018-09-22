@@ -25,6 +25,8 @@
 
 package java.nio.file.attribute;
 
+import java.io.IOException;
+
 /**
  * Checked exception thrown when a lookup of {@link UserPrincipal} fails because
  * the principal does not exist.

@@ -25,6 +25,8 @@
 
 package java.nio.file;
 
+import java.io.IOException;
+
 /**
  * An object that may be registered with a watch service so that it can be
  * <em>watched</em> for changes and events.

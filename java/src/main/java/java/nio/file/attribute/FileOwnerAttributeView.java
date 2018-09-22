@@ -25,6 +25,8 @@
 
 package java.nio.file.attribute;
 
+import java.io.IOException;
+
 /**
  * A file attribute view that supports reading or updating the owner of a file.
  * This file attribute view is intended for file system implementations that

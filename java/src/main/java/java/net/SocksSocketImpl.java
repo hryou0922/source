@@ -23,6 +23,7 @@
  * questions.
  */
 package java.net;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.BufferedOutputStream;
@@ -34,9 +35,8 @@ import sun.net.www.ParseUtil;
 /* import org.ietf.jgss.*; */
 
 /**
- * SOCKS (V4 & V5) TCP socket implementation (RFC 1928).
- * This is a subclass of PlainSocketImpl.
- * Note this class should <b>NOT</b> be public.
+ * SOCKS(V4 & V5 ) TCP 套接字实现(1928)
+ * 它是PlainSocketImpl的子类
  */
 
 class SocksSocketImpl extends PlainSocketImpl implements SocksConsts {

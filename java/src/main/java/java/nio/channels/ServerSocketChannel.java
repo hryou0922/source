@@ -25,6 +25,7 @@
 
 package java.nio.channels;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.SocketOption;
 import java.net.SocketAddress;

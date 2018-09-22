@@ -76,12 +76,10 @@ class Socket implements java.io.Closeable {
     }
 
     /**
-     * Creates an unconnected socket, specifying the type of proxy, if any,
-     * that should be used regardless of any other settings.
-     * <P>
-     * If there is a security manager, its {@code checkConnect} method
-     * is called with the proxy host address and port number
-     * as its arguments. This could result in a SecurityException.
+     * 根据指定代理的类型，创建一个未连接的套接字
+     *
+     * 如果有security manager，则会调用checkConnect方法去对代理的host的地址和端口进行，可能会抛出SecurityException
+     *
      * <P>
      * Examples:
      * <UL> <LI>{@code Socket s = new Socket(Proxy.NO_PROXY);} will create
@@ -111,12 +109,15 @@ class Socket implements java.io.Closeable {
         Proxy p = proxy == Proxy.NO_PROXY ? Proxy.NO_PROXY
                                           : sun.net.ApplicationProxy.create(proxy);
         Proxy.Type type = p.type();
+        // 如果类型是http或socks
         if (type == Proxy.Type.SOCKS || type == Proxy.Type.HTTP) {
             SecurityManager security = System.getSecurityManager();
             InetSocketAddress epoint = (InetSocketAddress) p.address();
             if (epoint.getAddress() != null) {
+                // 检查IP地址是否是IP4或IP5
                 checkAddress (epoint.getAddress(), "Socket");
             }
+            // 检查host和端口是否可用
             if (security != null) {
                 if (epoint.isUnresolved())
                     epoint = new InetSocketAddress(epoint.getHostName(), epoint.getPort());
@@ -142,6 +143,7 @@ class Socket implements java.io.Closeable {
     }
 
     /**
+     * 使用用户指定的SocketImpl
      * Creates an unconnected Socket with a user-specified
      * SocketImpl.
      * <P>

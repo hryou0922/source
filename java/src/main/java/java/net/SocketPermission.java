@@ -25,6 +25,7 @@
 
 package java.net;
 
+import java.io.*;
 import java.util.Enumeration;
 import java.util.Vector;
 import java.util.List;
@@ -35,10 +36,6 @@ import java.security.Permission;
 import java.security.PermissionCollection;
 import java.security.PrivilegedAction;
 import java.security.AccessController;
-import java.io.Serializable;
-import java.io.ObjectStreamField;
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
 
 import sun.net.util.IPAddressUtil;
 import sun.net.RegisteredDomain;

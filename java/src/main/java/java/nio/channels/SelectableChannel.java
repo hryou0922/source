@@ -25,6 +25,7 @@
 
 package java.nio.channels;
 
+import java.io.IOException;
 import java.nio.channels.spi.AbstractInterruptibleChannel;
 import java.nio.channels.spi.SelectorProvider;
 

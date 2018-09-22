@@ -25,6 +25,7 @@
 
 package java.nio.file;
 
+import java.io.IOException;
 import java.util.Set;
 import java.util.EnumSet;
 import java.security.SecureRandom;

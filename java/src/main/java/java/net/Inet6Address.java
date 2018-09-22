@@ -25,11 +25,9 @@
 
 package java.net;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamField;
-import java.util.Enumeration;
+import java.io.*;
 import java.util.Arrays;
+import java.util.Enumeration;
 
 /**
  * This class represents an Internet Protocol version 6 (IPv6) address.

@@ -25,6 +25,7 @@
 
 package java.net;
 
+import java.io.IOException;
 import java.util.jar.JarFile;
 import java.util.jar.JarEntry;
 import java.util.jar.Attributes;

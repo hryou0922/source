@@ -25,16 +25,7 @@
 
 package java.nio.file;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.Closeable;
-import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.Writer;
+import java.io.*;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;

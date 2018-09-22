@@ -25,6 +25,8 @@
 
 package java.net;
 
+import java.io.IOException;
+
 /**
  * Thrown to indicate that there is an error in the underlying
  * protocol, such as a TCP error.

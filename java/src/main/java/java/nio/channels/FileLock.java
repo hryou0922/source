@@ -25,6 +25,8 @@
 
 package java.nio.channels;
 
+import java.io.IOException;
+
 /**
  * A token representing a lock on a region of a file.
  *

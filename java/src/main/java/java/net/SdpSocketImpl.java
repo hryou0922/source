@@ -27,6 +27,8 @@ package java.net;
 
 import sun.net.sdp.SdpSupport;
 
+import java.io.IOException;
+
 /**
  * SocketImpl that supports the SDP protocol
  */

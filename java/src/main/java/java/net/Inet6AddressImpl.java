@@ -35,6 +35,8 @@ package java.net;
  * @since 1.4
  */
 
+import java.io.IOException;
+
 class Inet6AddressImpl implements InetAddressImpl {
     public native String getLocalHostName() throws UnknownHostException;
     public native InetAddress[]

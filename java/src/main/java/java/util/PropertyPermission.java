@@ -25,11 +25,8 @@
 
 package java.util;
 
-import java.io.Serializable;
+import java.io.*;
 import java.security.*;
-import java.io.ObjectStreamField;
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
 
 import sun.security.util.SecurityConstants;
 

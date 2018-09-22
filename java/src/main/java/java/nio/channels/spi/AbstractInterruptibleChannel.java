@@ -28,6 +28,7 @@
 
 package java.nio.channels.spi;
 
+import java.io.IOException;
 import java.nio.channels.*;
 
 import sun.nio.ch.Interruptible;
@@ -125,7 +126,7 @@ public abstract class AbstractInterruptibleChannel
      * immediately, either by throwing an exception or by returning normally.
      * </p>
      *
-     * @throws  IOException
+     * @throws IOException
      *          If an I/O error occurs while closing the channel
      */
     protected abstract void implCloseChannel() throws IOException;

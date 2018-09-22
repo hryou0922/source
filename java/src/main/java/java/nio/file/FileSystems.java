@@ -25,6 +25,7 @@
 
 package java.nio.file;
 
+import java.io.IOException;
 import java.nio.file.spi.FileSystemProvider;
 import java.net.URI;
 import java.security.AccessController;

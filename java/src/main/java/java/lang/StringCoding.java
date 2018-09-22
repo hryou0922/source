@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;

@@ -25,6 +25,7 @@
 
 package java.nio.file.spi;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 /**

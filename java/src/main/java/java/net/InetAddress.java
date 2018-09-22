@@ -25,6 +25,7 @@
 
 package java.net;
 
+import java.io.*;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Iterator;
@@ -33,10 +34,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.ServiceLoader;
 import java.security.AccessController;
-import java.io.ObjectStreamField;
-import java.io.ObjectInputStream;
 import java.io.ObjectInputStream.GetField;
-import java.io.ObjectOutputStream;
 import java.io.ObjectOutputStream.PutField;
 import sun.security.action.*;
 import sun.net.InetAddressCachePolicy;

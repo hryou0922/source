@@ -25,13 +25,8 @@
 
 package java.net;
 
-import java.util.List;
-import java.util.StringTokenizer;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.text.SimpleDateFormat;
-import java.util.TimeZone;
-import java.util.Locale;
-import java.util.Objects;
 
 /**
  * An HttpCookie object represents an HTTP cookie, which carries state

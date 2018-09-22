@@ -25,6 +25,8 @@
 
 package java.nio.file;
 
+import java.io.IOException;
+import java.io.InvalidObjectException;
 import java.util.ConcurrentModificationException;
 import java.util.Objects;
 import java.io.ObjectInputStream;
@@ -70,7 +72,7 @@ public final class DirectoryIteratorException
     /**
      * Called to read the object from a stream.
      *
-     * @throws  InvalidObjectException
+     * @throws InvalidObjectException
      *          if the object is invalid or has a cause that is not
      *          an {@code IOException}
      */

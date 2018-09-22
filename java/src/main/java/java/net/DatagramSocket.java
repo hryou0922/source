@@ -25,6 +25,7 @@
 
 package java.net;
 
+import java.io.IOException;
 import java.nio.channels.DatagramChannel;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
@@ -650,7 +651,7 @@ class DatagramSocket implements java.io.Closeable {
      * @revised 1.4
      * @spec JSR-51
      */
-    public void send(DatagramPacket p) throws IOException  {
+    public void send(DatagramPacket p) throws IOException {
         InetAddress packetAddress = null;
         synchronized (p) {
             if (isClosed())

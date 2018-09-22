@@ -25,6 +25,7 @@
 
 package java.nio.channels;
 
+import java.io.IOException;
 import java.nio.channels.spi.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Future;

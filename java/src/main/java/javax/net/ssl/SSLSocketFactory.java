@@ -26,6 +26,7 @@
 
 package javax.net.ssl;
 
+import java.io.IOException;
 import java.net.*;
 import javax.net.SocketFactory;
 import java.io.InputStream;

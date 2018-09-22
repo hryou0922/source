@@ -24,23 +24,15 @@
  */
 package java.net;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamField;
+import java.io.*;
 
 /**
+ * 本类实现了 IP Socket Address ( (IP address + port number) 或(hostname + port number))
+ * 当使用hostname时，会尝试解析hostname。如果解析失败，会说unresolved。但是有些环境下，向通过代理连接，会依然被使用
  *
- * This class implements an IP Socket Address (IP address + port number)
- * It can also be a pair (hostname + port number), in which case an attempt
- * will be made to resolve the hostname. If resolution fails then the address
- * is said to be <I>unresolved</I> but can still be used on some circumstances
- * like connecting through a proxy.
- * <p>
- * It provides an immutable object used by sockets for binding, connecting, or
- * as returned values.
- * <p>
- * The <i>wildcard</i> is a special local IP address. It usually means "any"
- * and can only be used for {@code bind} operations.
+ * 此类为不可变类
+ *
+ * 通配符 是一个特殊的本地IP地址。 它通常意味着“任何”地址，并且只能用于bind操作。
  *
  * @see Socket
  * @see ServerSocket
@@ -50,6 +42,7 @@ public class InetSocketAddress
     extends SocketAddress
 {
     // Private implementation class pointed to by all public methods.
+    // 私有实现类
     private static class InetSocketAddressHolder {
         // The hostname of the Socket Address
         private String hostname;
@@ -147,32 +140,16 @@ public class InetSocketAddress
         return hostname;
     }
 
-    /**
-     * Creates a socket address where the IP address is the wildcard address
-     * and the port number a specified value.
-     * <p>
-     * A valid port value is between 0 and 65535.
-     * A port number of {@code zero} will let the system pick up an
-     * ephemeral port in a {@code bind} operation.
-     * <p>
-     * @param   port    The port number
-     * @throws IllegalArgumentException if the port parameter is outside the specified
-     * range of valid port values.
-     */
-    public InetSocketAddress(int port) {
-        this(InetAddress.anyLocalAddress(), port);
-    }
+
 
     /**
+     * 根据IP地址和端口创建一个套接字
      *
-     * Creates a socket address from an IP address and a port number.
-     * <p>
-     * A valid port value is between 0 and 65535.
-     * A port number of {@code zero} will let the system pick up an
-     * ephemeral port in a {@code bind} operation.
-     * <P>
-     * A {@code null} address will assign the <i>wildcard</i> address.
-     * <p>
+     * 合法的端口从0到65535
+     * 但是当设置端口为0时，则系统在bind操作会从空闲的端口中选择一个临时端口进行绑定
+     *
+     * 当addr设置为null时，系统会设置此值为通配符地址（如 0.0.0.0 或 ::0）
+     *
      * @param   addr    The IP address
      * @param   port    The port number
      * @throws IllegalArgumentException if the port parameter is outside the specified
@@ -181,39 +158,21 @@ public class InetSocketAddress
     public InetSocketAddress(InetAddress addr, int port) {
         holder = new InetSocketAddressHolder(
                         null,
-                        addr == null ? InetAddress.anyLocalAddress() : addr,
-                        checkPort(port));
+                        addr == null ? InetAddress.anyLocalAddress() : addr, // 如果IP为null，则会选择一个通配符地址
+                        checkPort(port)); // 检查端
     }
 
-    /**
-     *
-     * Creates a socket address from a hostname and a port number.
-     * <p>
-     * An attempt will be made to resolve the hostname into an InetAddress.
-     * If that attempt fails, the address will be flagged as <I>unresolved</I>.
-     * <p>
-     * If there is a security manager, its {@code checkConnect} method
-     * is called with the host name as its argument to check the permission
-     * to resolve it. This could result in a SecurityException.
-     * <P>
-     * A valid port value is between 0 and 65535.
-     * A port number of {@code zero} will let the system pick up an
-     * ephemeral port in a {@code bind} operation.
-     * <P>
-     * @param   hostname the Host name
-     * @param   port    The port number
-     * @throws IllegalArgumentException if the port parameter is outside the range
-     * of valid port values, or if the hostname parameter is <TT>null</TT>.
-     * @throws SecurityException if a security manager is present and
-     *                           permission to resolve the host name is
-     *                           denied.
-     * @see     #isUnresolved()
-     */
+    public InetSocketAddress(int port) {
+        this(InetAddress.anyLocalAddress(), port);
+    }
+
     public InetSocketAddress(String hostname, int port) {
         checkHost(hostname);
         InetAddress addr = null;
         String host = null;
         try {
+            // An attempt will be made to resolve the hostname into an InetAddress.
+            // If that attempt fails, the address will be flagged as <I>unresolved</I>.
             addr = InetAddress.getByName(hostname);
         } catch(UnknownHostException e) {
             host = hostname;
@@ -227,24 +186,8 @@ public class InetSocketAddress
     }
 
     /**
+     * 从主机名和端口号创建未解析的套接字地址。
      *
-     * Creates an unresolved socket address from a hostname and a port number.
-     * <p>
-     * No attempt will be made to resolve the hostname into an InetAddress.
-     * The address will be flagged as <I>unresolved</I>.
-     * <p>
-     * A valid port value is between 0 and 65535.
-     * A port number of {@code zero} will let the system pick up an
-     * ephemeral port in a {@code bind} operation.
-     * <P>
-     * @param   host    the Host name
-     * @param   port    The port number
-     * @throws IllegalArgumentException if the port parameter is outside
-     *                  the range of valid port values, or if the hostname
-     *                  parameter is <TT>null</TT>.
-     * @see     #isUnresolved()
-     * @return  a {@code InetSocketAddress} representing the unresolved
-     *          socket address
      * @since 1.5
      */
     public static InetSocketAddress createUnresolved(String host, int port) {
@@ -312,21 +255,12 @@ public class InetSocketAddress
         }
     }
 
-    /**
-     * Gets the port number.
-     *
-     * @return the port number.
-     */
+    // 返回端口
     public final int getPort() {
         return holder.getPort();
     }
 
-    /**
-     *
-     * Gets the {@code InetAddress}.
-     *
-     * @return the InetAdress or {@code null} if it is unresolved.
-     */
+    // 返回InetAddress，如果host无法被解析，则返回null
     public final InetAddress getAddress() {
         return holder.getAddress();
     }

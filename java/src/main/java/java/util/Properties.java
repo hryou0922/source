@@ -25,14 +25,7 @@
 
 package java.util;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.Writer;
-import java.io.OutputStreamWriter;
-import java.io.BufferedWriter;
+import java.io.*;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 

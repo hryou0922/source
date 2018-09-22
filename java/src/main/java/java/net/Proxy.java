@@ -26,9 +26,8 @@
 package java.net;
 
 /**
- * This class represents a proxy setting, typically a type (http, socks) and
- * a socket address.
- * A {@code Proxy} is an immutable object.
+ * 此类表示proxy的设置，通常是代理类型(http,socks)和socket的地址
+ * Proxy是不可变对象
  *
  * @see     ProxySelector
  * @author Yingxian Wang
@@ -38,37 +37,23 @@ package java.net;
 public class Proxy {
 
     /**
-     * Represents the proxy type.
+     * 表示代理类型.
      *
      * @since 1.5
      */
     public enum Type {
-        /**
-         * Represents a direct connection, or the absence of a proxy.
-         */
+        // 表示直接连接或没有代理。
         DIRECT,
-        /**
-         * Represents proxy for high level protocols such as HTTP or FTP.
-         */
+        // 表示高级协议的代理，如果http, ftp
         HTTP,
-        /**
-         * Represents a SOCKS (V4 or V5) proxy.
-         */
+        // 表示socks(v4或v5)代理
         SOCKS
     };
 
     private Type type;
     private SocketAddress sa;
 
-    /**
-     * A proxy setting that represents a {@code DIRECT} connection,
-     * basically telling the protocol handler not to use any proxying.
-     * Used, for instance, to create sockets bypassing any other global
-     * proxy settings (like SOCKS):
-     * <P>
-     * {@code Socket s = new Socket(Proxy.NO_PROXY);}
-     *
-     */
+    // 代理配置表示一个DIRECT连接，不使用任何代理
     public final static Proxy NO_PROXY = new Proxy();
 
     // Creates the proxy that represents a {@code DIRECT} connection.

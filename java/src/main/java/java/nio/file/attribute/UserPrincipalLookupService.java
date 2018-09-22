@@ -25,6 +25,8 @@
 
 package java.nio.file.attribute;
 
+import java.io.IOException;
+
 /**
  * An object to lookup user and group principals by name. A {@link UserPrincipal}
  * represents an identity that may be used to determine access rights to objects

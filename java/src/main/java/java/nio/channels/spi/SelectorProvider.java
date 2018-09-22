@@ -25,6 +25,7 @@
 
 package java.nio.channels.spi;
 
+import java.io.IOException;
 import java.net.ProtocolFamily;
 import java.nio.channels.*;
 import java.security.AccessController;
