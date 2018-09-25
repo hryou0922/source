@@ -16,33 +16,28 @@
 package io.netty.util;
 
 /**
- * A reference-counted object that requires explicit deallocation.
- * <p>
- * When a new {@link ReferenceCounted} is instantiated, it starts with the reference count of {@code 1}.
- * {@link #retain()} increases the reference count, and {@link #release()} decreases the reference count.
- * If the reference count is decreased to {@code 0}, the object will be deallocated explicitly, and accessing
- * the deallocated object will usually result in an access violation.
- * </p>
+ * 需要显式释放的引用计数对象(A reference-counted object that requires explicit deallocation.)。
+ *
+ * 当实例化新的ReferenceCounted时，它引用计数以1开始。调用{@link #retain()}增加引用计数;{@link #release()}减少引用计数;
+ * 如果引用计数减少到0，则将显式释放该对象，并且访问解除分配的对象通常会导致访问冲突
+ *
+ * 如果一个实现{@link ReferenceCounted}的对象，是个包含{@link ReferenceCounted}对象的容器，
+ * 当容器的引用计数变为0时，包含的对象也将通过{@link #release（）}释放
  * <p>
  * If an object that implements {@link ReferenceCounted} is a container of other objects that implement
  * {@link ReferenceCounted}, the contained objects will also be released via {@link #release()} when the container's
  * reference count becomes 0.
  * </p>
+ *
  */
 public interface ReferenceCounted {
-    /**
-     * Returns the reference count of this object.  If {@code 0}, it means this object has been deallocated.
-     */
+    // 返回这个对象的引用计数。如值为0，表示此对象已经被释放
     int refCnt();
 
-    /**
-     * Increases the reference count by {@code 1}.
-     */
+    // 对象的引用计数加1
     ReferenceCounted retain();
 
-    /**
-     * Increases the reference count by the specified {@code increment}.
-     */
+    // 对象的引用计数增加指定的值
     ReferenceCounted retain(int increment);
 
     /**
@@ -59,19 +54,11 @@ public interface ReferenceCounted {
      */
     ReferenceCounted touch(Object hint);
 
-    /**
-     * Decreases the reference count by {@code 1} and deallocates this object if the reference count reaches at
-     * {@code 0}.
-     *
-     * @return {@code true} if and only if the reference count became {@code 0} and this object has been deallocated
-     */
+    // 引用计数减1，如果引用计数变为0，则释放此对象
+    // 只有当且当引用计数变为0且释放此对象，此时返回true
     boolean release();
 
-    /**
-     * Decreases the reference count by the specified {@code decrement} and deallocates this object if the reference
-     * count reaches at {@code 0}.
-     *
-     * @return {@code true} if and only if the reference count became {@code 0} and this object has been deallocated
-     */
+    // 引用计数减少指定值，如果引用计数变为0，则释放此对象
+    // 只有当且当引用计数变为0且释放此对象，此时返回true
     boolean release(int decrement);
 }
