@@ -16,36 +16,25 @@
 package io.netty.util;
 
 /**
- * An attribute which allows to store a value reference. It may be updated atomically and so is thread-safe.
+ * 一个attribute，存在一个值引用。它可以被原子更新且线程安全
  *
  * @param <T>   the type of the value it holds.
  */
 public interface Attribute<T> {
 
-    /**
-     * Returns the key of this attribute.
-     */
+    // 返回attribute的key值
     AttributeKey<T> key();
 
-    /**
-     * Returns the current value, which may be {@code null}
-     */
+    // 返回当前的attribute值
     T get();
 
-    /**
-     * Sets the value
-     */
+    // 设置值
     void set(T value);
 
-    /**
-     *  Atomically sets to the given value and returns the old value which may be {@code null} if non was set before.
-     */
+    // 原子设置值，返回旧的值
     T getAndSet(T value);
 
-    /**
-     *  Atomically sets to the given value if this {@link Attribute}'s value is {@code null}.
-     *  If it was not possible to set the value as it contains a value it will just return the current value.
-     */
+    // 原子设置给定的值。如果值非空，则设置失败并返回当前的值
     T setIfAbsent(T value);
 
     /**
