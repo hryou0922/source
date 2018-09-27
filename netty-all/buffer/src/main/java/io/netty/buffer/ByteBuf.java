@@ -248,16 +248,12 @@ import java.nio.charset.UnsupportedCharsetException;
 @SuppressWarnings("ClassMayBeInterface")
 public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
 
-    /**
-     * Returns the number of bytes (octets) this buffer can contain.
-     */
+    // 返回容量的大小
     public abstract int capacity();
 
     /**
-     * Adjusts the capacity of this buffer.  If the {@code newCapacity} is less than the current
-     * capacity, the content of this buffer is truncated.  If the {@code newCapacity} is greater
-     * than the current capacity, the buffer is appended with unspecified data whose length is
-     * {@code (newCapacity - currentCapacity)}.
+     * 调整buffer的容量,如果newCapacity < 当前capacity,则buffer的内容被截断.
+     * 如果 newCapacity >　当前capacity, 缓冲区附加了未指定的数据，其长度为(newCapacity - currentCapacity）。
      */
     public abstract ByteBuf capacity(int newCapacity);
 
@@ -269,9 +265,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      */
     public abstract int maxCapacity();
 
-    /**
-     * Returns the {@link ByteBufAllocator} which created this buffer.
-     */
+    // 返回创建此buffer的{@link ByteBufAllocator}
     public abstract ByteBufAllocator alloc();
 
     /**
@@ -298,209 +292,91 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     @Deprecated
     public abstract ByteBuf order(ByteOrder endianness);
 
-    /**
-     * Return the underlying buffer instance if this buffer is a wrapper of another buffer.
-     *
-     * @return {@code null} if this buffer is not a wrapper
-     */
+    // 如果此缓冲区是另一个缓冲区的包装，则返回底层缓冲区实例。如果此缓存区不是wrapper,则返回null
     public abstract ByteBuf unwrap();
 
-    /**
-     * Returns {@code true} if and only if this buffer is backed by an
-     * NIO direct buffer.
-     */
+    // 当且仅当此缓冲区由NIO直接缓冲区支持时，才返回{@code true}。
     public abstract boolean isDirect();
 
-    /**
-     * Returns {@code true} if and only if this buffer is read-only.
-     */
+    // 当且仅当此buffer为只读,则返回true
     public abstract boolean isReadOnly();
 
-    /**
-     * Returns a read-only version of this buffer.
-     */
+    // 返回此buffer的只读版本
     public abstract ByteBuf asReadOnly();
 
-    /**
-     * Returns the {@code readerIndex} of this buffer.
-     */
+    // ====================索引操作相关：读写索引、mark或rest相关================================
+    // 返回此buffer的readerIndex值
     public abstract int readerIndex();
-
-    /**
-     * Sets the {@code readerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code readerIndex} is
-     *            less than {@code 0} or
-     *            greater than {@code this.writerIndex}
-     */
+    // 设置此的buffer的readerIndex。如果readerIndex < 0 或 readerIndex > this.writerIndex，抛出 IndexOutOfBoundsException
     public abstract ByteBuf readerIndex(int readerIndex);
 
-    /**
-     * Returns the {@code writerIndex} of this buffer.
-     */
+    // 返回此buffer的writerIndex
     public abstract int writerIndex();
-
-    /**
-     * Sets the {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code writerIndex} is
-     *            less than {@code this.readerIndex} or
-     *            greater than {@code this.capacity}
-     */
+    // 设置此的buffer的writerIndex值。如果 writerIndex < this.readerIndex 或 writerIndex > this.capacity，抛出 IndexOutOfBoundsException
     public abstract ByteBuf writerIndex(int writerIndex);
 
     /**
-     * Sets the {@code readerIndex} and {@code writerIndex} of this buffer
-     * in one shot.  This method is useful when you have to worry about the
-     * invocation order of {@link #readerIndex(int)} and {@link #writerIndex(int)}
-     * methods.  For example, the following code will fail:
+     * 同时设置readerIndex和writerIndex 值
      *
-     * <pre>
-     * // Create a buffer whose readerIndex, writerIndex and capacity are
-     * // 0, 0 and 8 respectively.
-     * {@link ByteBuf} buf = {@link Unpooled}.buffer(8);
-     *
-     * // IndexOutOfBoundsException is thrown because the specified
-     * // readerIndex (2) cannot be greater than the current writerIndex (0).
-     * buf.readerIndex(2);
-     * buf.writerIndex(4);
-     * </pre>
-     *
-     * The following code will also fail:
-     *
-     * <pre>
-     * // Create a buffer whose readerIndex, writerIndex and capacity are
-     * // 0, 8 and 8 respectively.
-     * {@link ByteBuf} buf = {@link Unpooled}.wrappedBuffer(new byte[8]);
-     *
-     * // readerIndex becomes 8.
-     * buf.readLong();
-     *
-     * // IndexOutOfBoundsException is thrown because the specified
-     * // writerIndex (4) cannot be less than the current readerIndex (8).
-     * buf.writerIndex(4);
-     * buf.readerIndex(2);
-     * </pre>
-     *
-     * By contrast, this method guarantees that it never
-     * throws an {@link IndexOutOfBoundsException} as long as the specified
-     * indexes meet basic constraints, regardless what the current index
-     * values of the buffer are:
-     *
-     * <pre>
-     * // No matter what the current state of the buffer is, the following
-     * // call always succeeds as long as the capacity of the buffer is not
-     * // less than 4.
-     * buf.setIndex(2, 4);
-     * </pre>
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code readerIndex} is less than 0,
-     *         if the specified {@code writerIndex} is less than the specified
-     *         {@code readerIndex} or if the specified {@code writerIndex} is
-     *         greater than {@code this.capacity}
+     * 相同于以下两个方法的组合
+     *  readerIndex(int readerIndex) +  writerIndex(int writerIndex)
      */
     public abstract ByteBuf setIndex(int readerIndex, int writerIndex);
 
-    /**
-     * Returns the number of readable bytes which is equal to
-     * {@code (this.writerIndex - this.readerIndex)}.
-     */
+    // 返回当前可读的字节数：等价于 (this.writerIndex - this.readerIndex)}
     public abstract int readableBytes();
 
-    /**
-     * Returns the number of writable bytes which is equal to
-     * {@code (this.capacity - this.writerIndex)}.
-     */
+    // 返回当前可写的字节数：等价于(this.capacity - this.writerIndex)}.
     public abstract int writableBytes();
-
-    /**
-     * Returns the maximum possible number of writable bytes, which is equal to
-     * {@code (this.maxCapacity - this.writerIndex)}.
-     */
+    // 返回最大可写字节：等价于 this.maxCapacity - this.writerIndex)}.
     public abstract int maxWritableBytes();
 
-    /**
-     * Returns {@code true}
-     * if and only if {@code (this.writerIndex - this.readerIndex)} is greater
-     * than {@code 0}.
-     */
+    // 当且仅当  (this.writerIndex - this.readerIndex) > 0，则返回true
     public abstract boolean isReadable();
-
-    /**
-     * Returns {@code true} if and only if this buffer contains equal to or more than the specified number of elements.
-     */
+    // 当且仅当 (this.writerIndex - this.readerIndex) >= size，则返回true
     public abstract boolean isReadable(int size);
 
-    /**
-     * Returns {@code true}
-     * if and only if {@code (this.capacity - this.writerIndex)} is greater
-     * than {@code 0}.
-     */
+    // 当且仅当 (this.capacity - this.writerIndex) > 0, 则返回true
     public abstract boolean isWritable();
-
-    /**
-     * Returns {@code true} if and only if this buffer has enough room to allow writing the specified number of
-     * elements.
-     */
+    // 当且仅当 (this.capacity - this.writerIndex) > size, 则返回true
     public abstract boolean isWritable(int size);
 
-    /**
-     * Sets the {@code readerIndex} and {@code writerIndex} of this buffer to
-     * {@code 0}.
-     * This method is identical to {@link #setIndex(int, int) setIndex(0, 0)}.
-     * <p>
-     * Please note that the behavior of this method is different
-     * from that of NIO buffer, which sets the {@code limit} to
-     * the {@code capacity} of the buffer.
-     */
+    // 将readerIndex和writerIndex值设置为0，造价于 #setIndex(0, 0)
     public abstract ByteBuf clear();
 
-    /**
-     * Marks the current {@code readerIndex} in this buffer.  You can
-     * reposition the current {@code readerIndex} to the marked
-     * {@code readerIndex} by calling {@link #resetReaderIndex()}.
-     * The initial value of the marked {@code readerIndex} is {@code 0}.
-     */
+    // 标记当前buffer的readerIndex值。当调用#resetReaderIndex()时，重新设置readerIndex值为标记的readerIndex值。
+    // 标记readerIndex的初始值为0
     public abstract ByteBuf markReaderIndex();
 
-    /**
-     * Repositions the current {@code readerIndex} to the marked
-     * {@code readerIndex} in this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the current {@code writerIndex} is less than the marked
-     *         {@code readerIndex}
-     */
+    // 设置buffer当前的readerIndex值为标记(marked）的readerIndex。
+    // 如果当前的writerIndex <  marked readerIndex值，则抛出 IndexOutOfBoundsException
     public abstract ByteBuf resetReaderIndex();
 
-    /**
-     * Marks the current {@code writerIndex} in this buffer.  You can
-     * reposition the current {@code writerIndex} to the marked
-     * {@code writerIndex} by calling {@link #resetWriterIndex()}.
-     * The initial value of the marked {@code writerIndex} is {@code 0}.
-     */
+    // 标记当前的writerIndex值。当调用#resetWriterIndex()时，重新设置writerIndex值为标记的writerIndex值。
+    // 标记writerIndex的初始值为0
     public abstract ByteBuf markWriterIndex();
-
-    /**
-     * Repositions the current {@code writerIndex} to the marked
-     * {@code writerIndex} in this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the current {@code readerIndex} is greater than the marked
-     *         {@code writerIndex}
-     */
+    // 设置buffer当前的writerIndex值为标记(marked）的writerIndex。
+    // 如果当前的 readerIndex >  marked writerIndex值，则抛出 IndexOutOfBoundsException
     public abstract ByteBuf resetWriterIndex();
 
+    // ===================== 重用缓冲区 ========================
     /**
-     * Discards the bytes between the 0th index and {@code readerIndex}.
-     * It moves the bytes between {@code readerIndex} and {@code writerIndex}
-     * to the 0th index, and sets {@code readerIndex} and {@code writerIndex}
-     * to {@code 0} and {@code oldWriterIndex - oldReaderIndex} respectively.
-     * <p>
-     * Please refer to the class documentation for more detailed explanation.
+     * 丢失已经读取的数据, 即丢弃 0 - readerIndex 之间的数据,
+     * 分别设置值:
+     *  readerIndex = 0
+     *  writerIndex = ( oldWriterIndex - oldReaderIndex)
+     *
+     *  ===代码说明 AbstractByteBuf
+     *  首先对读索引进行判断，如果为0则说明没有可重用的缓冲区，直接返回。
+     *  如果读索引大于0且读索引不等于写索引，说明缓存区既有已经读取过的的被丢弃的缓冲区，也有尚未读取的可读缓冲区。
+     *  调用setBytes(0,this,readerIndex,writerIndex-readerIndex)方法进行字节组复制。
+     *  将尚未读取的字节数组复制到缓冲区的起始位置，然后重新设置读写索引，读索引设置为0，
+     *  写索引设置为(之前的写索引-读索引)
+     *  在设置读写索引的同时，需要同时调整markedReaderIndex和markedWriteIndex，方法 adjustMarkers(int decrement)
+     *      首先对备份的markedReaderIndex和需要减少的decremtn进行判断，如果小于需要减少的值，则将markedReaderIndex设置为0
+     *      如果需要减少的值markedReaderIndex，则它也一定也小于markedWriteIndex，则markedReaderIndex和markedWriterIndex的新值减少decerement之后的值
+     *      如果readerIndex等于writeIndex，则说明没有可读的字节数组，那就不需要进行内存复制，直接调整mark，将读写索引设置为0，即可完成缓冲区的重用
+     *
      */
     public abstract ByteBuf discardReadBytes();
 
@@ -513,378 +389,120 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract ByteBuf discardSomeReadBytes();
 
     /**
-     * Makes sure the number of {@linkplain #writableBytes() the writable bytes}
-     * is equal to or greater than the specified value.  If there is enough
-     * writable bytes in this buffer, this method returns with no side effect.
-     * Otherwise, it raises an {@link IllegalArgumentException}.
-     *
-     * @param minWritableBytes
-     *        the expected minimum number of writable bytes
-     * @throws IndexOutOfBoundsException
-     *         if {@link #writerIndex()} + {@code minWritableBytes} &gt; {@link #maxCapacity()}
+     * 保证buffer里可写的字节数 >= minWritableBytes.如果是,则没有影响,否则则抛出IllegalArgumentException
+     *  如果 #writerIndex() + minWritableBytes > #maxCapacity(), 抛出IndexOutOfBoundsException
      */
     public abstract ByteBuf ensureWritable(int minWritableBytes);
 
     /**
-     * Tries to make sure the number of {@linkplain #writableBytes() the writable bytes}
-     * is equal to or greater than the specified value.  Unlike {@link #ensureWritable(int)},
-     * this method does not raise an exception but returns a code.
+     *  保证buffer里可写的字节数 >= minWritableBytes，不同于#ensureWritable(int)，此方法不会抛出异常
      *
      * @param minWritableBytes
      *        the expected minimum number of writable bytes
      * @param force
-     *        When {@link #writerIndex()} + {@code minWritableBytes} &gt; {@link #maxCapacity()}:
-     *        <ul>
-     *        <li>{@code true} - the capacity of the buffer is expanded to {@link #maxCapacity()}</li>
-     *        <li>{@code false} - the capacity of the buffer is unchanged</li>
-     *        </ul>
-     * @return {@code 0} if the buffer has enough writable bytes, and its capacity is unchanged.
-     *         {@code 1} if the buffer does not have enough bytes, and its capacity is unchanged.
-     *         {@code 2} if the buffer has enough writable bytes, and its capacity has been increased.
-     *         {@code 3} if the buffer does not have enough bytes, but its capacity has been
-     *                   increased to its maximum.
+     *        当 {@link #writerIndex()} + {@code minWritableBytes} > {@link #maxCapacity()}: （即容量不够时）
+     *          如果是true: buffer的容量扩大到maxCapacity()
+     *          如果是false: buffer的容量不变
+     *
+     * @return
+     *          0: buffer的容量足够，capacity没有变化
+     *          1：buffer的容量不够，capacity湍变化
+     *          2：capacity的容量足够，但是capacity变大
+     *          3：capacity的容量不够，capacity已经增加到最大
      */
     public abstract int ensureWritable(int minWritableBytes, boolean force);
 
-    /**
-     * Gets a boolean at the specified absolute (@code index) in this buffer.
-     * This method does not modify the {@code readerIndex} or {@code writerIndex}
-     * of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 1} is greater than {@code this.capacity}
-     */
+    /// ======================= 以下开始获取基本的数据类型 get =====================
+    // 在index位置上返回boolean值。此方法不修改readerIndex和writerIndex值
     public abstract boolean getBoolean(int index);
-
-    /**
-     * Gets a byte at the specified absolute {@code index} in this buffer.
-     * This method does not modify {@code readerIndex} or {@code writerIndex} of
-     * this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 1} is greater than {@code this.capacity}
-     */
+    // 在index位置上返回byte值。此方法不修改readerIndex和writerIndex值
     public abstract byte  getByte(int index);
-
-    /**
-     * Gets an unsigned byte at the specified absolute {@code index} in this
-     * buffer.  This method does not modify {@code readerIndex} or
-     * {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 1} is greater than {@code this.capacity}
-     */
+    // 在index位置上返回unsigned byte值。此方法不修改readerIndex和writerIndex值
     public abstract short getUnsignedByte(int index);
+    // 在（index - index+1）位置上返回16位short integer的值。此方法不修改readerIndex和writerIndex值
 
-    /**
-     * Gets a 16-bit short integer at the specified absolute {@code index} in
-     * this buffer.  This method does not modify {@code readerIndex} or
-     * {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 2} is greater than {@code this.capacity}
-     */
     public abstract short getShort(int index);
-
-    /**
-     * Gets a 16-bit short integer at the specified absolute {@code index} in
-     * this buffer in Little Endian Byte Order. This method does not modify
-     * {@code readerIndex} or {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 2} is greater than {@code this.capacity}
-     */
+    // 在（index - index+1）位置上返回16位short integer的值（字节顺序使用Little Endian Byte Order）。此方法不修改readerIndex和writerIndex值
     public abstract short getShortLE(int index);
-
-    /**
-     * Gets an unsigned 16-bit short integer at the specified absolute
-     * {@code index} in this buffer.  This method does not modify
-     * {@code readerIndex} or {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 2} is greater than {@code this.capacity}
-     */
+    // 在（index - index+1）位置上返回unsigned 16bit short integer的值。此方法不修改readerIndex和writerIndex值
     public abstract int getUnsignedShort(int index);
-
-    /**
-     * Gets an unsigned 16-bit short integer at the specified absolute
-     * {@code index} in this buffer in Little Endian Byte Order.
-     * This method does not modify {@code readerIndex} or
-     * {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 2} is greater than {@code this.capacity}
-     */
+    // 在（index - index+1）位置上返回unsigned 16-bit short integer 的值（字节顺序使用Little Endian Byte Order）。此方法不修改readerIndex和writerIndex值
     public abstract int getUnsignedShortLE(int index);
 
-    /**
-     * Gets a 24-bit medium integer at the specified absolute {@code index} in
-     * this buffer.  This method does not modify {@code readerIndex} or
-     * {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 3} is greater than {@code this.capacity}
-     */
+    // 在（index - index+2）位置上返回 24-bit medium integer的值。此方法不修改readerIndex和writerIndex值
     public abstract int   getMedium(int index);
-
-    /**
-     * Gets a 24-bit medium integer at the specified absolute {@code index} in
-     * this buffer in the Little Endian Byte Order. This method does not
-     * modify {@code readerIndex} or {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 3} is greater than {@code this.capacity}
-     */
+    // 在（index - index+2）位置上返回 24-bit medium integer的值（字节顺序使用Little Endian Byte Order）。此方法不修改readerIndex和writerIndex值
     public abstract int getMediumLE(int index);
-
-    /**
-     * Gets an unsigned 24-bit medium integer at the specified absolute
-     * {@code index} in this buffer.  This method does not modify
-     * {@code readerIndex} or {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 3} is greater than {@code this.capacity}
-     */
+    // 在（index - index+2）位置上返回 unsigned 24-bit medium integer的值。此方法不修改readerIndex和writerIndex值
     public abstract int   getUnsignedMedium(int index);
-
-    /**
-     * Gets an unsigned 24-bit medium integer at the specified absolute
-     * {@code index} in this buffer in Little Endian Byte Order.
-     * This method does not modify {@code readerIndex} or
-     * {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 3} is greater than {@code this.capacity}
-     */
+    // 在（index - index+2）位置上返回unsigned 24-bit medium integer的值（字节顺序使用Little Endian Byte Order）。此方法不修改readerIndex和writerIndex值
     public abstract int   getUnsignedMediumLE(int index);
 
-    /**
-     * Gets a 32-bit integer at the specified absolute {@code index} in
-     * this buffer.  This method does not modify {@code readerIndex} or
-     * {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 4} is greater than {@code this.capacity}
-     */
+    // 在（index - index+3）位置上返回 32-bit integer的值。此方法不修改readerIndex和writerIndex值
     public abstract int   getInt(int index);
-
-    /**
-     * Gets a 32-bit integer at the specified absolute {@code index} in
-     * this buffer with Little Endian Byte Order. This method does not
-     * modify {@code readerIndex} or {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 4} is greater than {@code this.capacity}
-     */
+    // 在（index - index+3）位置上返回 32-bit integer的值（字节顺序使用Little Endian Byte Order）。此方法不修改readerIndex和writerIndex值
     public abstract int   getIntLE(int index);
-
-    /**
-     * Gets an unsigned 32-bit integer at the specified absolute {@code index}
-     * in this buffer.  This method does not modify {@code readerIndex} or
-     * {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 4} is greater than {@code this.capacity}
-     */
+    // 在（index - index+3）位置上返回 unsigned 32-bit integer的值。此方法不修改readerIndex和writerIndex值
     public abstract long  getUnsignedInt(int index);
-
-    /**
-     * Gets an unsigned 32-bit integer at the specified absolute {@code index}
-     * in this buffer in Little Endian Byte Order. This method does not
-     * modify {@code readerIndex} or {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 4} is greater than {@code this.capacity}
-     */
+    // 在（index - index+3）位置上返回 unsigned 32-bit integer的值（字节顺序使用Little Endian Byte Order）。此方法不修改readerIndex和writerIndex值
     public abstract long  getUnsignedIntLE(int index);
 
-    /**
-     * Gets a 64-bit long integer at the specified absolute {@code index} in
-     * this buffer.  This method does not modify {@code readerIndex} or
-     * {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 8} is greater than {@code this.capacity}
-     */
+    // 在（index - index+7）位置上返回 64-bit long integer 的值。此方法不修改readerIndex和writerIndex值
     public abstract long  getLong(int index);
-
-    /**
-     * Gets a 64-bit long integer at the specified absolute {@code index} in
-     * this buffer in Little Endian Byte Order. This method does not
-     * modify {@code readerIndex} or {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 8} is greater than {@code this.capacity}
-     */
+    // 在（index - index+7）位置上返回 64-bit long integer 的值（字节顺序使用Little Endian Byte Order）。此方法不修改readerIndex和writerIndex值
     public abstract long  getLongLE(int index);
 
-    /**
-     * Gets a 2-byte UTF-16 character at the specified absolute
-     * {@code index} in this buffer.  This method does not modify
-     * {@code readerIndex} or {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 2} is greater than {@code this.capacity}
-     */
+    // 在（index - index+1）位置上返回 2-byte UTF-16 character 的值。此方法不修改readerIndex和writerIndex值
     public abstract char  getChar(int index);
 
-    /**
-     * Gets a 32-bit floating point number at the specified absolute
-     * {@code index} in this buffer.  This method does not modify
-     * {@code readerIndex} or {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 4} is greater than {@code this.capacity}
-     */
+    // 在（index - index+3）位置上返回32-bit floating point number  的值。此方法不修改readerIndex和writerIndex值
     public abstract float getFloat(int index);
-
-    /**
-     * Gets a 32-bit floating point number at the specified absolute
-     * {@code index} in this buffer in Little Endian Byte Order.
-     * This method does not modify {@code readerIndex} or
-     * {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 4} is greater than {@code this.capacity}
-     */
+    // 在（index - index+3）位置上返回32-bit floating point number  的值（字节顺序使用Little Endian Byte Order）。此方法不修改readerIndex和writerIndex值
     public float getFloatLE(int index) {
         return Float.intBitsToFloat(getIntLE(index));
     }
 
-    /**
-     * Gets a 64-bit floating point number at the specified absolute
-     * {@code index} in this buffer.  This method does not modify
-     * {@code readerIndex} or {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 8} is greater than {@code this.capacity}
-     */
+    // 在（index - index+7）位置上返回 64-bit floating point number 的值。此方法不修改readerIndex和writerIndex值
     public abstract double getDouble(int index);
-
-    /**
-     * Gets a 64-bit floating point number at the specified absolute
-     * {@code index} in this buffer in Little Endian Byte Order.
-     * This method does not modify {@code readerIndex} or
-     * {@code writerIndex} of this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 8} is greater than {@code this.capacity}
-     */
+    // 在（index - index+7）位置上返回 64-bit floating point number 的值（字节顺序使用Little Endian Byte Order）。此方法不修改readerIndex和writerIndex值
     public double getDoubleLE(int index) {
         return Double.longBitsToDouble(getLongLE(index));
     }
 
-    /**
-     * Transfers this buffer's data to the specified destination starting at
-     * the specified absolute {@code index} until the destination becomes
-     * non-writable.  This method is basically same with
-     * {@link #getBytes(int, ByteBuf, int, int)}, except that this
-     * method increases the {@code writerIndex} of the destination by the
-     * number of the transferred bytes while
-     * {@link #getBytes(int, ByteBuf, int, int)} does not.
-     * This method does not modify {@code readerIndex} or {@code writerIndex} of
-     * the source buffer (i.e. {@code this}).
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         if {@code index + dst.writableBytes} is greater than
-     *            {@code this.capacity}
-     */
-    public abstract ByteBuf getBytes(int index, ByteBuf dst);
+    /// ======================= 以下开始获取基本的数据类型 end =====================
 
     /**
-     * Transfers this buffer's data to the specified destination starting at
-     * the specified absolute {@code index}.  This method is basically same
-     * with {@link #getBytes(int, ByteBuf, int, int)}, except that this
-     * method increases the {@code writerIndex} of the destination by the
-     * number of the transferred bytes while
-     * {@link #getBytes(int, ByteBuf, int, int)} does not.
-     * This method does not modify {@code readerIndex} or {@code writerIndex} of
-     * the source buffer (i.e. {@code this}).
-     *
-     * @param length the number of bytes to transfer
+     * 将this的buffer的数据(索引从 index - index+length )转移到dst buffer中(索引从 dstIndex - dstIndex+length )。
+     * 此方法的操作都不会修改源buffer和目的buffer的readerIndex和writerIndex
      *
      * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0},
-     *         if {@code index + length} is greater than
-     *            {@code this.capacity}, or
-     *         if {@code length} is greater than {@code dst.writableBytes}
-     */
-    public abstract ByteBuf getBytes(int index, ByteBuf dst, int length);
-
-    /**
-     * Transfers this buffer's data to the specified destination starting at
-     * the specified absolute {@code index}.
-     * This method does not modify {@code readerIndex} or {@code writerIndex}
-     * of both the source (i.e. {@code this}) and the destination.
-     *
-     * @param dstIndex the first index of the destination
-     * @param length   the number of bytes to transfer
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0},
-     *         if the specified {@code dstIndex} is less than {@code 0},
-     *         if {@code index + length} is greater than
-     *            {@code this.capacity}, or
-     *         if {@code dstIndex + length} is greater than
-     *            {@code dst.capacity}
+     *      1. index < 0
+     *      2. dstIndex < 0
+     *      3. index + length > this.capacity
+     *      4. dstIndex + length > dst.capacity
      */
     public abstract ByteBuf getBytes(int index, ByteBuf dst, int dstIndex, int length);
+    // 等价于：  getBytes(index, dst, 0, dst.length);
+    public abstract ByteBuf getBytes(int index, ByteBuf dst);
+    // 等价于： getBytes(index, dst, dst.writerIndex(), length);
+    public abstract ByteBuf getBytes(int index, ByteBuf dst, int length);
+
 
     /**
-     * Transfers this buffer's data to the specified destination starting at
-     * the specified absolute {@code index}.
-     * This method does not modify {@code readerIndex} or {@code writerIndex} of
-     * this buffer
+     *  将this的buffer的数据(索引从 index - index+length )转移到dst 字节数组中(索引从 dstIndex - dstIndex+length )。
+     *  此方法的操作都不会修改源buffer的readerIndex和writerIndex
      *
      * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         if {@code index + dst.length} is greater than
-     *            {@code this.capacity}
-     */
-    public abstract ByteBuf getBytes(int index, byte[] dst);
-
-    /**
-     * Transfers this buffer's data to the specified destination starting at
-     * the specified absolute {@code index}.
-     * This method does not modify {@code readerIndex} or {@code writerIndex}
-     * of this buffer.
-     *
-     * @param dstIndex the first index of the destination
-     * @param length   the number of bytes to transfer
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0},
-     *         if the specified {@code dstIndex} is less than {@code 0},
-     *         if {@code index + length} is greater than
-     *            {@code this.capacity}, or
-     *         if {@code dstIndex + length} is greater than
-     *            {@code dst.length}
+     *          1. index < 0
+     *          2. dstIndex < 0
+     *          3. index + length > this.capacity
+     *          4. dstIndex + length > dst.length
      */
     public abstract ByteBuf getBytes(int index, byte[] dst, int dstIndex, int length);
+    // 等价于：getBytes(index, dst, 0, dst.length);
+    public abstract ByteBuf getBytes(int index, byte[] dst);
 
+    // ============= 以下跟上面类似，将this buffer的数据复制到目标对象中
     /**
      * Transfers this buffer's data to the specified destination starting at
      * the specified absolute {@code index} until the destination's position
@@ -966,28 +584,13 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      */
     public abstract CharSequence getCharSequence(int index, int length, Charset charset);
 
-    /**
-     * Sets the specified boolean at the specified absolute {@code index} in this
-     * buffer.
-     * This method does not modify {@code readerIndex} or {@code writerIndex} of
-     * this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 1} is greater than {@code this.capacity}
-     */
+
+
+    /// ======================= 以下开始获取基本的数据类型 set =====================
+    // 在（index）位置上设置 specified boolean 的值。此方法不修改readerIndex和writerIndex值
     public abstract ByteBuf setBoolean(int index, boolean value);
 
-    /**
-     * Sets the specified byte at the specified absolute {@code index} in this
-     * buffer.  The 24 high-order bits of the specified value are ignored.
-     * This method does not modify {@code readerIndex} or {@code writerIndex} of
-     * this buffer.
-     *
-     * @throws IndexOutOfBoundsException
-     *         if the specified {@code index} is less than {@code 0} or
-     *         {@code index + 1} is greater than {@code this.capacity}
-     */
+    // 在（index）位置上设置 byte  的值。此方法不修改readerIndex和writerIndex值
     public abstract ByteBuf setByte(int index, int value);
 
     /**
@@ -1745,11 +1348,14 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract int readBytes(FileChannel out, long position, int length) throws IOException;
 
     /**
-     * Increases the current {@code readerIndex} by the specified
-     * {@code length} in this buffer.
+     * 在此缓冲区中将当前readerIndex增加指定的 length
+     * @throws IndexOutOfBoundsException： length > this.readableBytes
      *
-     * @throws IndexOutOfBoundsException
-     *         if {@code length} is greater than {@code this.readableBytes}
+     * 见AbstractByteBuf代码：
+     *  首先判断跳过的长度是否大于当前缓冲区可读的字节数组长度
+     *  如果校验通过，则设置新的读索引为（旧的索引值 + length），然后对新的读索引进行判断，如果小于写索引，则设置新的索引，否则则抛出 IndexOutOfBoundsException
+     *
+     *
      */
     public abstract ByteBuf skipBytes(int length);
 
@@ -2070,19 +1676,12 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      */
     public abstract int writeCharSequence(CharSequence sequence, Charset charset);
 
+
+    ///========================以下开始属于搜索的部分=====================
     /**
-     * Locates the first occurrence of the specified {@code value} in this
-     * buffer.  The search takes place from the specified {@code fromIndex}
-     * (inclusive)  to the specified {@code toIndex} (exclusive).
-     * <p>
-     * If {@code fromIndex} is greater than {@code toIndex}, the search is
-     * performed in a reversed order.
-     * <p>
-     * This method does not modify {@code readerIndex} or {@code writerIndex} of
-     * this buffer.
-     *
-     * @return the absolute index of the first occurrence if found.
-     *         {@code -1} otherwise.
+     * 从索引fromIndex（包含） 到 toIndex (排除) 之间搜索 value值，如果找到，则返回第一次找到的索引值，否则返回 0
+     * 如果 fromIndex > toIndex ,则搜索从反序搜索
+     * 此方法不会修改buffer的readerIndex和writerIndex值
      */
     public abstract int indexOf(int fromIndex, int toIndex, byte value);
 
@@ -2456,6 +2055,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
 
     @Override
     public abstract ByteBuf retain(int increment);
+
 
     @Override
     public abstract ByteBuf retain();

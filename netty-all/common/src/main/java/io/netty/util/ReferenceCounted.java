@@ -34,6 +34,20 @@ public interface ReferenceCounted {
     // 返回这个对象的引用计数。如值为0，表示此对象已经被释放
     int refCnt();
 
+    /**
+     * 对象引用计数器
+     *
+     * 每调用一次retain方法，引用计数器就会加一，由于可能存在多线程并发调用的场景
+     * 所以它的累加操作必须是线程安全
+     *
+     * # AbstractReferenceCountedByteBuf
+     *  通过自旋对引用计数器进行加一操作。
+     *  由于计数器初始值为1，如果申请和释放操作能够保证正确使用，则它的最小值为1，当被释放和被申请的次数相等时，就调用回收方法回收当前的ByteBuf对象。
+     *  如果为0，说明对象被意外、错误地引用，抛出 IllegalReferenceCountException。
+     *  如果引用计数计数器达到整型的最大值，抛出引用越界的异常IllegalReferenceCountException
+     *  最后通CAS进行原子更新
+     *
+     */
     // 对象的引用计数加1
     ReferenceCounted retain();
 
@@ -54,8 +68,13 @@ public interface ReferenceCounted {
      */
     ReferenceCounted touch(Object hint);
 
-    // 引用计数减1，如果引用计数变为0，则释放此对象
-    // 只有当且当引用计数变为0且释放此对象，此时返回true
+    /**
+     * 引用计数减1，如果引用计数变为0，则释放此对象
+     *  只有当且当引用计数变为0且释放此对象，此时返回true
+     *
+     * # AbstractReferenceCountedByteBuf代码实现
+     *
+     */
     boolean release();
 
     // 引用计数减少指定值，如果引用计数变为0，则释放此对象

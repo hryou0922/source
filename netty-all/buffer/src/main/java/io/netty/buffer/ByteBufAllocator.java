@@ -129,6 +129,17 @@ public interface ByteBufAllocator {
     /**
      * Calculate the new capacity of a {@link ByteBuf} that is used when a {@link ByteBuf} needs to expand by the
      * {@code minNewCapacity} with {@code maxCapacity} as upper-bound.
+     *
+     * AbstractByteBufAllocator的实现原理:
+     *  首先需要重新设计下扩展后的容量（== writeIndex + minWirteableBytes），也就是满足要求的最小的容量
+     *  首先设置阈值为 4M，当需要的新容量正好等于阈值时，则使用阈值作为新的缓冲区容量
+     *  如果新申请的内存空间大于阈值，不能采用倍增的方式（防止内存膨胀和浪费）扩张内存，采用每次步进4M的方式进行内存扩张。
+     *  扩张的时候需要对扩张后的内存和最大内存进行比较，如果大于缓冲区的最大长度，则使用maxCapacity作为扩容后的缓冲区容量
+     *  如果扩容后的新容量小于阈值，则以64为计数进行倍增，直到倍增后的结果大于或等于需要的容量值
+     *
+     *  采用倍增的原因：见<Netty权威指南> p335
+     *  采用先倍增后步进行的原因：见<Netty权威指南> p335
+     *
      */
     int calculateNewCapacity(int minNewCapacity, int maxCapacity);
  }
