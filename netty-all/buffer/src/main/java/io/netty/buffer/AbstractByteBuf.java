@@ -39,7 +39,10 @@ import java.nio.charset.Charset;
 import static io.netty.util.internal.MathUtil.isOutOfBounds;
 
 /**
- * A skeletal implementation of a buffer.
+ * buffer的骨干实现
+ *
+ * 此类没有定义ByteBuf的缓冲区实现，因为AbstractByteBuf并不清楚子类到底是基于堆内存或直接内存，因此无法提前定义
+ *
  */
 public abstract class AbstractByteBuf extends ByteBuf {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(AbstractByteBuf.class);
@@ -62,6 +65,7 @@ public abstract class AbstractByteBuf extends ByteBuf {
         }
     }
 
+    // leakDetector：所有的ByteBuf实例共享同一个ResourceLeakDetector对象，用于检测对象是否泄露
     static final ResourceLeakDetector<ByteBuf> leakDetector =
             ResourceLeakDetectorFactory.instance().newResourceLeakDetector(ByteBuf.class);
 
