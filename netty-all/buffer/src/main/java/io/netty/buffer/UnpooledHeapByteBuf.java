@@ -31,12 +31,23 @@ import java.nio.channels.ScatteringByteChannel;
 import static io.netty.util.internal.ObjectUtil.checkNotNull;
 
 /**
- * Big endian Java heap buffer implementation. It is recommended to use
- * {@link UnpooledByteBufAllocator#heapBuffer(int, int)}, {@link Unpooled#buffer(int)} and
- * {@link Unpooled#wrappedBuffer(byte[])} instead of calling the constructor explicitly.
+ *
+ * Big endian Java堆缓冲区实现
+ * 建议使用UnpooledByteBufAllocator#heapBuffer(int, int)、Unpooled#buffer(int)和Unpooled#wrappedBuffer(byte[])，而不是显式调用构造函数。
+ *
+ ==========
+ 此类是基于堆内存进行内存分配的字节缓冲区，它没有基于对象池技术实现，这意味着每次I/O的读写都会创建一个新UnplooledHeapByteBuf，频繁进行大块内存的分配和回收对性能会造成一定影响，但是相比于堆 外内存的申请和释放，它的成本还是会低一些
+
+ 相比于PooledByteBuf，UnplooledHeapByteBuf的实现原理更加简单，也不容易出现内存管理方法的问题，因此在满足性能的情况下，推荐使用UnplooledHeapByteBuf
+
+
  */
 public class UnpooledHeapByteBuf extends AbstractReferenceCountedByteBuf {
 
+    /**
+     * 它聚合了一个ByteBufAllocator，用于UnpooledHeapByteBuf的内存分配，紧接着定义了一个byte数组作为缓冲区，最后定义了一个ByteBuf类型和tmpNioBuf变量用于实现Netty ByteBuf到JDK NIO ByteBuffer的转换
+     使用JDK的ByteBuffer替换byte数组也是可行的，直接使用byte数组的根本原因就是提升性能和更加便捷地进行位操作。JDK的ByteBuffer底层实现也是byte数组
+     */
     private final ByteBufAllocator alloc;
     byte[] array;
     private ByteBuffer tmpNioBuf;
@@ -107,6 +118,9 @@ public class UnpooledHeapByteBuf extends AbstractReferenceCountedByteBuf {
         return ByteOrder.BIG_ENDIAN;
     }
 
+    /**
+     * 如果基于堆内存实现的ByteBuf，它返回false
+     */
     @Override
     public boolean isDirect() {
         return false;
@@ -117,6 +131,18 @@ public class UnpooledHeapByteBuf extends AbstractReferenceCountedByteBuf {
         return array.length;
     }
 
+    /**
+
+     动态扩展缓冲区
+     1. 对新容量进行合法性校验，如果大于容量上限或小于0，则抛出IllegalArgumentException
+     2. 判断新的容量值是否大于当前的缓冲区，如果大于则需要进行动态扩展，通过 byte[] newArray = new byte[newCapacity] 创建新的缓冲区字节数组，然后通过System.arraycopy进行内存复制，将旧的字节数组复制到新创建的字节数组中，然后调用setArray替换旧的字节数组
+
+     4. 如果新的容量小于当前的缓冲区容量不需要动态进行扩展，但是需要截取当前缓冲区创建一个新的子缓冲区：
+         a. 首先判断下读索引是否小于新的容量值，如果小于进一步判断写索引是否大于新的容量值，如果大于则将写索引设置为新容量值（防止越界）
+         b. 更新完成写索引之后通过内存身后System.arraycopy将当前可读的字节数组复制到新创建的子缓冲区中
+     5. 当动态扩容完成后，需要将原先的视图tmpNioBuf设置为空
+     *
+     */
     @Override
     public ByteBuf capacity(int newCapacity) {
         checkNewCapacity(newCapacity);
@@ -146,11 +172,17 @@ public class UnpooledHeapByteBuf extends AbstractReferenceCountedByteBuf {
         return this;
     }
 
+    /**
+     * 由于UnpooledHeapByteBuf基于字节数组实现，所有它返回值主true
+     */
     @Override
     public boolean hasArray() {
         return true;
     }
 
+    /**
+     * 由于UnpooledHeapByteBuf基于字节数组实现，所以它的返回值是内部的字节数组成功变量
+     */
     @Override
     public byte[] array() {
         ensureAccessible();
@@ -264,6 +296,10 @@ public class UnpooledHeapByteBuf extends AbstractReferenceCountedByteBuf {
         return this;
     }
 
+    /**
+     * 首先是合法性校验
+     调用System.arraycopy进行字节数组的复制
+     */
     @Override
     public ByteBuf setBytes(int index, byte[] src, int srcIndex, int length) {
         checkSrcIndex(index, length, srcIndex, src.length);
@@ -309,6 +345,11 @@ public class UnpooledHeapByteBuf extends AbstractReferenceCountedByteBuf {
         return 1;
     }
 
+    /**
+     转换JDK ByteBuffer
+     因为ByteBuf基于byte数组实现，NIO的ByteBuffer提供wrap方法，可以将byte数组转换成ByteBuffer对象
+     UnpooledHeapByteBuf唯一不同的是它还设备ByteBuffer的slice方法。由于每次调用nioBuffer都会创建一个新的ByteBuffer，因此此处的slice方法起不到重用缓冲区内容的效果，只能保证读写索引的独立性
+     */
     @Override
     public ByteBuffer nioBuffer(int index, int length) {
         ensureAccessible();

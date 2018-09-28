@@ -1887,6 +1887,11 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * Please note that the returned NIO buffer will not see the changes of this buffer if this buffer
      * is a dynamic buffer and it adjusted its capacity.
      *
+   转换为JDK ByteBuffer
+        因为ByteBuf基于byte数组实现，NIO的ByteBuffer提供wrap方法，可以将byte数组转换成ByteBuffer对象
+        UnpooledHeapByteBuf唯一不同的是它还设备ByteBuffer的slice方法。由于每次调用nioBuffer都会创建一个新的ByteBuffer，因此此处的slice方法起不到重用缓冲区内容的效果，只能保证读写索引的独立性
+
+     *
      * @throws UnsupportedOperationException
      *         if this buffer cannot create a {@link ByteBuffer} that shares the content with itself
      *

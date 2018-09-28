@@ -1444,6 +1444,9 @@ public abstract class AbstractByteBuf extends ByteBuf {
     /**
      * Should be called by every method that tries to access the buffers content to check
      * if the buffer was released before.
+     *
+     * 应该由尝试访问缓冲区内容的每个方法调用，以检查缓冲区之前是否已释放。
+     *
      */
     protected final void ensureAccessible() {
         if (checkAccessible && internalRefCnt() == 0) {
