@@ -1511,26 +1511,15 @@ public final class Class<T> implements java.io.Serializable,
 
 
     /**
-     * Returns an array containing {@code Field} objects reflecting all
-     * the accessible public fields of the class or interface represented by
-     * this {@code Class} object.
+     * ?? 静态字段会返回吗 - 会 ??
      *
-     * <p> If this {@code Class} object represents a class or interface with no
-     * no accessible public fields, then this method returns an array of length
-     * 0.
+     * 返回一个包含Field对象的数组：类或接口所有public fields
+     * 如果Class(类或接口) 没有public fields，则返回长度为0的数组
+     * 如果Class表示类，则返回此类和它的父类中所有的public fields
+     * 如果Class表示类，则返回此接口和它的父接口中所有的 fields （默认为静态成员变量）
+     * 如果Class表示an array type, a primitive type, or void，则返回长度为0的数组
      *
-     * <p> If this {@code Class} object represents a class, then this method
-     * returns the public fields of the class and of all its superclasses.
-     *
-     * <p> If this {@code Class} object represents an interface, then this
-     * method returns the fields of the interface and of all its
-     * superinterfaces.
-     *
-     * <p> If this {@code Class} object represents an array type, a primitive
-     * type, or void, then this method returns an array of length 0.
-     *
-     * <p> The elements in the returned array are not sorted and are not in any
-     * particular order.
+     * 返回的数组没有排序也没有特定的顺序排列
      *
      * @return the array of {@code Field} objects representing the
      *         public fields
@@ -1864,28 +1853,19 @@ public final class Class<T> implements java.io.Serializable,
 
 
     /**
-     * Returns an array of {@code Field} objects reflecting all the fields
-     * declared by the class or interface represented by this
-     * {@code Class} object. This includes public, protected, default
-     * (package) access, and private fields, but excludes inherited fields.
+     * 返回一个包含 Field 对象的数组。 包括类或接口中 public, protected, default (package) access, and private fields, 但是不包括继承 fields
      *
-     * <p> If this {@code Class} object represents a class or interface with no
-     * declared fields, then this method returns an array of length 0.
+     * 如果Class表示类或接口，Class没有声明的fields，则返回长度为0的数组
+     * 如果Class表示an array type, a primitive type, or void, 则返回长度为0的数组
      *
-     * <p> If this {@code Class} object represents an array type, a primitive
-     * type, or void, then this method returns an array of length 0.
-     *
-     * <p> The elements in the returned array are not sorted and are not in any
-     * particular order.
+     * 返回的数组是无序
      *
      * @return  the array of {@code Field} objects representing all the
      *          declared fields of this class
      * @throws  SecurityException
      *          If a security manager, <i>s</i>, is present and any of the
      *          following conditions is met:
-     *
      *          <ul>
-     *
      *          <li> the caller's class loader is not the same as the
      *          class loader of this class and invocation of
      *          {@link SecurityManager#checkPermission
@@ -1898,7 +1878,6 @@ public final class Class<T> implements java.io.Serializable,
      *          invocation of {@link SecurityManager#checkPackageAccess
      *          s.checkPackageAccess()} denies access to the package
      *          of this class
-     *
      *          </ul>
      *
      * @since JDK1.1
