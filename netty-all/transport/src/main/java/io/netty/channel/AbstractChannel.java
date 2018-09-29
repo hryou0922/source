@@ -38,7 +38,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
 /**
- * A skeletal {@link Channel} implementation.
+ * Channel的骨干实现
+ * AbstractChannel聚合了所有Channel使用到的能力对象，由AbstractChannel提供初始化和统一封装，如果功能和子类相关，则定义成抽象方法由子类具体实现
+
  */
 public abstract class AbstractChannel extends DefaultAttributeMap implements Channel {
 
@@ -48,22 +50,28 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             new ClosedChannelException(), AbstractUnsafe.class, "flush0()");
     private static final ClosedChannelException ENSURE_OPEN_CLOSED_CHANNEL_EXCEPTION = ThrowableUtil.unknownStackTrace(
             new ClosedChannelException(), AbstractUnsafe.class, "ensureOpen(...)");
+    // 链路已经关闭异常
     private static final ClosedChannelException CLOSE_CLOSED_CHANNEL_EXCEPTION = ThrowableUtil.unknownStackTrace(
             new ClosedChannelException(), AbstractUnsafe.class, "close(...)");
     private static final ClosedChannelException WRITE_CLOSED_CHANNEL_EXCEPTION = ThrowableUtil.unknownStackTrace(
             new ClosedChannelException(), AbstractUnsafe.class, "write(...)");
+    // 物理链路尚未建立异常 ??
     private static final NotYetConnectedException FLUSH0_NOT_YET_CONNECTED_EXCEPTION = ThrowableUtil.unknownStackTrace(
             new NotYetConnectedException(), AbstractUnsafe.class, "flush0()");
 
+    // 代表父类Channel
     private final Channel parent;
+    // 采用默认方式生成的全局唯一ID
     private final ChannelId id;
     private final Unsafe unsafe;
+    // 当前Channel对应的DefaultChannelPipleline
     private final DefaultChannelPipeline pipeline;
     private final VoidChannelPromise unsafeVoidPromise = new VoidChannelPromise(this, false);
     private final CloseFuture closeFuture = new CloseFuture(this);
 
     private volatile SocketAddress localAddress;
     private volatile SocketAddress remoteAddress;
+    // 当前Channel注册的EventLoop
     private volatile EventLoop eventLoop;
     private volatile boolean registered;
     private boolean closeInitiated;
@@ -186,6 +194,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         localAddress = null;
     }
 
+    // 先从成员变量获取，如果成员变量没有，则从unsafe获取
     @Override
     public SocketAddress remoteAddress() {
         SocketAddress remoteAddress = this.remoteAddress;
@@ -212,6 +221,8 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
     public boolean isRegistered() {
         return registered;
     }
+
+    // === 当Channel进行I/O操作会产生对应的I/O事件，然后驱动事件在ChannelPipeline中传播，由对应的ChannelHandler对事件进行拦截和处理，不关心的事件可以直接忽略 begin。
 
     @Override
     public ChannelFuture bind(SocketAddress localAddress) {
@@ -325,6 +336,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         return pipeline.newFailedFuture(cause);
     }
 
+    // === 当Channel进行I/O操作会产生对应的I/O事件。
     @Override
     public ChannelFuture closeFuture() {
         return closeFuture;

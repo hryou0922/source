@@ -44,7 +44,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Abstract base class for {@link Channel} implementations which use a Selector based approach.
+ * Channel实现的抽象基类，它使用基于Selector的方法。
  */
 public abstract class AbstractNioChannel extends AbstractChannel {
 
@@ -54,8 +54,11 @@ public abstract class AbstractNioChannel extends AbstractChannel {
     private static final ClosedChannelException DO_CLOSE_CLOSED_CHANNEL_EXCEPTION = ThrowableUtil.unknownStackTrace(
             new ClosedChannelException(), AbstractNioChannel.class, "doClose()");
 
+    // 由于NIO Channel、NioSocketChannel和NioServerChannel需要共用，所以定义了一个java.nio.SocketChannel和java.nio.ServerSocketChannel的公共父类SelectableChannel，用于设置SelectableChanel参数和进行I/O操作
     private final SelectableChannel ch;
+    // 代表JDK SelectionKey的OP_READ
     protected final int readInterestOp;
+    // 该SelectionKey是Channel注册到EventLoop后返回的选择键。由于Channel会面临多个业务线程的并发写操作，当SelectionKey由SelectionKey修改之后，为了能让其他业务线程感知到变化，所以使用volatile修饰
     volatile SelectionKey selectionKey;
     boolean readPending;
     private final Runnable clearReadPendingRunnable = new Runnable() {
@@ -68,9 +71,12 @@ public abstract class AbstractNioChannel extends AbstractChannel {
     /**
      * The future of the current connection attempt.  If not null, subsequent
      * connection attempts will fail.
+     * 代表连接操作结果的ChannelPromise
      */
     private ChannelPromise connectPromise;
+    // 以及连接超时定时器ScheduledFuture
     private ScheduledFuture<?> connectTimeoutFuture;
+    // 请求的通信地址信息
     private SocketAddress requestedRemoteAddress;
 
     /**
@@ -380,15 +386,20 @@ public abstract class AbstractNioChannel extends AbstractChannel {
 
     @Override
     protected void doRegister() throws Exception {
+        // selected标识注册操作是否成功
         boolean selected = false;
-        for (;;) {
+        for (;;) { // 循环注册
             try {
+                // 调用SelectableChannel的register方法，将当前的Channel注册到EventLoop的多路复用器上.
+                // 此类注册的网络事件是0，说明对任何事件都不感兴趣，仅仅完成注册操作。注册的时候可以指定附件，后续Channel接收到网络事件通知时可以从SelectionKey中重新获取之前的附件进行处理，此处将AbstractNioChannel的实现子类自身当作附件注册。如果注册Channel成功，则返回selectionKey，通过selectionKey可以从多路复用器中获取Channel对象
+                // 如果当前注册返回的selectionKey已经被取消，则抛出CancelledKeyException异常，捕获该异常进行处理。
                 selectionKey = javaChannel().register(eventLoop().unwrappedSelector(), 0, this);
                 return;
             } catch (CancelledKeyException e) {
                 if (!selected) {
                     // Force the Selector to select now as the "canceled" SelectionKey may still be
                     // cached and not removed because no Select.select(..) operation was called yet.
+                    // 如果是第一次处理该异常，调用多路复用器的selectNow()方法将已经取消的selectionKey从多路复用器中删除掉。操作成功之后，将selected置为true，说明之前失效的selectionKey已经被删除掉。继续发起下一次注册操作，如果成功则退出，如果仍然发生CancelledKeyException异常，说明我们无法删除已经被取消的selectionKey，按照JDK的API说明，这种意外不应该发生。如果发生这种问题，则说明可能NIO的相关类库存在不可恢复的BUG，直接抛出CancelledKeyExcption异常到上层进行统一处理
                     eventLoop().selectNow();
                     selected = true;
                 } else {

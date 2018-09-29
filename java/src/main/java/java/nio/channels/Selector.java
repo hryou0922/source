@@ -205,13 +205,11 @@ import java.util.Set;
 
 public abstract class Selector implements Closeable {
 
-    /**
-     * Initializes a new instance of this class.
-     */
+    // 初始化此类的一个实例
     protected Selector() { }
 
     /**
-     * Opens a selector.
+     * 打开一个selector.
      *
      * <p> The new selector is created by invoking the {@link
      * SelectorProvider#openSelector openSelector} method
@@ -227,18 +225,10 @@ public abstract class Selector implements Closeable {
         return SelectorProvider.provider().openSelector();
     }
 
-    /**
-     * Tells whether or not this selector is open.
-     *
-     * @return <tt>true</tt> if, and only if, this selector is open
-     */
+    // 当 selector 为打开状态时，则返回true
     public abstract boolean isOpen();
 
-    /**
-     * Returns the provider that created this channel.
-     *
-     * @return  The provider that created this channel
-     */
+    // 创建此channel的provider
     public abstract SelectorProvider provider();
 
     /**
@@ -275,15 +265,9 @@ public abstract class Selector implements Closeable {
     public abstract Set<SelectionKey> selectedKeys();
 
     /**
-     * Selects a set of keys whose corresponding channels are ready for I/O
-     * operations.
-     *
-     * <p> This method performs a non-blocking <a href="#selop">selection
-     * operation</a>.  If no channels have become selectable since the previous
-     * selection operation then this method immediately returns zero.
-     *
-     * <p> Invoking this method clears the effect of any previous invocations
-     * of the {@link #wakeup wakeup} method.  </p>
+     * 选择一组键，其相应的通道已准备好进行I / O操作。（Selects a set of keys whose corresponding channels are ready for I/O operations.）
+     * 此方法执行非阻塞 no blocking selection操作。如果从上次selection操作之后没有selectable的通道，则此方法立即返回0
+     * 调用此方法清除 之前调用 wakeup 方法产生的效果
      *
      * @return  The number of keys, possibly zero, whose ready-operation sets
      *          were updated by the selection operation
@@ -297,17 +281,26 @@ public abstract class Selector implements Closeable {
     public abstract int selectNow() throws IOException;
 
     /**
-     * Selects a set of keys whose corresponding channels are ready for I/O
-     * operations.
+     * 选择一组键，其相应的通道已准备好进行I / O操作。（Selects a set of keys whose corresponding channels are ready for I/Ooperations)
      *
-     * <p> This method performs a blocking <a href="#selop">selection
-     * operation</a>.  It returns only after at least one channel is selected,
-     * this selector's {@link #wakeup wakeup} method is invoked, the current
-     * thread is interrupted, or the given timeout period expires, whichever
-     * comes first.
+     * 此方法执行阻塞 blocking selection操作，当发生以下情况之一时才返回：
+     *  a. 至少有一个channel被selected
+     *  b. selector的wakeup方法被调用
+     *  c. 当前线程被中断
      *
-     * <p> This method does not offer real-time guarantees: It schedules the
-     * timeout as if by invoking the {@link Object#wait(long)} method. </p>
+     * @return  The number of keys, possibly zero,
+     *          whose ready-operation sets were updated
+     *
+     * @throws  IOException
+     *          If an I/O error occurs
+     *
+     * @throws  ClosedSelectorException
+     *          If this selector is closed
+     */
+    public abstract int select() throws IOException;
+
+    /**
+     * 超时版本的 select()
      *
      * @param  timeout  If positive, block for up to <tt>timeout</tt>
      *                  milliseconds, more or less, while waiting for a
@@ -330,28 +323,10 @@ public abstract class Selector implements Closeable {
         throws IOException;
 
     /**
-     * Selects a set of keys whose corresponding channels are ready for I/O
-     * operations.
+     * 触发尚未返回的第一个selection操作立即返回 (Causes the first selection operation that has not yet returned to return
+     * immediately.)
      *
-     * <p> This method performs a blocking <a href="#selop">selection
-     * operation</a>.  It returns only after at least one channel is selected,
-     * this selector's {@link #wakeup wakeup} method is invoked, or the current
-     * thread is interrupted, whichever comes first.  </p>
-     *
-     * @return  The number of keys, possibly zero,
-     *          whose ready-operation sets were updated
-     *
-     * @throws  IOException
-     *          If an I/O error occurs
-     *
-     * @throws  ClosedSelectorException
-     *          If this selector is closed
-     */
-    public abstract int select() throws IOException;
-
-    /**
-     * Causes the first selection operation that has not yet returned to return
-     * immediately.
+     * 如果
      *
      * <p> If another thread is currently blocked in an invocation of the
      * {@link #select()} or {@link #select(long)} methods then that invocation

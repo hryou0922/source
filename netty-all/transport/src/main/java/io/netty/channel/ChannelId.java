@@ -19,19 +19,16 @@ package io.netty.channel;
 import java.io.Serializable;
 
 /**
- * Represents the globally unique identifier of a {@link Channel}.
- * <p>
- * The identifier is generated from various sources listed in the following:
- * <ul>
- * <li>MAC address (EUI-48 or EUI-64) or the network adapter, preferably a globally unique one,</li>
- * <li>the current process ID,</li>
- * <li>{@link System#currentTimeMillis()},</li>
- * <li>{@link System#nanoTime()},</li>
- * <li>a random 32-bit integer, and</li>
- * <li>a sequentially incremented 32-bit integer.</li>
- * </ul>
- * </p>
- * <p>
+ * 表示 Channel 的全局唯一标识符。
+ *
+ * ID由以下变量生成：
+ *  - MAC地址(EUI-48 or EUI-64) 或 网络适配器，最好是全球唯一的，
+ *  - 当前进程ID
+ *  - System#currentTimeMillis()
+ *  - System#nanoTime()
+ *  - a random 32-bit integer
+ *  - 一个顺序递增的32位整数
+ *
  * The global uniqueness of the generated identifier mostly depends on the MAC address and the current process ID,
  * which are auto-detected at the class-loading time in best-effort manner.  If all attempts to acquire them fail,
  * a warning message is logged, and random values will be used instead.  Alternatively, you can specify them manually
