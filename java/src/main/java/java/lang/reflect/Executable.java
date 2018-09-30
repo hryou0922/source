@@ -517,26 +517,22 @@ public abstract class Executable extends AccessibleObject
     }
 
     /**
-     * Returns an array of arrays of {@code Annotation}s that
-     * represent the annotations on the formal parameters, in
-     * declaration order, of the {@code Executable} represented by
-     * this object.  Synthetic and mandated parameters (see
-     * explanation below), such as the outer "this" parameter to an
-     * inner class constructor will be represented in the returned
-     * array.  If the executable has no parameters (meaning no formal,
-     * no synthetic, and no mandated parameters), a zero-length array
-     * will be returned.  If the {@code Executable} has one or more
-     * parameters, a nested array of length zero is returned for each
-     * parameter with no annotations. The annotation objects contained
-     * in the returned arrays are serializable.  The caller of this
-     * method is free to modify the returned arrays; it will have no
-     * effect on the arrays returned to other callers.
+     * 返回一个二维Annotation数组
+     *  此数组表示此Executable（既Method或Constructor）对应方法/构造函数上的参数的注解信息
+     *  此数组的顺序为参数的排列顺序
+     *      第一个维度：表示这是第几个参数 ??
+     *      第二个维度：表示注解在参数上的0个/1个/多个注解 ??
      *
-     * A compiler may add extra parameters that are implicitly
-     * declared in source ("mandated"), as well as parameters that
-     * are neither implicitly nor explicitly declared in source
-     * ("synthetic") to the parameter list for a method.  See {@link
-     * Parameter} for more information.
+     * 如果Executable没有参数，则返回长度为0的数组
+     * 如果Executable}具有一个或多个参数，则为没有注释的每个参数返回长度为零的嵌套数组
+     *
+     * ==?? 需要实践确认
+     * 如： public void save(@RedisSave()int id,@RedisSave()String name){}
+     * 第一个参数下表为0,第二个为1
+     *  也就是说:annos[0][0] == @RedisSave
+             annos[1][0] == @RedisSave
+        也就是说,二维数组是包含多个仅有一个值的数组.
+        因为参数前可以添加多个注解,所以是二维数组,一个参数上不可以添加相同的注解,同一个注解可以加在不同的参数上!
      *
      * @see Parameter
      * @see Parameter#getAnnotations

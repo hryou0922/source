@@ -26,8 +26,7 @@
 package java.lang.reflect;
 
 /**
- * Member is an interface that reflects identifying information about
- * a single member (a field or a method) or a constructor.
+ * 此接口标识 单个成员（字段或方法）或构造函数的信息
  *
  * @see Class
  * @see Field
@@ -39,47 +38,36 @@ package java.lang.reflect;
 public
 interface Member {
 
-    /**
-     * Identifies the set of all public members of a class or interface,
-     * including inherited members.
-     */
+    // 标识类或接口的所有公共成员的集合(只含public)，包括继承的成员。
     public static final int PUBLIC = 0;
 
-    /**
-     * Identifies the set of declared members of a class or interface.
-     * Inherited members are not included.
-     */
+    // 标识当前类或接口的已声明成员集(含public,private,protected,pacakage)。 不包括继承的成员。
     public static final int DECLARED = 1;
 
     /**
      * Returns the Class object representing the class or interface
      * that declares the member or constructor represented by this Member.
      *
+     * 好像是此类内部定义的类??
+     *
      * @return an object representing the declaring class of the
      * underlying member
      */
     public Class<?> getDeclaringClass();
 
-    /**
-     * Returns the simple name of the underlying member or constructor
-     * represented by this Member.
-     *
-     * @return the simple name of the underlying member
-     */
+    // 返回  underlying member 的简单名称
     public String getName();
 
-    /**
-     * Returns the Java language modifiers for the member or
-     * constructor represented by this Member, as an integer.  The
-     * Modifier class should be used to decode the modifiers in
-     * the integer.
-     *
-     * @return the Java language modifiers for the underlying member
-     * @see Modifier
-     */
+    // 以整数形式返回此Member表示的成员或构造函数的Java语言修饰符。 应使用Modifier类来解码整数中的修饰符。
     public int getModifiers();
 
     /**
+     * 由java编译器生成的（除了像默认构造函数这一类的）方法或者类,如果是则返回true，否则false
+     *
+     * 关于Synthetic解释看这篇文章：
+     *  Java 中冷门的 synthetic 关键字原理解读： https://www.cnblogs.com/bethunebtj/p/7761596.html
+     *      编译器通过生成一些在源代码中不存在的synthetic方法和类的方式，实现了对private级别的字段和类的访问，从而绕开了语言限制，这可以算是一种trick
+     *
      * Returns {@code true} if this member was introduced by
      * the compiler; returns {@code false} otherwise.
      *

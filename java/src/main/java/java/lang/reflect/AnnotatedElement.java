@@ -237,15 +237,7 @@ import sun.reflect.annotation.AnnotationType;
  */
 public interface AnnotatedElement {
     /**
-     * Returns true if an annotation for the specified type
-     * is <em>present</em> on this element, else false.  This method
-     * is designed primarily for convenient access to marker annotations.
-     *
-     * <p>The truth value returned by this method is equivalent to:
-     * {@code getAnnotation(annotationClass) != null}
-     *
-     * <p>The body of the default method is specified to be the code
-     * above.
+     * 如果指定类型的annotation注解在此元素上，则返回true，否则返回false
      *
      * @param annotationClass the Class object corresponding to the
      *        annotation type
@@ -259,8 +251,7 @@ public interface AnnotatedElement {
     }
 
    /**
-     * Returns this element's annotation for the specified type if
-     * such an annotation is <em>present</em>, else null.
+     * 如果此元素上有注解指定的annotation，则返回这个annotation，否则返回null
      *
      * @param <T> the type of the annotation to query for and return if present
      * @param annotationClass the Class object corresponding to the
@@ -273,13 +264,9 @@ public interface AnnotatedElement {
     <T extends Annotation> T getAnnotation(Class<T> annotationClass);
 
     /**
-     * Returns annotations that are <em>present</em> on this element.
-     *
-     * If there are no annotations <em>present</em> on this element, the return
-     * value is an array of length 0.
-     *
-     * The caller of this method is free to modify the returned array; it will
-     * have no effect on the arrays returned to other callers.
+     * 返回此元素上注解的所有annotation
+     * 如果元素上没有注解，则返回长度为0的数组
+     * 调用可以随意修改返回数组，不会对其它调用者返回的数组有影响
      *
      * @return annotations present on this element
      * @since 1.5
@@ -346,11 +333,8 @@ public interface AnnotatedElement {
      }
 
     /**
-     * Returns this element's annotation for the specified type if
-     * such an annotation is <em>directly present</em>, else null.
-     *
-     * This method ignores inherited annotations. (Returns null if no
-     * annotations are directly present on this element.)
+     * 从此元素上返回直接注解在此元素上的指定的annotation，如果没有，则返回null
+     * 此方法会忽略inherited annotations
      *
      * @implSpec The default implementation first performs a null check
      * and then loops over the results of {@link
@@ -434,16 +418,9 @@ public interface AnnotatedElement {
     }
 
     /**
-     * Returns annotations that are <em>directly present</em> on this element.
-     * This method ignores inherited annotations.
-     *
-     * If there are no annotations <em>directly present</em> on this element,
-     * the return value is an array of length 0.
-     *
-     * The caller of this method is free to modify the returned array; it will
-     * have no effect on the arrays returned to other callers.
-     *
-     * @return annotations directly present on this element
+     * 返回直接注解在此元素上的annotation数组。此方法会忽略继承的注解
+     * 如果没有注解直接注解在方法上，则返回的数组为0
+     * 调用可以随意修改返回数组，不会对其它调用者返回的数组有影响
      * @since 1.5
      */
     Annotation[] getDeclaredAnnotations();

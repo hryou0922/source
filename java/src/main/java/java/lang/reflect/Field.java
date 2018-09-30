@@ -334,40 +334,19 @@ class Field extends AccessibleObject implements Member {
     }
 
     /**
-     * Returns the value of the field represented by this {@code Field}, on
-     * the specified object. The value is automatically wrapped in an
-     * object if it has a primitive type.
+     * 返回此field在指定对象（静态类或实例）中的值。如果对象具有基本类型，则该值自动包装在对象中。
+     *  ( Gets the value of a static or instance field of type)
      *
-     * <p>The underlying field's value is obtained as follows:
+     * field的值获得规则：
+     *     如果field是静态字段，则忽略obj参数
+     *     如果field是实例field，
+     *      如果obj是null，则抛出NullPointerException
+     *      如果obj不是此field的claas或接口，则抛出IllegalArgumentException
      *
-     * <p>If the underlying field is a static field, the {@code obj} argument
-     * is ignored; it may be null.
+     * 如果此field根据Java语言访问控制不可被访问，但是强行执行访问，则该方法将抛出{@code IllegalAccessException}。
+     * 如果此field是static，则field此对应的class如果没有被初始化则会被初始化
      *
-     * <p>Otherwise, the underlying field is an instance field.  If the
-     * specified {@code obj} argument is null, the method throws a
-     * {@code NullPointerException}. If the specified object is not an
-     * instance of the class or interface declaring the underlying
-     * field, the method throws an {@code IllegalArgumentException}.
-     *
-     * <p>If this {@code Field} object is enforcing Java language access control, and
-     * the underlying field is inaccessible, the method throws an
-     * {@code IllegalAccessException}.
-     * If the underlying field is static, the class that declared the
-     * field is initialized if it has not already been initialized.
-     *
-     * <p>Otherwise, the value is retrieved from the underlying instance
-     * or static field.  If the field has a primitive type, the value
-     * is wrapped in an object before being returned, otherwise it is
-     * returned as is.
-     *
-     * <p>If the field is hidden in the type of {@code obj},
-     * the field's value is obtained according to the preceding rules.
-     *
-     * @param obj object from which the represented field's value is
-     * to be extracted
-     * @return the value of the represented field in object
-     * {@code obj}; primitive values are wrapped in an appropriate
-     * object before being returned
+     * 其它情况，则返回此field的值。
      *
      * @exception IllegalAccessException    if this {@code Field} object
      *              is enforcing Java language access control and the underlying
@@ -393,28 +372,7 @@ class Field extends AccessibleObject implements Member {
         return getFieldAccessor(obj).get(obj);
     }
 
-    /**
-     * Gets the value of a static or instance {@code boolean} field.
-     *
-     * @param obj the object to extract the {@code boolean} value
-     * from
-     * @return the value of the {@code boolean} field
-     *
-     * @exception IllegalAccessException    if this {@code Field} object
-     *              is enforcing Java language access control and the underlying
-     *              field is inaccessible.
-     * @exception IllegalArgumentException  if the specified object is not
-     *              an instance of the class or interface declaring the
-     *              underlying field (or a subclass or implementor
-     *              thereof), or if the field value cannot be
-     *              converted to the type {@code boolean} by a
-     *              widening conversion.
-     * @exception NullPointerException      if the specified object is null
-     *              and the field is an instance field.
-     * @exception ExceptionInInitializerError if the initialization provoked
-     *              by this method fails.
-     * @see       Field#get
-     */
+    //  Field#get 的boolean版本
     @CallerSensitive
     public boolean getBoolean(Object obj)
         throws IllegalArgumentException, IllegalAccessException
@@ -428,28 +386,7 @@ class Field extends AccessibleObject implements Member {
         return getFieldAccessor(obj).getBoolean(obj);
     }
 
-    /**
-     * Gets the value of a static or instance {@code byte} field.
-     *
-     * @param obj the object to extract the {@code byte} value
-     * from
-     * @return the value of the {@code byte} field
-     *
-     * @exception IllegalAccessException    if this {@code Field} object
-     *              is enforcing Java language access control and the underlying
-     *              field is inaccessible.
-     * @exception IllegalArgumentException  if the specified object is not
-     *              an instance of the class or interface declaring the
-     *              underlying field (or a subclass or implementor
-     *              thereof), or if the field value cannot be
-     *              converted to the type {@code byte} by a
-     *              widening conversion.
-     * @exception NullPointerException      if the specified object is null
-     *              and the field is an instance field.
-     * @exception ExceptionInInitializerError if the initialization provoked
-     *              by this method fails.
-     * @see       Field#get
-     */
+    //  Field#get 的byte版本
     @CallerSensitive
     public byte getByte(Object obj)
         throws IllegalArgumentException, IllegalAccessException
@@ -463,30 +400,7 @@ class Field extends AccessibleObject implements Member {
         return getFieldAccessor(obj).getByte(obj);
     }
 
-    /**
-     * Gets the value of a static or instance field of type
-     * {@code char} or of another primitive type convertible to
-     * type {@code char} via a widening conversion.
-     *
-     * @param obj the object to extract the {@code char} value
-     * from
-     * @return the value of the field converted to type {@code char}
-     *
-     * @exception IllegalAccessException    if this {@code Field} object
-     *              is enforcing Java language access control and the underlying
-     *              field is inaccessible.
-     * @exception IllegalArgumentException  if the specified object is not
-     *              an instance of the class or interface declaring the
-     *              underlying field (or a subclass or implementor
-     *              thereof), or if the field value cannot be
-     *              converted to the type {@code char} by a
-     *              widening conversion.
-     * @exception NullPointerException      if the specified object is null
-     *              and the field is an instance field.
-     * @exception ExceptionInInitializerError if the initialization provoked
-     *              by this method fails.
-     * @see Field#get
-     */
+    //  Field#get 的byte版本
     @CallerSensitive
     public char getChar(Object obj)
         throws IllegalArgumentException, IllegalAccessException
@@ -500,30 +414,7 @@ class Field extends AccessibleObject implements Member {
         return getFieldAccessor(obj).getChar(obj);
     }
 
-    /**
-     * Gets the value of a static or instance field of type
-     * {@code short} or of another primitive type convertible to
-     * type {@code short} via a widening conversion.
-     *
-     * @param obj the object to extract the {@code short} value
-     * from
-     * @return the value of the field converted to type {@code short}
-     *
-     * @exception IllegalAccessException    if this {@code Field} object
-     *              is enforcing Java language access control and the underlying
-     *              field is inaccessible.
-     * @exception IllegalArgumentException  if the specified object is not
-     *              an instance of the class or interface declaring the
-     *              underlying field (or a subclass or implementor
-     *              thereof), or if the field value cannot be
-     *              converted to the type {@code short} by a
-     *              widening conversion.
-     * @exception NullPointerException      if the specified object is null
-     *              and the field is an instance field.
-     * @exception ExceptionInInitializerError if the initialization provoked
-     *              by this method fails.
-     * @see       Field#get
-     */
+    //  Field#get 的short版本
     @CallerSensitive
     public short getShort(Object obj)
         throws IllegalArgumentException, IllegalAccessException
@@ -537,30 +428,7 @@ class Field extends AccessibleObject implements Member {
         return getFieldAccessor(obj).getShort(obj);
     }
 
-    /**
-     * Gets the value of a static or instance field of type
-     * {@code int} or of another primitive type convertible to
-     * type {@code int} via a widening conversion.
-     *
-     * @param obj the object to extract the {@code int} value
-     * from
-     * @return the value of the field converted to type {@code int}
-     *
-     * @exception IllegalAccessException    if this {@code Field} object
-     *              is enforcing Java language access control and the underlying
-     *              field is inaccessible.
-     * @exception IllegalArgumentException  if the specified object is not
-     *              an instance of the class or interface declaring the
-     *              underlying field (or a subclass or implementor
-     *              thereof), or if the field value cannot be
-     *              converted to the type {@code int} by a
-     *              widening conversion.
-     * @exception NullPointerException      if the specified object is null
-     *              and the field is an instance field.
-     * @exception ExceptionInInitializerError if the initialization provoked
-     *              by this method fails.
-     * @see       Field#get
-     */
+    //  Field#get 的int版本
     @CallerSensitive
     public int getInt(Object obj)
         throws IllegalArgumentException, IllegalAccessException
@@ -574,30 +442,7 @@ class Field extends AccessibleObject implements Member {
         return getFieldAccessor(obj).getInt(obj);
     }
 
-    /**
-     * Gets the value of a static or instance field of type
-     * {@code long} or of another primitive type convertible to
-     * type {@code long} via a widening conversion.
-     *
-     * @param obj the object to extract the {@code long} value
-     * from
-     * @return the value of the field converted to type {@code long}
-     *
-     * @exception IllegalAccessException    if this {@code Field} object
-     *              is enforcing Java language access control and the underlying
-     *              field is inaccessible.
-     * @exception IllegalArgumentException  if the specified object is not
-     *              an instance of the class or interface declaring the
-     *              underlying field (or a subclass or implementor
-     *              thereof), or if the field value cannot be
-     *              converted to the type {@code long} by a
-     *              widening conversion.
-     * @exception NullPointerException      if the specified object is null
-     *              and the field is an instance field.
-     * @exception ExceptionInInitializerError if the initialization provoked
-     *              by this method fails.
-     * @see       Field#get
-     */
+    //  Field#get 的long版本
     @CallerSensitive
     public long getLong(Object obj)
         throws IllegalArgumentException, IllegalAccessException
@@ -611,30 +456,7 @@ class Field extends AccessibleObject implements Member {
         return getFieldAccessor(obj).getLong(obj);
     }
 
-    /**
-     * Gets the value of a static or instance field of type
-     * {@code float} or of another primitive type convertible to
-     * type {@code float} via a widening conversion.
-     *
-     * @param obj the object to extract the {@code float} value
-     * from
-     * @return the value of the field converted to type {@code float}
-     *
-     * @exception IllegalAccessException    if this {@code Field} object
-     *              is enforcing Java language access control and the underlying
-     *              field is inaccessible.
-     * @exception IllegalArgumentException  if the specified object is not
-     *              an instance of the class or interface declaring the
-     *              underlying field (or a subclass or implementor
-     *              thereof), or if the field value cannot be
-     *              converted to the type {@code float} by a
-     *              widening conversion.
-     * @exception NullPointerException      if the specified object is null
-     *              and the field is an instance field.
-     * @exception ExceptionInInitializerError if the initialization provoked
-     *              by this method fails.
-     * @see Field#get
-     */
+    //  Field#get 的float版本
     @CallerSensitive
     public float getFloat(Object obj)
         throws IllegalArgumentException, IllegalAccessException
@@ -648,30 +470,7 @@ class Field extends AccessibleObject implements Member {
         return getFieldAccessor(obj).getFloat(obj);
     }
 
-    /**
-     * Gets the value of a static or instance field of type
-     * {@code double} or of another primitive type convertible to
-     * type {@code double} via a widening conversion.
-     *
-     * @param obj the object to extract the {@code double} value
-     * from
-     * @return the value of the field converted to type {@code double}
-     *
-     * @exception IllegalAccessException    if this {@code Field} object
-     *              is enforcing Java language access control and the underlying
-     *              field is inaccessible.
-     * @exception IllegalArgumentException  if the specified object is not
-     *              an instance of the class or interface declaring the
-     *              underlying field (or a subclass or implementor
-     *              thereof), or if the field value cannot be
-     *              converted to the type {@code double} by a
-     *              widening conversion.
-     * @exception NullPointerException      if the specified object is null
-     *              and the field is an instance field.
-     * @exception ExceptionInInitializerError if the initialization provoked
-     *              by this method fails.
-     * @see       Field#get
-     */
+    //  Field#get 的double版本
     @CallerSensitive
     public double getDouble(Object obj)
         throws IllegalArgumentException, IllegalAccessException
