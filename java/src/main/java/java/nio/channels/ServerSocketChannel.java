@@ -210,12 +210,13 @@ public abstract class ServerSocketChannel
         throws IOException;
 
     /**
-     * Retrieves a server socket associated with this channel.
+     * 返回关联到此channel上的server socket
+     *
+     * isBound判断服务端监听端口是否处于绑定状态，它的remoteAddress为空。
      *
      * <p> The returned object will not declare any public methods that are not
      * declared in the {@link ServerSocket} class.  </p>
      *
-     * @return  A server socket associated with this channel
      */
     public abstract ServerSocket socket();
 

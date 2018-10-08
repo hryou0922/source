@@ -40,6 +40,7 @@ import static io.netty.channel.internal.ChannelUtils.WRITE_STATUS_SNDBUF_FULL;
 /**
  * AbstractNioChannel是Chnanle操作bytes的基础类
  *
+ * 最主要方法：doWrite
  *
  *
  */

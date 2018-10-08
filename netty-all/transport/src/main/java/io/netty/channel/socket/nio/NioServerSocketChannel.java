@@ -41,15 +41,22 @@ import java.util.Map;
 /**
  * A {@link io.netty.channel.socket.ServerSocketChannel} implementation which uses
  * NIO selector based implementation to accept new connections.
+ *
+ * 重要方法：doReadMessages
+ *
+ *
+ *
  */
 public class NioServerSocketChannel extends AbstractNioMessageChannel
                              implements io.netty.channel.socket.ServerSocketChannel {
 
+    // ChannelMetadata：定义了ServerSocketChannelConfig用于配置ServerSocketChannel的TCP参数。
     private static final ChannelMetadata METADATA = new ChannelMetadata(false, 16);
     private static final SelectorProvider DEFAULT_SELECTOR_PROVIDER = SelectorProvider.provider();
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(NioServerSocketChannel.class);
 
+    // 静态的newSocket方法用于通过ServerSocketChannel的open打开新的ServerSocketChannel通道
     private static ServerSocketChannel newSocket(SelectorProvider provider) {
         try {
             /**
@@ -116,6 +123,7 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
 
     @Override
     protected ServerSocketChannel javaChannel() {
+        // javaChannel的实现是java.nio.ServerSocketChannel，服务端在进行端口绑定的时候，可以指定backlog，也就是允许客户端排队的最大长度。
         return (ServerSocketChannel) super.javaChannel();
     }
 
@@ -140,6 +148,8 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
 
     @Override
     protected int doReadMessages(List<Object> buf) throws Exception {
+        // 通过ServerSocketChannel的accept接收新的客户端连接，如果SocketChannel不为空，则利用当前的NioServerSocketChannel和SocketChannel创建新的NioSocketChannel，并将其加入到List<Object>buf中，最后返回1，表示服务端消息读取成功
+        // 对于NioServerSocketChannel，它的读取操作就是接收客户端的连接，创建NioSocketChannel对象
         SocketChannel ch = SocketUtils.accept(javaChannel());
 
         try {

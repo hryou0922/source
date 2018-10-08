@@ -31,6 +31,11 @@ import java.util.List;
 
 /**
  * AbstractNioChannel是Chnanle操作messages的基础类
+ *
+ * 最主要方法：doWrite
+ *
+ * AbstractNioMessageChannel和AbstractNioByteChannel类似，不同之处：一个发送的是ByteBuf或FileRegion，它们可以直接被发送；另一个发送的则是POJO对象
+ *
  */
 public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
     boolean inputShutdown;
@@ -122,6 +127,7 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
         }
     }
 
+
     @Override
     protected void doWrite(ChannelOutboundBuffer in) throws Exception {
         final SelectionKey key = selectionKey();
@@ -130,6 +136,7 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
         for (;;) {
             Object msg = in.current();
             if (msg == null) {
+                // 在循环体内对消息进行发送，从ChannelOutboundBuffer中弹出一条消息进行处理，如果消息为空，说明发送缓冲区为空，所有消息都已经被发送完成。清除写半包，退出循环
                 // Wrote all messages.
                 if ((interestOps & SelectionKey.OP_WRITE) != 0) {
                     key.interestOps(interestOps & ~SelectionKey.OP_WRITE);
@@ -137,6 +144,7 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
                 break;
             }
             try {
+                // 与AbstractNioByteChannel的循环发送类似，利用writeSpinCount对单条消息进行发送，调用doWriteMessage(Object,ChannelOutboundBuffer)判断消息是否发送成功，如果成功，则将发送标识done设置为true，退出循环；否则继续执行循环，直到执行writeSpinCount次
                 boolean done = false;
                 for (int i = config().getWriteSpinCount() - 1; i >= 0; i--) {
                     if (doWriteMessage(msg, in)) {
@@ -145,6 +153,7 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
                     }
                 }
 
+                // 发送操作完成之后，判断发送结果，如果当前的消息被完全发送出去，则将该消息从缓冲数组中删除；否则设置半包标识，注册SelectionKey.OP_WRITE到多路复用器上，由多路复用器轮询对应的Channel重新发送尚未发送完全的半包消息
                 if (done) {
                     in.remove();
                 } else {

@@ -52,6 +52,12 @@ import static io.netty.channel.internal.ChannelUtils.MAX_BYTES_PER_GATHERING_WRI
 
 /**
  * {@link io.netty.channel.socket.SocketChannel} which uses NIO selector based implementation.
+ *
+ 重要方法：
+     doConnect：连接操作
+     doWrite：写半包
+     doReadBytes：读写操作
+
  */
 public class NioSocketChannel extends AbstractNioByteChannel implements io.netty.channel.socket.SocketChannel {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(NioSocketChannel.class);
@@ -303,12 +309,19 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
 
     @Override
     protected boolean doConnect(SocketAddress remoteAddress, SocketAddress localAddress) throws Exception {
+        // 判断本地Socket地址是否为空，如果不为空则调用java.nio.channels.SocketChannel.socket().bind()方法绑定本地地址。如果绑定成功，则继续调用java.nio.channels.SocketChannel.connection(SocketAddress)发起TCP连接
         if (localAddress != null) {
             doBind0(localAddress);
         }
 
         boolean success = false;
         try {
+            /*
+            对连接结果进行判断，连接有以下三种情况：
+                1. 连接成功，则返回true
+                2. 暂时没有连接上，服务端没有返回ACK应答，连接结果不确定，返回false。需要将NioSocketChannel中的selectionKey设置OP_CONNECT，监听连接网络操作位。
+                3. 连接失败，直接抛出I/O异常.如果抛出了I/O异常，说明客户端的TCP握手请求直接被REST或拒绝，此时需要关闭客户端连接
+             */
             boolean connected = SocketUtils.connect(javaChannel(), remoteAddress);
             if (!connected) {
                 selectionKey().interestOps(SelectionKey.OP_CONNECT);
