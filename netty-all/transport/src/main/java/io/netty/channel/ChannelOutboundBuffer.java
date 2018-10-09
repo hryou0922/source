@@ -79,7 +79,7 @@ public final class ChannelOutboundBuffer {
     private Entry unflushedEntry;
     // The Entry which represents the tail of the buffer
     private Entry tailEntry;
-    // The number of flushed entries that are not written yet
+    // 尚未写入的刷新条目数：The number of flushed entries that are not written yet
     private int flushed;
 
     private int nioBufferCount;
@@ -372,18 +372,17 @@ public final class ChannelOutboundBuffer {
     }
 
     /**
-     * Returns an array of direct NIO buffers if the currently pending messages are made of {@link ByteBuf} only.
-     * {@link #nioBufferCount()} and {@link #nioBufferSize()} will return the number of NIO buffers in the returned
-     * array and the total number of readable bytes of the NIO buffers respectively.
-     * <p>
-     * Note that the returned array is reused and thus should not escape
-     * {@link AbstractChannel#doWrite(ChannelOutboundBuffer)}.
-     * Refer to {@link NioSocketChannel#doWrite(ChannelOutboundBuffer)} for an example.
-     * </p>
-     * @param maxCount The maximum amount of buffers that will be added to the return value.
-     * @param maxBytes A hint toward the maximum number of bytes to include as part of the return value. Note that this
-     *                 value maybe exceeded because we make a best effort to include at least 1 {@link ByteBuffer}
-     *                 in the return value to ensure write progress is made.
+     * 如果当前pending(挂起)的消息仅由{@link ByteBuf}构成，则返回direct NIO buffers数组
+     *
+     * {@link #nioBufferCount（）}：返回返回数组中的NIO缓冲区数 (the number of NIO buffers in the returned array)
+     * {@link #nioBufferSize（）}：返回NIO缓冲区的可读字节总数 (the total number of readable bytes of the NIO buffers)
+     *
+     * Note that the returned array is reused and thus should not escape {@link AbstractChannel#doWrite(ChannelOutboundBuffer)}.
+     *
+     * 有关示例，请参阅{@link NioSocketChannel#doWrite（ChannelOutboundBuffer）}。
+     *
+     * @param maxCount 允许最大返回最大buffers数量 (The maximum amount of buffers that will be added to the return value)
+     * @param maxBytes 暗示最大字节数，实际值可能超出这个值(A hint toward the maximum number of bytes to include as part of the return value. Note that this value maybe exceeded because we make a best effort to include at least 1 {@link ByteBuffer} in the return value to ensure write progress is made)
      */
     public ByteBuffer[] nioBuffers(int maxCount, long maxBytes) {
         assert maxCount > 0;

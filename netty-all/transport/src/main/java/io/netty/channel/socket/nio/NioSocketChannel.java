@@ -353,6 +353,21 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
         javaChannel().close();
     }
 
+    /**
+     * netty 和 现在的不同
+     * NioSocketChannel的读写操作实际上是基于NIO的SocketChannel和Netty的ByteBuf封装而成,下面我们首先分析从SocketChannel中读取数据报,如图16-35所示。
+     它有两个参数,说明如下。
+     java.nio.channels.SocketChannel:JDK NIO的SocketChannel;
+     length:ByteBuf的可写最大字节数。
+
+     实际上就是从SocketChannel中读取L个字节到ByteBuf中,L为ByteBuf可写的字节数,下面我们看下ByteBuf writeBytes方法的实现,如图16-36所示。
+     首先分析setBytes(intindex,ScatteringByteChannelin,intlength)在UnpooledHeapByteBuf中的实现,如图16-37所示。
+     从SocketChannel中读取字节数组到缓冲区java.nio.ByteBuffer中,它的起始position为writeIndex,limit为writeIndex+length,JDK ByteButffer的相关DOC说明如图16-38
+
+     * @param byteBuf
+     * @return
+     * @throws Exception
+     */
     @Override
     protected int doReadBytes(ByteBuf byteBuf) throws Exception {
         final RecvByteBufAllocator.Handle allocHandle = unsafe().recvBufAllocHandle();
@@ -385,13 +400,42 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
         }
     }
 
+    /**
+     *
+     * 来自netty书，未整理，老的代码和新差别比较大
+     * 获取待发送的ByteBuf个数，如果小于等于1，则调用父类AbstractNioByteChannel的doWrite方法，操作完成之后退出
+     在批量发送缓冲区的消息之前，先对一系列的局部变量进行赋值，首先，获取需要发送的ByteBuffer数组个数nioBufferCnt，然后，从ChannelOutboundBuffer中获取需要发送的总字节数，从NioSocketChannel中获取NIO的SocketChannel，将是否发送完成标识设置为false，将是否有半包标识设置为false
+
+     就像循环读一样,我们需要对一次Selector轮询的写操作次数进行上限控制,因为如果TCP的发送缓冲区满,TCP处于KEEP-ALIVE状态,消息会无法发送出去,如果不对上限进行控制,就会长时间地处于发送状态,Reactor线程无法及时读取其他消息和执行排队的Task。所以,我们必须对循环次数上限做控制。
+
+     调用NIOSocketChannel的write方法,它有三个参数:第一个是需要发送的ByteBuffer数组,第二个是数组的偏移量,第三个参数是发送的ByteBuffer个数。返回值是写入SocketChannel的字节个数。
+
+     下面对写入的字节进行判断,如果为0,说明TCP发送缓冲区已满,很有可能无法再写进去,因此从循环中跳出,同时将写半包标识设置为true,用于向多路复用器注册写操作位,告诉多路复用器有没发完的半包消息,需要轮询出就绪的SocketChannel继续发送。
+
+     发送操作完成后进行两个计算:需要发送的字节数要减去已经发送的字节数;发送的字节总数+已经发送的字节数。更新完这两个变量后,判断缓冲区中所有的消息是否已经发送完成,如果是,则把发送完成标识设置为true同时退出循环。如果没有发送完成,则继续循环。从循环发送中退出之后,首先对发送完成标识done进行判断,如果发送完成,则循环释放已经发送的消息。环形数组的发送缓冲区释放完成后,取消半包标识,告诉多路复用器消息已经全部发送完成。
+
+
+     当缓冲区中的消息没有发送完成,甚至某个ByteBuffer只发送了几个字节,出现了所谓的“写半包“时,该怎么办?下面我们继续看看Netty是如何处理“写半包“的。如图16-34所示。
+
+
+     首先,循环遍历发送缓冲区,对消息的发送结果进行判断,下面具体展开进行说明。
+     (1)从ChannelOutboundBuffer弹出第一条发送的ByteBuf,然后获取该ByteBuf的读索引和可读字节数。
+     (2)对可读字节数和发送的总字节数进行比较,如果发送的字节数大于可读的字节数,说明当前的ByteBuf已经被完全发送出去,更新ChannelOutboundBuffer的发送进度信息,将已经发送的ByteBuf删除,释放相关资源。最后,发送的字节数要减去第一条发送的字节数,得到后续消息发送的总字节数,然后继续循环判断第二条消息、第三条消息…...
+     (3)如果可读的消息大于已经发送的总字节数,说明这条消息没有被完整地发送出去,仅仅发送了部分数据报,也就是出现了所谓的“写半包“问题。此时,需要更新可读的索引为当前索引+已经发送的总字节数,然后更新ChannelOutboundButffer的发送进度信息,退出循环。
+     (4)如果可读字节数等于已经发送的总字节数,则说明最后一次发送的消息是个整包消息,没有剩余的半包消息待发送。更新发送进度信息,将最后一条已发送的消息从缓冲区中删除,最后退出循环。
+
+     循环发送操作完成之后,更新SocketChannel的操作位为OP_WRITE,由多路复用器在下一次轮询中触发SocketChannel,继续处理没有发送完成的半包消息。
+
+     * @param in
+     * @throws Exception
+     */
     @Override
     protected void doWrite(ChannelOutboundBuffer in) throws Exception {
         SocketChannel ch = javaChannel();
         int writeSpinCount = config().getWriteSpinCount();
         do {
             if (in.isEmpty()) {
-                // All written so clear OP_WRITE
+                // 已经完成写入操作，清除OP_WRITE事件。All written so clear OP_WRITE
                 clearOpWrite();
                 // Directly return here so incompleteWrite(...) is not called.
                 return;

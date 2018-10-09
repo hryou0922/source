@@ -142,20 +142,16 @@ public interface ChannelConfig {
     ChannelConfig setMaxMessagesPerRead(int maxMessagesPerRead);
 
     /**
-     * Returns the maximum loop count for a write operation until
-     * {@link WritableByteChannel#write(ByteBuffer)} returns a non-zero value.
-     * It is similar to what a spin lock is used for in concurrency programming.
-     * It improves memory utilization and write throughput depending on
-     * the platform that JVM runs on.  The default value is {@code 16}.
+     * 返回写操作的最大循环计数，直到{@link WritableByteChannel#write（ByteBuffer）}返回非零值。
+     * 它类似于用于并发编程的自旋锁
+     * 它根据运行JVM的平台提高内存利用率和写入吞吐量。 默认值为16。
      */
     int getWriteSpinCount();
 
     /**
-     * Sets the maximum loop count for a write operation until
-     * {@link WritableByteChannel#write(ByteBuffer)} returns a non-zero value.
-     * It is similar to what a spin lock is used for in concurrency programming.
-     * It improves memory utilization and write throughput depending on
-     * the platform that JVM runs on.  The default value is {@code 16}.
+     * 设置写操作的最大循环计数，直到{@link WritableByteChannel#write（ByteBuffer）}返回非零值。
+     * 它类似于用于并发编程的自旋锁
+     * 它根据运行JVM的平台提高内存利用率和写入吞吐量。 默认值为16。
      *
      * @throws IllegalArgumentException
      *         if the specified value is {@code 0} or less than {@code 0}
