@@ -107,6 +107,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     }
 
     /**
+     * 作为NIO框架的Reactor线程,NioEventLoop需要处理网络I/O读写事件,因此它必须聚合一个多路复用器对象。查看Selector定义
      * The NIO {@link Selector}.
      */
     private Selector selector;
@@ -161,6 +162,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     }
 
     private SelectorTuple openSelector() {
+        // Selector的初始化非常简单,直接调用Selector.open()方法就能创建并打开一个新的Selector。Netty对Selector的selectedKeys进行了优化,用户可以通过io.netty.noKeySetOptimization开关决定是否启用该优化项。默认不打开selectedKeys优化功能。
+        // 如果没有开启selectedKeys优化开关,通过provider.openSelector()创建并打开多路复用器之后就立即返回。
         final Selector unwrappedSelector;
         try {
             unwrappedSelector = provider.openSelector();
@@ -203,6 +206,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             @Override
             public Object run() {
                 try {
+                    // 如果开启了优化开关,需要通过反射的方式从Selector实例中获取selectedKeys和publicSelectedKeys,将上述两个成员变量设置为可写,通过反射的方式使用Netty构造的selectedKeys包装类selectedKeySet将原JDK的selectedKeys替换掉。
                     Field selectedKeysField = selectorImplClass.getDeclaredField("selectedKeys");
                     Field publicSelectedKeysField = selectorImplClass.getDeclaredField("publicSelectedKeys");
 
@@ -321,9 +325,21 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     /**
      * Replaces the current {@link Selector} of this event loop with newly created {@link Selector}s to work
      * around the infamous epoll 100% CPU bug.
+
+     如果本次Selector的轮询结果为空,也没有wakeup操作或是新的消息需要处理,则说明是个空轮询,有可能触发了JDK的epollbug,它会导致Selector的空轮询,使I/O线程一直处于100%状态。截止到当前最新的JDK7版本,该bug仍然没有被完全修复。所以Netty需要对该bug进行规避和修正。
+
+     Bug-id=6403933的Selector堆栈如图18-14所示。
+
+     该Bug的修复策略如下。
+     (1)对Seleetor的seleet操作周期进行统计;
+     (2)每完成一次空的select操作进行一次计数;
+     (3)在树个周期(例如100ms〉内如果连续发生N次空轮询,说明触发了JDK NIO的epoll()死循环bug。
+
+     监测到Selector处于死循环后,需要通过重建Selector的方式让系统恢复正常,
      */
     public void rebuildSelector() {
         if (!inEventLoop()) {
+            //首先通过inEventLoop()方法判断是否是其他线程发起的rebuildSelector,如果由其他线程发起,为了避免多线程并发操作Selector和其他资源,需要将rebuildSelector封装成Task,放到NioEventLoop的消息队列中,由NioEventLoop线程负责调用,这样就避免了多线程并发操作导致的线程安全问题。
             execute(new Runnable() {
                 @Override
                 public void run() {
@@ -351,6 +367,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         }
 
         // Register all channels to the new Selector.
+        // 调用openSelector方法创建并打开新的Selector,通过循环,将原Selector上注册的SocketChannel从旧的Selector上去注册，重新注册到新的Selector上，并将老的Selector关闭。通过销毁旧的、有问题的多路复用器,使用新建的Selector,就可以解决空轮询Selector导致的I/O线程CPU占用100%的问题。
         int nChannels = 0;
         for (SelectionKey key: oldSelector.keys()) {
             Object a = key.attachment();
@@ -399,6 +416,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
     @Override
     protected void run() {
+        // 所有的逻辑操作都在for循环体内进行,只有当NioEventLoop接收到退出指令的时候,才退出循环,否则一直执行下去,这也是通用的NIO线程实现方式。
         for (;;) {
             try {
                 switch (selectStrategy.calculateStrategy(selectNowSupplier, hasTasks())) {
@@ -712,6 +730,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         return unwrappedSelector;
     }
 
+    // Selector的selectNow()方法会立即触发Selector的选择操作,如果有准备就绪的Channel,则返回就绪Channel的集合,否则返回0。选择完成之后,再次判断用户是否调用了Selector的wakeup方法,如果调用,则执行selector.wakeup()操作。
     int selectNow() throws IOException {
         try {
             return selector.selectNow();
@@ -723,14 +742,27 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         }
     }
 
+    /**
+    Select操作完成之后,需要对结果进行判断,如果存在下列任意一种情况,则退出当前循环。
+     1)有Channel处于就绪状态,selectedKeys不为0,说明有读写事件需要处理;
+     2)oldWakenUp为true:
+     3)系统或者用户调用了wakeup操作,唤醒当前的多路复用器;
+     4)消息队列中有新的任务需要处理。
+
+     * @param oldWakenUp
+     * @throws IOException
+     */
     private void select(boolean oldWakenUp) throws IOException {
         Selector selector = this.selector;
         try {
             int selectCnt = 0;
             long currentTimeNanos = System.nanoTime();
+            // 取当前系统的纳秒时间,调用delayNanos()方法计算获得NioEventLoop中定时任务的            触发时间。
             long selectDeadLineNanos = currentTimeNanos + delayNanos(currentTimeNanos);
 
             for (;;) {
+                // 计算下一个将要触发的定时任务的剩余超时时间,将它转换成毫秒,为超时时间增加0.5毫秒的调整值。对剩余的超时时间进行判断,如果需要立即执行或者已经超时,则调用selectorsselect.Now()进行轮询操作,将selectCnt设置为1,并退出当前循环。
+                // 将定时任务剩余的超时时间作为参数进行select操作,每完成一次select操作,对select计数器selectCnt加1。
                 long timeoutMillis = (selectDeadLineNanos - currentTimeNanos + 500000L) / 1000000L;
                 if (timeoutMillis <= 0) {
                     if (selectCnt == 0) {
@@ -744,6 +776,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                 // Selector#wakeup. So we need to check task queue again before executing select operation.
                 // If we don't, the task might be pended until select operation was timed out.
                 // It might be pended until idle timeout if IdleStateHandler existed in pipeline.
+                // 本行是否可以删除，首先需要将wakenUp还原为false,并将之前的wakeup状态保存到oldtWakenUp变量中。
+                // 通过hasTasks()方法判断当前的消息队列中是否有消息尚未处理,如果有则调用selectNow()方法立即进行一次select操作,看是否有准备就绪的Channel需要处理。
                 if (hasTasks() && wakenUp.compareAndSet(false, true)) {
                     selector.selectNow();
                     selectCnt = 1;
@@ -786,6 +820,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                     logger.warn(
                             "Selector.select() returned prematurely {} times in a row; rebuilding Selector {}.",
                             selectCnt, selector);
+
 
                     rebuildSelector();
                     selector = this.selector;
