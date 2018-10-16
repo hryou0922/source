@@ -58,6 +58,19 @@ import static io.netty.channel.internal.ChannelUtils.MAX_BYTES_PER_GATHERING_WRI
      doWrite：写半包
      doReadBytes：读写操作
 
+ // 以下未处理，暂时放在这里
+ NioSocketChannel的读写操作实际上是基于NIO的SocketChannel和Netty的ByteBuf封装而成,下面我们首先分析从SocketChannel中读取数据报,如图16-35所示。
+
+ 它有两个参数,说明如下。
+ java.nio.channels.SocketChannel:JDK NIO的SocketChannel;
+ length:ByteBuf的可写最大字节数。
+
+ 实际上就是从SocketChannel中读取L个字节到ByteBuf中,L为ByteBuf可写的字节数,下面我们看下ByteBuf writeBytes方法的实现,如图16-36所示。
+
+ 首先分析setBytes(intindex,ScatteringByteChannelin,intlength)在UnpooledHeapByteBuf中的实现,如图16-37所示。
+ 从SocketChannel中读取字节数组到缓冲区java.nio.ByteBuffer中,它的起始position为writeIndex,limit为writeIndex+length,JDK ByteButffer的相关DOC说明如图16-38
+ 所示。
+
  */
 public class NioSocketChannel extends AbstractNioByteChannel implements io.netty.channel.socket.SocketChannel {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(NioSocketChannel.class);
@@ -296,13 +309,16 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
 
     @Override
     protected void doBind(SocketAddress localAddress) throws Exception {
+        // 对于客户端,主要用于指定客户端Channel的本地绑定Socket地址
         doBind0(localAddress);
     }
 
     private void doBind0(SocketAddress localAddress) throws Exception {
         if (PlatformDependent.javaVersion() >= 7) {
+            // SocketChannel: 通道
             SocketUtils.bind(javaChannel(), localAddress);
         } else {
+            // Socket
             SocketUtils.bind(javaChannel().socket(), localAddress);
         }
     }
@@ -324,6 +340,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
              */
             boolean connected = SocketUtils.connect(javaChannel(), remoteAddress);
             if (!connected) {
+                // 如果是第(2)种结果,需要将NioSocketChannel中的selectionKey设置为OP_CONNECT,监听连接应答消息。
                 selectionKey().interestOps(SelectionKey.OP_CONNECT);
             }
             success = true;

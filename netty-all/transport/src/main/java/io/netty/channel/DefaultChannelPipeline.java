@@ -42,6 +42,21 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 /**
  * The default {@link ChannelPipeline} implementation.  It is usually created
  * by a {@link Channel} implementation when the {@link Channel} is created.
+
+ 17.2.3 ChannelPipeline的inbound事件
+     当发生某个UO事件的时候,例如链路建立、链路关闭、读取操作完成等,都会产生-个事件,事件在pipeline中得到传播和处理,它是事件处理的总入口。由于网络UO相关的事件有限,因此Netty对这些事件进行了统一抽象.Netty自身和用户的ChannelHandler会对感兴趣的事件进行拦截和处理。
+     pipeline中以fireXXX命名的方法都是从IO线程流向用户业务Handler的inbound事件,它们的实现因功能而异,但是处理步骤类似,总结如下。
+     (1)调用HeadHandler对应的fireXXX方法;
+     (2)执行事件相关的逻辑操作。
+     以fireChannelActive方法为例,调用head.-fireChannelActive()之后,判断当前的Channel配置是否自动读取,如果为真则调用Channel的read方法,代码如图17-11所示。
+
+ 17.2.4_ChannelPipeline的outbound事件
+     由用户线程或者代码发起的I/O操作被称为outbound事件,事实上inbound和outbound是Netty自身根据事件在pipeline中的流向抽象出来的术语,在其他NIO框架中并没有这个概念。
+     Pipeline本身并不直接进行I/O操作,在前面对Channel和Unsafe的介绍中我们知道最终都是由Unsafe和Channel来实现真正的I/O操作的。Pipeline负责将I/O事件通过TailHandler进行调度和传播,最终调用Unsafe的I/O方法进行I/O操作
+     如：pipeline的客户端连接操作
+     它直接调用TailHandler的connect方法，最终会调用到HeadHandler的connect方法′最终由HeadHandler调用Unsafe的connect方法发起真正的连接,pipeline仅仅负责事件的调度。
+
+ *
  */
 public class DefaultChannelPipeline implements ChannelPipeline {
 
@@ -249,18 +264,30 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         return addBefore(null, baseName, name, handler);
     }
 
+    // 将名为name的ChannelPipeline加到名baseName的ChannelPipeline后面
     @Override
     public final ChannelPipeline addBefore(
             EventExecutorGroup group, String baseName, String name, ChannelHandler handler) {
         final AbstractChannelHandlerContext newCtx;
         final AbstractChannelHandlerContext ctx;
+        /**
+         由于ChannelPipeline支持运行期动态修改,因此存在两种潜在的多线程并发访问场景。
+         1.线程和用户业务线程的并发访问;
+         2.用户多个线程之间的并发访问。
+
+         为了保证ChannelPipeline的线程安全性,需要通过线程安全容器或者锁来保证并发访问的安全,此处Netty直接使用了synchronized关键字,保证同步块内的所有操作的原子性。
+
+         */
         synchronized (this) {
+            // 检查handler是否是共享和重复添加/删除
             checkMultiplicity(handler);
+            // 对新增的ChannelHandler名进行重复性校验,如果已经有同名的ChannelHandler存在,则不允许覆盐,抛出IIlegalArgumentException(“Duplicatehandlername:“+name)异常。校验通过之后,使用新增的ChannelHandler等参数构造一个新的DefaultChannelHandlerContext实例
             name = filterName(name, handler);
             ctx = getContextOrDie(baseName);
 
+            // 创建新的ChannelHandlerContext
             newCtx = newContext(group, name, handler);
-
+            // 将新创建的DefaultChannelHandlerContext添加到当前的pipeline中
             addBefore0(ctx, newCtx);
 
             // If the registered is false it means that the channel was not registered on an eventloop yet.
@@ -284,6 +311,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
                 return this;
             }
         }
+        // 加入成功之后,缓存ChannelHandlerContext,发送新增ChannelHandlerContext通知消息
         callHandlerAdded0(newCtx);
         return this;
     }
@@ -299,6 +327,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         if (name == null) {
             return generateName(handler);
         }
+        // 不可重名
         checkDuplicateName(name);
         return name;
     }
@@ -985,6 +1014,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
 
     @Override
     public final ChannelFuture connect(SocketAddress remoteAddress) {
+        // 它直接调用TailHandler的connect方法，最终会调用到HeadHandler的connect方法′最终由HeadHandler调用Unsafe的connect方法发起真正的连接,pipeline仅仅负责事件的调度。
         return tail.connect(remoteAddress);
     }
 
@@ -1114,6 +1144,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     }
 
     private AbstractChannelHandlerContext getContextOrDie(String name) {
+        // 首先根据baseName获取它对应的DefaultChannelHandlerContext,ChannelPipeline维护了ChannelHandler名和ChannelHandlerContext实例的映射关系
         AbstractChannelHandlerContext ctx = (AbstractChannelHandlerContext) context(name);
         if (ctx == null) {
             throw new NoSuchElementException(name);

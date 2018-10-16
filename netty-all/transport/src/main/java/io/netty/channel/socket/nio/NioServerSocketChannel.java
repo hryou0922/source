@@ -132,11 +132,14 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
         return SocketUtils.localSocketAddress(javaChannel().socket());
     }
 
+    // 对于服务端,用于绑定监听端口,可以设置backlog参数
     @Override
     protected void doBind(SocketAddress localAddress) throws Exception {
         if (PlatformDependent.javaVersion() >= 7) {
+            // ServerSocketChannel：通道
             javaChannel().bind(localAddress, config.getBacklog());
         } else {
+            // ServerSocket：无通道
             javaChannel().socket().bind(localAddress, config.getBacklog());
         }
     }

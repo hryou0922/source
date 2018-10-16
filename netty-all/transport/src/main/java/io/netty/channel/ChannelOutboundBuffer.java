@@ -128,8 +128,7 @@ public final class ChannelOutboundBuffer {
     }
 
     /**
-     * Add a flush to this {@link ChannelOutboundBuffer}. This means all previous added messages are marked as flushed
-     * and so you will be able to handle them.
+     * 为此ChannelOutboundBuffer添加一个flush。这意味着所有以前添加的消息都标记为已刷新，因此您将能够处理它们
      */
     public void addFlush() {
         // There is no need to process all entries if there was already a flush before and no new messages
