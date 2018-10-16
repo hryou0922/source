@@ -77,6 +77,11 @@ import java.util.Spliterators;
  * <a href="{@docRoot}/../technotes/guides/collections/index.html">
  * Java Collections Framework</a>.
  *
+ * 参考文献：
+ *  java并发之SynchronousQueue实现原理： https://blog.csdn.net/yanyan19880509/article/details/52562039
+ *  Java阻塞队列SynchronousQueue详解：https://www.jianshu.com/p/376d368cb44f
+ *  chronousQueue(同步队列): http://shift-alt-ctrl.iteye.com/blog/1840385
+ *
  * @since 1.5
  * @author Doug Lea and Bill Scherer and Michael Scott
  * @param <E> the type of elements held in this collection
