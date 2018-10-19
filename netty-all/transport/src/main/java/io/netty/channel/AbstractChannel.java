@@ -431,6 +431,16 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
     /**
      * {@link Unsafe} implementation which sub-classes must extend and use.
+     *
+     关键方法：
+         1.register方法
+         2.bind方法
+         3.disconnect方法
+         4.close方法
+         5.write方法
+         6.flush方法
+         7. deregister
+
      */
     protected abstract class AbstractUnsafe implements Unsafe {
 
@@ -467,6 +477,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             return remoteAddress0();
         }
 
+        // register方法主要用于将当前Unsafe对应的Channel注册到EventLoop的多路复用器上,然后调用DefaultChannelPipeline的fireChannelRegistered方法。如果Channel被激活,则调用DefaultChannelPipeline的fireChannelActive方法。
         @Override
         public final void register(EventLoop eventLoop, final ChannelPromise promise) {
             if (eventLoop == null) {
@@ -484,6 +495,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
             AbstractChannel.this.eventLoop = eventLoop;
 
+            // 首先判断当前所在的线程是否是Channel对应的NioEventLoop线程,如果是同一个线程则不存在多线程并发操作问题,直接调用register0进行注册;如果是由用户线程或者其他线程发起的注册操作,则将注册操作封装成Runnable,放到NioEventLoop任务队列中执行。注意:如果直接执行register0方法,会存在多线程并发操作Channel的问题。
             if (eventLoop.inEventLoop()) {
                 register0(promise);
             } else {
@@ -505,6 +517,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             }
         }
 
+        // 首先调用ensureOpen方法判断当前Channel是否打开,如果没有打开则无法注册,直接返回。校验通过后调用doRegister方法,它由AbstractNioUnsafe对应的AbstractNioChanne1实现
         private void register0(ChannelPromise promise) {
             try {
                 // check if the channel is still open as it could be closed in the mean time when the register
@@ -513,6 +526,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                     return;
                 }
                 boolean firstRegistration = neverRegistered;
+                // 该方法在前面的AbstractNioChannel源码分析中已经介绍过,此处不再赘述。如果doRegister方法没有抛出异常,则说明Channel注册成功。将ChannelPromise的结果设置为成功,调用ChannelPipeline的fireChanneIRegistered方法,判断当前的Channel是否已经被激活,如果已经被激活,则调用ChannelPipeline的fireChannelActive方法。
                 doRegister();
                 neverRegistered = false;
                 registered = true;
@@ -537,6 +551,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                     }
                 }
             } catch (Throwable t) {
+                // 如果注册过程中发生了异常,则强制关闭连接,将异常堆栈信息设置到ChanneIPromise中。
                 // Close the channel directly to avoid FD leak.
                 closeForcibly();
                 closeFuture.setClosed();
@@ -544,6 +559,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             }
         }
 
+        // bind方法主要用于绑定指定的端口,对于服务端,用于绑定监听端口,可以设置backlog参数;对于客户端,主要用于指定客户端Channel的本地绑定Socket地址。
         @Override
         public final void bind(final SocketAddress localAddress, final ChannelPromise promise) {
             assertEventLoop();
@@ -567,8 +583,10 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
             boolean wasActive = isActive();
             try {
+                // 调用doBind方法,对于NioSocketChannel和NioServerSocketChannel有不同的实现
                 doBind(localAddress);
             } catch (Throwable t) {
+                // 如果绑定本地端口发生异常,则将异常设置到ChannelPromise中用于通知ChannelFuture,随后调用closeIfClosed方法来关闭Channel。
                 safeSetFailure(promise, t);
                 closeIfClosed();
                 return;
@@ -586,6 +604,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             safeSetSuccess(promise);
         }
 
+        // disconnect用于客户端或者服务端主动关闭连接
         @Override
         public final void disconnect(final ChannelPromise promise) {
             assertEventLoop();
@@ -702,6 +721,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             }
 
             if (closeInitiated) {
+                // 如果链路没有处于刷新状态,需要从closeFuture中判断关闭操作是否完成,如果已经完成,不需要重复关闭链路,设置ChannelPromise的操作结果为成功并返回。
                 if (closeFuture.isDone()) {
                     // Closed already.
                     safeSetSuccess(promise);
@@ -728,6 +748,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                     @Override
                     public void run() {
                         try {
+
                             // Execute the close.
                             doClose0(promise);
                         } finally {
@@ -735,6 +756,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                             invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
+                                    // 调用ChannelOutboundBuffer的close方法释放缓冲区的消息,随后构造链路关闭通知Runnable放到NioEventLoop中执行
                                     if (outboundBuffer != null) {
                                         // Fail all the queued messages
                                         outboundBuffer.failFlushed(cause, notify);
@@ -758,6 +780,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                     }
                 }
                 if (inFlush0) {
+                    // 在链路关闭之前需要首先判断是否处于刷新状态,如果处于刷新状态说明还有消息尚未发送出去,需要等到所有消息发送完成再关闭链路,因此,将关闭操作封装成Runnable稍后再执行
                     invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -770,18 +793,22 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             }
         }
 
+        // 执行关闭操作,将消息发送缓冲数组设置为空,通知JVM进行内存回收。调用抽象方法doClose关闭链路
         private void doClose0(ChannelPromise promise) {
             try {
                 doClose();
                 closeFuture.setClosed();
+                // 如果关闭操作成功,设置ChannelPromise结果为成功。
                 safeSetSuccess(promise);
             } catch (Throwable t) {
+                // 如果操作失败,则设置异常对象到ChannelPromise中
                 closeFuture.setClosed();
                 safeSetFailure(promise, t);
             }
         }
 
         private void fireChannelInactiveAndDeregister(final boolean wasActive) {
+            // TODO这里是netty书上写的这里好像没有：调用deregister方法,将Channel从多路复用器上取消注册: NioEventLoop的cancel方法实际将selectionKey对应的Channel从多路复用器上去注册
             deregister(voidPromise(), wasActive && !isActive());
         }
 
@@ -868,6 +895,15 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             }
         }
 
+        /**
+
+         以下内容来自netty书，但是这个目前没有对的上
+         write方法实际上将消息添加到环形发送数组中,并不是真正的写Channel,它的代码如果Channel没有处于激活状态,说明TCP链路还没有真正建立成功,当前Channeil存在以下两种状态。
+             (1)Channel打开,但是TCP链路尚未建立成功:NOTVETCONNECTED_EXCEPTION:
+             (2)Channel已经关闭:CLOSED_CHANNEL_EXCEPTION。
+         对链路状态进行判断,给ChannelPromise设置对应的异常,然后调用ReferenceCountUtil的release方法释放发送的msg对象。
+         如果链路状态正常,则将需要发送的msg和promise放入发送缓冲区中(环形数组)。
+         */
         @Override
         public final void write(Object msg, ChannelPromise promise) {
             assertEventLoop();
@@ -880,6 +916,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 // See https://github.com/netty/netty/issues/2362
                 safeSetFailure(promise, WRITE_CLOSED_CHANNEL_EXCEPTION);
                 // release message now to prevent resource-leak
+                // 对链路状态进行判断,给ChannelPromise设置对应的异常,然后调用ReferenceCountUtil的release方法释放发送的msg对象。
                 ReferenceCountUtil.release(msg);
                 return;
             }
@@ -896,12 +933,39 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 ReferenceCountUtil.release(msg);
                 return;
             }
-
+            //  如果链路状态正常,则将需要发送的msg和promise放入发送缓冲区中(环形数组)。
             outboundBuffer.addMessage(msg, size, promise);
         }
 
+
+
+
+        /**
+         * 来自netty书： P391 - ?
+         首先计算需要发送的消息个数(unflushed-flush),如果只有1个消息需要发送,则调用父类的写操作,我们分析AbstractNioByteChannel的doWrite()
+
+         因为只有一条消息需要发送,所以直接从ChannelOutboundBuffer中获取当前需要发送的消息,代码如图16-56所示。
+
+
+         首先,获取需要发送的消息,如果消息为ByteBuf且它分配的是JDK的非堆内存,则直接返回。对返回的消息进行判断,如果为空,说明该消息已经发送完成并被回收,然后执行清空OP_WRITE操作位的clearOpWrite方法,代码如图16-57所示。
+
+         继续向下分析,如果需要发送的ByteBuf已经没有可写的字节了,则说明已经发送完成,将该消息从环形队列中删除,然后继续循环,代码如图16-58所示。
+
+         首先判断环形队列中是否还有需要发送的消息,如果没有,则直接返回。如果非空,则首先荻取Entry,然后对其进行资源释放,同时对需要发送的索引flushed进行更新。所有操作执行完之后,调用decrementPendingOutboundBytes减去已经发送的字节数,该方法跟incerementPendingOutboundBytes类似,会进行发送低水位的判断和事件通知,此处不再赘述。
+
+         首先将半包标识设置为false,从DefaultSocketChanneIConfig中获取循环发送的次数,进行循环发送,对发送方法doWriteBytes展开分析,如图16-61所示。
+
+         ByteBuf的readBytes()方法的功能是将当前ByteBuf中的可写字节数组写入到指定的Channel中。方法的第一个参数是Channel,此处就是SocketChannel,第二个参数是写入的字节数组长度,它等于ByteBuf的可读字节数,返回值是写入的字节个数。由于我们将SocketChannel设置为异步非阻塞模式,所以写操作不会阻塞。
+
+         从写操作中返回,需要对写入的字节数进行判断,如果为0,说明TCP发送缓冲区已满,不能继续再向里面写入消息,因此,将写半包标识设置为true,然后退出循环,执行后续排队的其他任务或者读操作,等待下一次selector的轮询继续触发写操作。
+
+         对写入的字节数进行累加,判断当前的ByteBuf中是否还有没有发送的字节,如果没有可发送的字节,则将done设置为true,退出循环。
+
+         从循环发送状态退出后,首先根据实际发送的字节数更新发送进度,实际就是发送的守节数和需要发送的字节数的一个比值。执行完进度更新后,判断本轮循环是否将需要发送的消息全部发送完成,如果发送完成则将该消息从循环队列中删除:否则,设置多路复用器的OP_WRITE操作位,用于通知Reactor线程还有半包消息需要继续发送。
+         */
         @Override
         public final void flush() {
+            // flush方法负责将发送缓冲区中待发送的消息全部写入到Channel中,并发送给通信对方。
             assertEventLoop();
 
             ChannelOutboundBuffer outboundBuffer = this.outboundBuffer;
@@ -943,6 +1007,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             }
 
             try {
+                // 首先将发送环形数组的unflushed指针修改为tail,标识本次要发送消息的缓冲区范围。然后调用flush0进行发送,由于flush0代码非常简单,我们重点分析doWrite方法
                 doWrite(outboundBuffer);
             } catch (Throwable t) {
                 if (t instanceof IOException && config().isAutoClose()) {
@@ -1118,7 +1183,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
     protected abstract void doBeginRead() throws Exception;
 
     /**
-     * Flush the content of the given buffer to the remote peer.
+     * 刷新给定缓冲区的内容到远端节点
      */
     protected abstract void doWrite(ChannelOutboundBuffer in) throws Exception;
 

@@ -221,6 +221,10 @@ public abstract class AbstractNioChannel extends AbstractChannel {
         void forceFlush();
     }
 
+    /**
+     * AbstractNioUnsafe是AbstractUnsafe类的NIO实现,它主要实现了connect、finishConnect等方法
+     *
+     */
     protected abstract class AbstractNioUnsafe extends AbstractUnsafe implements NioUnsafe {
 
         protected final void removeReadOp() {
@@ -257,9 +261,15 @@ public abstract class AbstractNioChannel extends AbstractChannel {
                 }
 
                 boolean wasActive = isActive();
+                /**
+                 * 操作有两个目的。
+                 (1)根据连接超时时间设置定时任务,超时时间到之后触发校验,如果发现连接并没有完成,则关闭连接句柄,释放资源,设置异常堆栈并发起去注册。
+                 (2)设置连接结果监听器,如果接收到连接完成通知则判断连接是否被取消,如果被取消则关闭连接句柄,释放资源,发起取消注册操作。
+                 */
                 if (doConnect(remoteAddress, localAddress)) {
                     fulfillConnectPromise(promise, wasActive);
                 } else {
+                    //只要连接失败,就抛出Error0,由调用方执行句柄关闭等资源释放操作,如果返回成功,则执行fulfillIConnectPromise方法,它负责将SocketChannel修改为监听读操作位,′用来监听网络的读事件,代码如图16-67所示。要雷
                     connectPromise = promise;
                     requestedRemoteAddress = remoteAddress;
 
@@ -283,6 +293,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
                         @Override
                         public void operationComplete(ChannelFuture future) throws Exception {
                             if (future.isCancelled()) {
+                                // 最后对连接超时进行判断:如果连接超时时仍然没有接收到服务端的ACK应答消息,则由定时任务关闭客户端连接,将SocketChannel从Reactor线程的多路复用器上摘除,释放资源,
                                 if (connectTimeoutFuture != null) {
                                     connectTimeoutFuture.cancel(false);
                                 }
@@ -298,6 +309,12 @@ public abstract class AbstractNioChannel extends AbstractChannel {
             }
         }
 
+        /**
+         通过SocketChannel的finishConnect方法判断连接结果,执行该方法返回三种可能结果。
+             连接成功返回true;:
+             连接失败返回false;
+             发生链路被关闭、链路中断等异常,连接失败。
+         */
         private void fulfillConnectPromise(ChannelPromise promise, boolean wasActive) {
             if (promise == null) {
                 // Closed via cancellation and the promise has been notified already.
@@ -314,6 +331,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
             // Regardless if the connection attempt was cancelled, channelActive() event should be triggered,
             // because what happened is what happened.
             if (!wasActive && active) {
+                // 异步连接返回之后,需要判断连接结果,如果连接成功,则触发ChannelActive事件,
                 pipeline().fireChannelActive();
             }
 
@@ -334,6 +352,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
             closeIfClosed();
         }
 
+        // 客户端接收到服务端的TCP握手应答消息,通过SocketChannel的finishConnect方法对连接结果进行判断
         @Override
         public final void finishConnect() {
             // Note this method is invoked by the event loop only if the connection attempt was
@@ -342,6 +361,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
             assert eventLoop().inEventLoop();
 
             try {
+                // 首先缓存连接状态,,然后执行doFinishConnect方法判断连接结果
                 boolean wasActive = isActive();
                 doFinishConnect();
                 fulfillConnectPromise(connectPromise, wasActive);
