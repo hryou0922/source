@@ -72,40 +72,13 @@ import sun.reflect.annotation.*;
 import sun.reflect.misc.ReflectUtil;
 
 /**
- * Instances of the class {@code Class} represent classes and
- * interfaces in a running Java application.  An enum is a kind of
- * class and an annotation is a kind of interface.  Every array also
- * belongs to a class that is reflected as a {@code Class} object
- * that is shared by all arrays with the same element type and number
- * of dimensions.  The primitive Java types ({@code boolean},
- * {@code byte}, {@code char}, {@code short},
- * {@code int}, {@code long}, {@code float}, and
- * {@code double}), and the keyword {@code void} are also
- * represented as {@code Class} objects.
+ * Instances of the class {@code Class} 表示 classes and interfaces。
+ *  enum是class的一种，annotation是interface的一种
+ * 每个数组也属于一个类，它反映为{@code Class}对象，由具有相同元素类型和维数的所有数组共享。（Every array also belongs to a class that is reflected as a {@code Class} object that is shared by all arrays with the same element type and number of dimensions）
+ * 私有的Java类型({@code boolean},{@code byte}, {@code char}, {@code short},　{@code int}, {@code long}, {@code float}, and　{@code double}), and the keyword {@code void} 　）也表示为一个Class objects.
  *
- * <p> {@code Class} has no public constructor. Instead {@code Class}
- * objects are constructed automatically by the Java Virtual Machine as classes
- * are loaded and by calls to the {@code defineClass} method in the class
- * loader.
+ * Class没有公共的构造器。当调用class loader的defineClass方法加载class字节码时，自动创建Class对象。
  *
- * <p> The following example uses a {@code Class} object to print the
- * class name of an object:
- *
- * <blockquote><pre>
- *     void printClassName(Object obj) {
- *         System.out.println("The class of " + obj +
- *                            " is " + obj.getClass().getName());
- *     }
- * </pre></blockquote>
- *
- * <p> It is also possible to get the {@code Class} object for a named
- * type (or for void) using a class literal.  See Section 15.8.2 of
- * <cite>The Java&trade; Language Specification</cite>.
- * For example:
- *
- * <blockquote>
- *     {@code System.out.println("The name of class Foo is: "+Foo.class.getName());}
- * </blockquote>
  *
  * @param <T> the type of the class modeled by this {@code Class}
  * object.  For example, the type of {@code String.class} is {@code
@@ -227,27 +200,11 @@ public final class Class<T> implements java.io.Serializable,
     }
 
     /**
-     * Returns the {@code Class} object associated with the class or
-     * interface with the given string name.  Invoking this method is
-     * equivalent to:
+     * 根据指定的名称返回一个Class对象，此Class对象可能民class或interface
      *
-     * <blockquote>
-     *  {@code Class.forName(className, true, currentLoader)}
-     * </blockquote>
-     *
-     * where {@code currentLoader} denotes the defining class loader of
-     * the current class.
-     *
-     * <p> For example, the following code fragment returns the
-     * runtime {@code Class} descriptor for the class named
-     * {@code java.lang.Thread}:
-     *
-     * <blockquote>
-     *   {@code Class t = Class.forName("java.lang.Thread")}
-     * </blockquote>
-     * <p>
-     * A call to {@code forName("X")} causes the class named
-     * {@code X} to be initialized.
+     * 此方法等价于：
+     *      {@code Class.forName(className, true, currentLoader)}
+     *  其中currentLoader表示当前class的class loader
      *
      * @param      className   the fully qualified name of the desired class.
      * @return     the {@code Class} object for the class with the
@@ -266,22 +223,13 @@ public final class Class<T> implements java.io.Serializable,
 
 
     /**
-     * Returns the {@code Class} object associated with the class or
-     * interface with the given string name, using the given class loader.
-     * Given the fully qualified name for a class or interface (in the same
-     * format returned by {@code getName}) this method attempts to
-     * locate, load, and link the class or interface.  The specified class
-     * loader is used to load the class or interface.  If the parameter
-     * {@code loader} is null, the class is loaded through the bootstrap
-     * class loader.  The class is initialized only if the
-     * {@code initialize} parameter is {@code true} and if it has
-     * not been initialized earlier.
+     * 根据指定的名称和 class loader 返回一个Class对象，此Class对象可能民class或interface
+     *  如果loader是null，则使用bootstrap class loader加载
+     *  如果initialize是true且class未被初始化过，则会对class进行初始化
      *
-     * <p> If {@code name} denotes a primitive type or void, an attempt
-     * will be made to locate a user-defined class in the unnamed package whose
-     * name is {@code name}. Therefore, this method cannot be used to
-     * obtain any of the {@code Class} objects representing primitive
-     * types or void.
+     * 此方法无法用于加载用于表示 primitive types 或 void 的Class对象。
+     * 当将name值表示为a primitive type or void时，此方法会在未命名的包下面查找此值对应的用户定义的类
+     *
      *
      * <p> If {@code name} denotes an array class, the component type of
      * the array class is loaded but not initialized.
