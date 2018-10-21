@@ -28,6 +28,8 @@ import io.netty.util.internal.TypeParameterMatcher;
 import java.util.List;
 
 /**
+ * MessageToMessageEncoder负责将一个POJO对象编码成另一个POJO对象
+ *
  * {@link ChannelOutboundHandlerAdapter} which encodes from one message to an other message
  *
  * For example here is an implementation which decodes an {@link Integer} to an {@link String}.
@@ -81,10 +83,12 @@ public abstract class MessageToMessageEncoder<I> extends ChannelOutboundHandlerA
         CodecOutputList out = null;
         try {
             if (acceptOutboundMessage(msg)) {
+                // 与之前的编码器类似,创建CodecOutputList对象,判断当前需要编码的对象是否是编码器可处理的类型,如果不是,则忽略,执行下一个ChannelHandler的write方法。
                 out = CodecOutputList.newInstance();
                 @SuppressWarnings("unchecked")
                 I cast = (I) msg;
                 try {
+                    // 具体的编码方法实现由用户子类编码器负责完成,如果编码后的CodecOutputList为空,说明编码没有成功,释放CodecOutputList引用。
                     encode(ctx, cast, out);
                 } finally {
                     ReferenceCountUtil.release(cast);
@@ -105,6 +109,7 @@ public abstract class MessageToMessageEncoder<I> extends ChannelOutboundHandlerA
         } catch (Throwable t) {
             throw new EncoderException(t);
         } finally {
+            // 如果编码成功,则通过遍历CodecOutputList,循环发送编码后的POJO对象,
             if (out != null) {
                 final int sizeMinusOne = out.size() - 1;
                 if (sizeMinusOne == 0) {

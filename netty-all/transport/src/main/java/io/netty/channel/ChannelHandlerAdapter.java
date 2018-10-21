@@ -21,7 +21,7 @@ import io.netty.util.internal.InternalThreadLocalMap;
 import java.util.Map;
 
 /**
- * Skeleton implementation of a {@link ChannelHandler}.
+ * ChannelHandler的骨干的实现
  */
 public abstract class ChannelHandlerAdapter implements ChannelHandler {
 
@@ -38,8 +38,7 @@ public abstract class ChannelHandlerAdapter implements ChannelHandler {
     }
 
     /**
-     * Return {@code true} if the implementation is {@link Sharable} and so can be added
-     * to different {@link ChannelPipeline}s.
+     * 如果ChannelHandler带有Sharable注解，则返回true。如果true，则此ChannelHandler实例可以被添加到不同的ChannelPipeline中
      */
     public boolean isSharable() {
         /**
@@ -60,28 +59,19 @@ public abstract class ChannelHandlerAdapter implements ChannelHandler {
         return sharable;
     }
 
-    /**
-     * Do nothing by default, sub-classes may override this method.
-     */
+    // 默认实现，没有做什么
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
         // NOOP
     }
 
-    /**
-     * Do nothing by default, sub-classes may override this method.
-     */
+    // 默认实现，没有做什么
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
         // NOOP
     }
 
-    /**
-     * Calls {@link ChannelHandlerContext#fireExceptionCaught(Throwable)} to forward
-     * to the next {@link ChannelHandler} in the {@link ChannelPipeline}.
-     *
-     * Sub-classes may override this method to change behavior.
-     */
+    // 调用{@link ChannelHandlerContext#fireExceptionCaught(Throwable)} 将异常传递到ChannelPipeline里的下一个ChannelHandler
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         ctx.fireExceptionCaught(cause);

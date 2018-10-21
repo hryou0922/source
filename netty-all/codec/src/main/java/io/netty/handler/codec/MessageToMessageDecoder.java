@@ -26,19 +26,18 @@ import io.netty.util.internal.TypeParameterMatcher;
 import java.util.List;
 
 /**
- * {@link ChannelInboundHandlerAdapter} which decodes from one message to an other message.
- *
+ * ChannelInboundHandlerAdapter 将一个message编码为另一个message
  *
  * For example here is an implementation which decodes a {@link String} to an {@link Integer} which represent
  * the length of the {@link String}.
  *
  * <pre>
  *     public class StringToIntegerDecoder extends
- *             {@link MessageToMessageDecoder}&lt;{@link String}&gt; {
+ *             {@link MessageToMessageDecoder}<{@link String}> {
  *
  *         {@code @Override}
  *         public void decode({@link ChannelHandlerContext} ctx, {@link String} message,
- *                            List&lt;Object&gt; out) throws {@link Exception} {
+ *                            List<Object> out) throws {@link Exception} {
  *             out.add(message.length());
  *         }
  *     }
@@ -79,17 +78,21 @@ public abstract class MessageToMessageDecoder<I> extends ChannelInboundHandlerAd
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        // 先通过CodecOutputList创建一个新的可循环利用的CodecOutputList,然后对解码的消息类型进行判断,通过类型参数校验器看是否是可接收的类型,如果是则校验通过
         CodecOutputList out = CodecOutputList.newInstance();
         try {
             if (acceptInboundMessage(msg)) {
                 @SuppressWarnings("unchecked")
                 I cast = (I) msg;
                 try {
+                    // 校验通过之后,直接调用decode抽象方法,由具体实现子类进行消息解码
                     decode(ctx, cast, out);
                 } finally {
+                    // 解码完成之后,调用ReferenceCountUtil的release方法来释放被解码的msg对象
                     ReferenceCountUtil.release(cast);
                 }
             } else {
+                // 如果需要解码的对象不是当前解码器可以接收和处理的类型,则将它加入到CodecOutputList中不进行解码。
                 out.add(msg);
             }
         } catch (DecoderException e) {
@@ -97,6 +100,7 @@ public abstract class MessageToMessageDecoder<I> extends ChannelInboundHandlerAd
         } catch (Exception e) {
             throw new DecoderException(e);
         } finally {
+            // 最后,对CodecOutputList进行遍历,循环调用ChannelHandlerContext的fireChannelRead方法,通知后续的ChannelHandler继续进行处理。循环通知完成之后,通过recycle方法释放CodecOutputList对象。
             int size = out.size();
             for (int i = 0; i < size; i ++) {
                 ctx.fireChannelRead(out.getUnsafe(i));

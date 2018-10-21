@@ -27,6 +27,8 @@ import io.netty.util.internal.TypeParameterMatcher;
 
 
 /**
+ * MessageToByteEncoder负责将用户的POJO对象编码成ByteBuf,以便通过网络进行传输
+ *
  * {@link ChannelOutboundHandlerAdapter} which encodes message in a stream-like fashion from one message to an
  * {@link ByteBuf}.
  *
@@ -99,16 +101,24 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         ByteBuf buf = null;
         try {
+            // 首先判断当前编码器是否支持需要发送的消息,如果不支持则直接透传
             if (acceptOutboundMessage(msg)) {
                 @SuppressWarnings("unchecked")
                 I cast = (I) msg;
+                // ;如果支持则判断缓冲区的类型,对于直接内存分配ioBuffer(堆外内存),对于堆内存通过heapBuffer方法分配
                 buf = allocateBuffer(ctx, cast, preferDirect);
                 try {
+                    // 编码使用的缓冲区分配完成之后,调用encode抽象方法进行编码,
+
                     encode(ctx, cast, buf);
                 } finally {
+                    // 发送操作完成之后,在方法退出之前释放编码缓冲区ByteBuf对象
                     ReferenceCountUtil.release(cast);
                 }
-
+                /** 编码完成之后,调用ReferenceCountUtil的release方法释放编码对象msg。对编码后的ByteBuf进行以下判断。
+                 1) 如果缓冲区包含可发送的字节,则调用ChannelHandlerContext的write方法发送ByteBuf:;
+                 2) 如果缓视区没有包含可写的字节,则需要释放编码后的ByteBuf,写入一个空的ByteBuf到ChannelHandlerContext中。
+                 **/
                 if (buf.isReadable()) {
                     ctx.write(buf, promise);
                 } else {

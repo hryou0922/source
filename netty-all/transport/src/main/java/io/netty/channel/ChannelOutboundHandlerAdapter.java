@@ -18,8 +18,8 @@ package io.netty.channel;
 import java.net.SocketAddress;
 
 /**
- * Skeleton implementation of a {@link ChannelOutboundHandler}. This implementation just forwards each method call via
- * the {@link ChannelHandlerContext}.
+ * ChannelOutboundHandler的骨干实现
+ * 本类实现只是将请求转发骊ChannelHandlerContext对应的方法
  */
 public class ChannelOutboundHandlerAdapter extends ChannelHandlerAdapter implements ChannelOutboundHandler {
 

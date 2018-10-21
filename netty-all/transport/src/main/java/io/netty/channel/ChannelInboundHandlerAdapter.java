@@ -16,14 +16,10 @@
 package io.netty.channel;
 
 /**
- * Abstract base class for {@link ChannelInboundHandler} implementations which provide
- * implementations of all of their methods.
+ * ChannelInboundHandler的适配器实现
+ *  此类实现只是将操作传递到ChannelPipeline里的下一个ChannelHandler，子类可以覆盖此方法实现
  *
- * <p>
- * This implementation just forward the operation to the next {@link ChannelHandler} in the
- * {@link ChannelPipeline}. Sub-classes may override a method implementation to change this.
- * </p>
- * <p>
+ *
  * Be aware that messages are not released after the {@link #channelRead(ChannelHandlerContext, Object)}
  * method returns automatically. If you are looking for a {@link ChannelInboundHandler} implementation that
  * releases the received messages automatically, please see {@link SimpleChannelInboundHandler}.

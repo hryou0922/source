@@ -27,50 +27,45 @@ import io.netty.util.internal.StringUtil;
 import java.util.List;
 
 /**
- * {@link ChannelInboundHandlerAdapter} which decodes bytes in a stream-like fashion from one {@link ByteBuf} to an
- * other Message type.
+ * {@link ChannelInboundHandlerAdapter}，它以类似流的方式将字节从一个{@link ByteBuf}解码为另一个Message类型。
  *
- * For example here is an implementation which reads all readable bytes from
- * the input {@link ByteBuf} and create a new {@link ByteBuf}.
+ * 这里是个例了：从input ByteBuf里读取所有可以读取字节，并创建新的ByteBuf
  *
  * <pre>
  *     public class SquareDecoder extends {@link ByteToMessageDecoder} {
  *         {@code @Override}
- *         public void decode({@link ChannelHandlerContext} ctx, {@link ByteBuf} in, List&lt;Object&gt; out)
+ *         public void decode({@link ChannelHandlerContext} ctx, {@link ByteBuf} in, List<Object> out)
  *                 throws {@link Exception} {
  *             out.add(in.readBytes(in.readableBytes()));
  *         }
  *     }
  * </pre>
  *
- * <h3>Frame detection</h3>
+ * <h3>帧检测</h3>
  * <p>
  * Generally frame detection should be handled earlier in the pipeline by adding a
  * {@link DelimiterBasedFrameDecoder}, {@link FixedLengthFrameDecoder}, {@link LengthFieldBasedFrameDecoder},
  * or {@link LineBasedFrameDecoder}.
- * <p>
+ *
+ * 如果实现自定义帧解码器，那么在实现{@link ByteToMessageDecoder}类时注意： 通过检查{@link ByteBuf＃readableBytes（）}，确保缓冲区中有足够的字节用于完整的帧。 如果完整帧没有足够的字节，则返回而不修改读取器索引以允许更多字节到达。
+ *
  * If a custom frame decoder is required, then one needs to be careful when implementing
  * one with {@link ByteToMessageDecoder}. Ensure there are enough bytes in the buffer for a
  * complete frame by checking {@link ByteBuf#readableBytes()}. If there are not enough bytes
  * for a complete frame, return without modifying the reader index to allow more bytes to arrive.
- * <p>
- * To check for complete frames without modifying the reader index, use methods like {@link ByteBuf#getInt(int)}.
- * One <strong>MUST</strong> use the reader index when using methods like {@link ByteBuf#getInt(int)}.
- * For example calling <tt>in.getInt(0)</tt> is assuming the frame starts at the beginning of the buffer, which
- * is not always the case. Use <tt>in.getInt(in.readerIndex())</tt> instead.
- * <h3>Pitfalls</h3>
- * <p>
- * Be aware that sub-classes of {@link ByteToMessageDecoder} <strong>MUST NOT</strong>
- * annotated with {@link @Sharable}.
- * <p>
- * Some methods such as {@link ByteBuf#readBytes(int)} will cause a memory leak if the returned buffer
- * is not released or added to the <tt>out</tt> {@link List}. Use derived buffers like {@link ByteBuf#readSlice(int)}
- * to avoid leaking memory.
+ *
+ * 要在不修改reader index 的情况下检查完整帧，请使用{@link ByteBuf＃getInt（int）}等方法。
+ * 例如，如果在缓冲区的开头处开始，则调用in.getInt（0）。如果不是，则调用in.getInt（in.readerIndex（））方法。
+ *
+ * 注意：
+ *  ByteToMessageDecoder的子类不可以使用@Sharable注解
+ *  如果如果返回的缓冲区未释放或添加到<tt> out </ tt> {@link List}，则某些方法（如{@link ByteBuf＃readBytes（int）}将导致内存泄漏。使用{@link ByteBuf＃readSlice（int）}等派生缓冲区来避免内存泄漏。
+ *
  */
 public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter {
 
     /**
-     * Cumulate {@link ByteBuf}s by merge them into one {@link ByteBuf}'s, using memory copies.
+     * 通过使用内存副本将累积的{@link ByteBuf}合并到一个{@link ByteBuf}
      */
     public static final Cumulator MERGE_CUMULATOR = new Cumulator() {
         @Override
@@ -96,9 +91,10 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
     };
 
     /**
-     * Cumulate {@link ByteBuf}s by add them to a {@link CompositeByteBuf} and so do no memory copy whenever possible.
-     * Be aware that {@link CompositeByteBuf} use a more complex indexing implementation so depending on your use-case
-     * and the decoder implementation this may be slower then just use the {@link #MERGE_CUMULATOR}.
+     * 将累积的{@link ByteBuf}添加到{@link CompositeByteBuf}，此时尽可能不进行内存复制。
+     * 注意：请注意{@link CompositeByteBuf}使用更复杂的索引实现，因此根据您的用例和解码器实现，这可能会慢一点，只需使用{@link #MERGE_CUMULATOR}。
+     *
+     * Be aware that {@link CompositeByteBuf} use a more complex indexing implementation so depending on your use-case and the decoder implementation this may be slower then just use the {@link #MERGE_CUMULATOR}.
      */
     public static final Cumulator COMPOSITE_CUMULATOR = new Cumulator() {
         @Override
@@ -252,9 +248,11 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        // 首先判断需要解码的msg对象是否是ByteBuf,如果是ByteBuf才需要进行解码,否则直接透传。
         if (msg instanceof ByteBuf) {
             CodecOutputList out = CodecOutputList.newInstance();
             try {
+                // 通过eumulation是否为空判断解码器是否缓存了没有解码完成的半包消息,如果为空,说明是首次解码或者最近一次已经处理完了半包消息,没有缓存的半包消息需要处理,直接将需要解码的ByteBuf赋值给cumulation;如果cumulation缓存有上次没有解码完成的ByteBuf,则进行复制操作,将需要解码的ByteBuf复制到cumulation中。
                 ByteBuf data = (ByteBuf) msg;
                 first = cumulation == null;
                 if (first) {
@@ -262,6 +260,7 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
                 } else {
                     cumulation = cumulator.cumulate(ctx.alloc(), cumulation, data);
                 }
+                // 复制操作完成之后释放需要解码的ByteBuf对象,调用callDecode方法进行解码
                 callDecode(ctx, cumulation, out);
             } catch (DecoderException e) {
                 throw e;
@@ -406,6 +405,7 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
      */
     protected void callDecode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
         try {
+            // 对ByteBuf进行循环解码,循环的条件是解码缓冲区对象中有可读的字节,
             while (in.isReadable()) {
                 int outSize = out.size();
 
@@ -425,17 +425,26 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
                 }
 
                 int oldInputLength = in.readableBytes();
+                // 调用抽象decode方法,由用户的子类解码器进行解码
                 decodeRemovalReentryProtection(ctx, in, out);
 
+                // 解码后需要对当前的pipeline状态和解码结果进行判断
                 // Check if this handler was removed before continuing the loop.
                 // If it was removed, it is not safe to continue to operate on the buffer.
                 //
                 // See https://github.com/netty/netty/issues/1664
+                //如果当前的ChannelHandlerContext已经被移除,则不能继续进行解码,直接退出循环;
                 if (ctx.isRemoved()) {
                     break;
                 }
 
+                // 如果输出的out列表长度没变化,说明解码没有成功,需要针对以下不同场景进行判断。
+                // 1)如果用户解码器没有消费ByteBuf,则说明是个半包消息,需要由I/O线程继续读取后续的数据报,在这种场景下要退出循环。
+                // 2)如果用户解码器消费了ByteBuf,说明可以解码可以继续进行。
+                // 3)如果用户解码器没有消费ByteBuf,但是却解码出了一个或者多个对象,这种行为被认为是非法的,需要抛出DecoderException异常。
+                // 4)最后通过isSingleDecode进行判断,如果是单条消息解码器,第一次解码完成之后就退出循环。
                 if (outSize == out.size()) {
+
                     if (oldInputLength == in.readableBytes()) {
                         break;
                     } else {
@@ -511,7 +520,9 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
         }
     }
 
+    // 在复制之前需要对cumulation的可写缓冲区进行判断,如果不足则需要动态扩展
     static ByteBuf expandCumulation(ByteBufAllocator alloc, ByteBuf cumulation, int readable) {
+        // 扩展的代码很简单,利用字节缓冲区分配器重新分配一个新的ByteBuf,将老的cumulation复制到新的ByteBuf中,释放cumulation。需要注意的是,此处内存扩展没有采用倍增或者步进的方式,分配的缓冲区恰恰够用,此处的算法可以优化下,以防止连续半包导致的频繁缓冲区扩张和内存复制
         ByteBuf oldCumulation = cumulation;
         cumulation = alloc.buffer(oldCumulation.readableBytes() + readable);
         cumulation.writeBytes(oldCumulation);
