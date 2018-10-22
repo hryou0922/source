@@ -90,6 +90,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
 
     @Override
     public Promise<V> setSuccess(V result) {
+        // 首先调用setSuccess0方法并对其操作结果进行判断,如果操作成功,则调用notifyListeners方法通知listener。
         if (setSuccess0(result)) {
             notifyListeners();
             return this;
@@ -214,10 +215,12 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
 
     @Override
     public Promise<V> await() throws InterruptedException {
+        // 如果当前的Promise已经被设置,则直接返回
         if (isDone()) {
             return this;
         }
 
+        // 如果线程已经被中断,则抛出中断异常。
         if (Thread.interrupted()) {
             throw new InterruptedException(toString());
         }
@@ -225,6 +228,8 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
         checkDeadLock();
 
         synchronized (this) {
+            // 通过同步关键字锁定当前Promise对象,使用循环判断对isDone结果进行判断,进行循环判断的原因是防止线程被意外唤醒导致的功能异常
+            // 由于在I/O线程中调用Promise的await或者sync方法会导致死锁,所以在循环体中需要对死锁进行保护性校验,防止I/O线程被挂死,最后调用java.lang.Object.wait()方法进行无限期等待,直到I/O线程调用setSuccess方法、trySuccess方法、setFailure或者tryFailure方法。
             while (!isDone()) {
                 incWaiters();
                 try {
@@ -553,6 +558,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
 
     private synchronized void checkNotifyWaiters() {
         if (waiters > 0) {
+            // 如果有正在等待异步UO操作完成的用户线程或者其他系统线程,则调用notifyAll方法唤醒所有正在等待的线程
             notifyAll();
         }
     }

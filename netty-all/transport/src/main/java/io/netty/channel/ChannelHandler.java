@@ -26,43 +26,21 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 处理I/O事件或拦截I/O操作，然后将I/O事件转发到ChannelPipeline里下一个ChannelHandler
  *
+ * ChannelHandler的子类：
+ *  ChannelInboundHandler：处理inbound I/O 事件
+ *  ChannelOutboundHandler：处理outbound I/O 操作
  *
+ * 为方便起见，原来ChannelHandler提供了以下适配器类
+ *  ChannelInboundHandlerAdapter：处理inbound I/O 事件
+ *  ChannelOutboundHandlerAdapter：处理 outbound I/O 操作
+ *  ChannelDuplexHandler：同时处理inbound I/O事件 和 outbound 操作
  *
+ * The context object(上下文对象)
+ *  ChannelHandler包含一个ChannelHandlerContext对象。ChannelHandler通过上下文对象与它所属的k ChannelPipeline}进行交互。ChannelHandler使用上下文对象传递上游或下游事件，动态修改管道，或者使用AttributeKey存储handler的信息
  *
- * Handles an I/O event or intercepts an I/O operation, and forwards it to its next handler in
- * its {@link ChannelPipeline}.
- *
- * <h3>Sub-types</h3>
- * <p>
- * {@link ChannelHandler} itself does not provide many methods, but you usually have to implement one of its subtypes:
- * <ul>
- * <li>{@link ChannelInboundHandler} to handle inbound I/O events, and</li>
- * <li>{@link ChannelOutboundHandler} to handle outbound I/O operations.</li>
- * </ul>
- * </p>
- * <p>
- * Alternatively, the following adapter classes are provided for your convenience:
- * <ul>
- * <li>{@link ChannelInboundHandlerAdapter} to handle inbound I/O events,</li>
- * <li>{@link ChannelOutboundHandlerAdapter} to handle outbound I/O operations, and</li>
- * <li>{@link ChannelDuplexHandler} to handle both inbound and outbound events</li>
- * </ul>
- * </p>
- * <p>
- * For more information, please refer to the documentation of each subtype.
- * </p>
- *
- * <h3>The context object</h3>
- * <p>
- * A {@link ChannelHandler} is provided with a {@link ChannelHandlerContext}
- * object.  A {@link ChannelHandler} is supposed to interact with the
- * {@link ChannelPipeline} it belongs to via a context object.  Using the
- * context object, the {@link ChannelHandler} can pass events upstream or
- * downstream, modify the pipeline dynamically, or store the information
- * (using {@link AttributeKey}s) which is specific to the handler.
- *
- * <h3>State management</h3>
+ * 状态管理
  *
  * A {@link ChannelHandler} often needs to store some stateful information.
  * The simplest and recommended approach is to use member variables:
@@ -155,22 +133,9 @@ import java.lang.annotation.Target;
  * </pre>
  *
  *
- * <h4>The {@code @Sharable} annotation</h4>
- * <p>
- * In the example above which used an {@link AttributeKey},
- * you might have noticed the {@code @Sharable} annotation.
- * <p>
- * If a {@link ChannelHandler} is annotated with the {@code @Sharable}
- * annotation, it means you can create an instance of the handler just once and
- * add it to one or more {@link ChannelPipeline}s multiple times without
- * a race condition.
- * <p>
- * If this annotation is not specified, you have to create a new handler
- * instance every time you add it to a pipeline because it has unshared state
- * such as member variables.
- * <p>
- * This annotation is provided for documentation purpose, just like
- * <a href="http://www.javaconcurrencyinpractice.com/annotations/doc/">the JCIP annotations</a>.
+ * @Sharable annotation：
+ *  如果{@link ChannelHandler}使用{@code @Sharable}注释进行注释，则意味着您只需创建一个处理程序实例，并将其多次添加到一个或多个{@link ChannelPipeline}而无需竞争条件
+ *  如果未指定此annotation，则每次将其添加到管道时都必须创建新的处理程序实例，因为它具有非共享状态，例如成员变量
  *
  * <h3>Additional resources worth reading</h3>
  * <p>
@@ -182,6 +147,7 @@ import java.lang.annotation.Target;
 public interface ChannelHandler {
 
     /**
+     * 在将{@link ChannelHandler}添加到实际上下文并且它已准备好处理事件之后调用。
      * Gets called after the {@link ChannelHandler} was added to the actual context and it's ready to handle events.
      */
     void handlerAdded(ChannelHandlerContext ctx) throws Exception;
@@ -201,6 +167,11 @@ public interface ChannelHandler {
     void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception;
 
     /**
+     *
+     * 表示注释的{@link ChannelHandler}的同一实例可以多次添加到一个或多个{@link ChannelPipeline}而没有竞争条件。
+     *
+     * 如果handler未指定此annotation，则每次将其添加到管道时都必须创建新的处理程序实例，因为它具有非共享状态，例如成员变量。
+     *
      * Indicates that the same instance of the annotated {@link ChannelHandler}
      * can be added to one or more {@link ChannelPipeline}s multiple times
      * without a race condition.
@@ -208,6 +179,7 @@ public interface ChannelHandler {
      * If this annotation is not specified, you have to create a new handler
      * instance every time you add it to a pipeline because it has unshared
      * state such as member variables.
+     *
      * <p>
      * This annotation is provided for documentation purpose, just like
      * <a href="http://www.javaconcurrencyinpractice.com/annotations/doc/">the JCIP annotations</a>.

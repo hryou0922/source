@@ -25,6 +25,8 @@ import java.util.List;
 
 
 /**
+ * LengthFieldPrepender负责在待发送的ByteBuf消息头中增加一个长度字段来标识消息的长度,它简化了用户的编码器开发,使用户不需要额外去设置这个长度字段
+ *
  * An encoder that prepends the length of the message.  The length value is
  * prepended as a binary form.
  * <p>
@@ -158,16 +160,28 @@ public class LengthFieldPrepender extends MessageToMessageEncoder<ByteBuf> {
 
     @Override
     protected void encode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
+        // 首先对长度字段进行设置,如果需要包含消息长度自身,则在原来长度的基础之上再加上lengthFieldLength的长度。
         int length = msg.readableBytes() + lengthAdjustment;
         if (lengthIncludesLengthFieldLength) {
             length += lengthFieldLength;
         }
 
+        // 如果调整后的消息长度小于0,则抛出参数非法异常
         if (length < 0) {
             throw new IllegalArgumentException(
                     "Adjusted frame length (" + length + ") is less than zero");
         }
+/**
+ 对消息长度自身所占的字节数进行判断,以便采用正确的方法将长度字段写入到ByteBuf中,共有以下6种可能。
+     1)长度字段所占字节为1:如果使用1个Byte字节代表消息长度,则最大长度需要小于256个字节。对长度进行校验,如果校验失败,则抛出参数非法异常;若校验通过,则创建新的ByteBuf并通过writeByte将长度值写入到ByteBuf中。
+     2)长度字段所占字节为2:如果使用2个Byte字节代表消息长度,则最大长度需要小于65536个字节,对长度进行校验,如果校验失败,则抛出参数非法异常;若校验通过,则创建新的ByteBuf并通过writeShort将长度值写入到ByteBuf中。
+     3)长度字段所占字节为3:如果使用3个Byte字节代表消息长度,则最大长度需要小于16777216个字节,对长度进行校验,如果校验失败,则抛出参数非法异常;若校验通过,则创建新的ByteBuf并通过writeMedium将长度值写入到ByteBuf中。
+     4)长度字段所占字节为4:创建新的ByteBuf,并通过writeInt将长度值写入到ByteBuf中。
+     5)长度字段所占字节为8:创建新的ByteBuf,并通过writeLong将长度值写入到ByteBuf中。
+     6)其他长度值:直接抛出Error。
 
+ 最后将原需要发送的ByteBuf复制到List<Object>out中,完成编码。
+ */
         switch (lengthFieldLength) {
         case 1:
             if (length >= 256) {

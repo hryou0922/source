@@ -1810,11 +1810,8 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract ByteBuf retainedSlice();
 
     /**
-     * Returns a slice of this buffer's sub-region. Modifying the content of
-     * the returned buffer or this buffer affects each other's content while
-     * they maintain separate indexes and marks.
-     * This method does not modify {@code readerIndex} or {@code writerIndex} of
-     * this buffer.
+     * 返回此缓冲区子区域的切片。修改返回的缓冲区或此缓冲区的内容会影响彼此的内容，同时它们会维护单独的 indexes 和 marks。 此方法不会修改此缓冲区的readerIndex或writerIndex。
+     *
      * <p>
      * Also be aware that this method will NOT call {@link #retain()} and so the
      * reference count will NOT be increased.
@@ -1822,15 +1819,9 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract ByteBuf slice(int index, int length);
 
     /**
-     * Returns a retained slice of this buffer's sub-region. Modifying the content of
-     * the returned buffer or this buffer affects each other's content while
-     * they maintain separate indexes and marks.
-     * This method does not modify {@code readerIndex} or {@code writerIndex} of
-     * this buffer.
-     * <p>
-     * Note that this method returns a {@linkplain #retain() retained} buffer unlike {@link #slice(int, int)}.
-     * This method behaves similarly to {@code slice(...).retain()} except that this method may return
-     * a buffer implementation that produces less garbage.
+     * 返回此缓冲区子区域的保留切片。修改返回的缓冲区或此缓冲区的内容会影响彼此的内容，同时它们会维护单独的 indexes 和 marks。此方法不会修改此缓冲区的readerIndex或writerIndex。
+     * 请注意，此方法返回的{@linkplain #retain（）retain}缓冲区，与{@link #slice（int，int）}不同。
+     * 此方法与{@code slice（...）。retain（）}的行为类似，不同之处在于此方法可能返回产生较少垃圾的缓冲区实现。
      */
     public abstract ByteBuf retainedSlice(int index, int length);
 

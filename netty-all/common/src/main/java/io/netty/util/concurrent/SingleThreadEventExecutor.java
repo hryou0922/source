@@ -390,6 +390,8 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
      * the tasks in the task queue and returns if it ran longer than {@code timeoutNanos}.
      */
     protected boolean runAllTasks(long timeoutNanos) {
+        // 首先从定时任务消息队列中弹出消息进行处理,如果消息队列为空,则退出循环。根据当前的时间戳进行判断,如果该定时任务已经或者正处于超时状态,则将其加入到执行TaskQueue中,同时从延时队列中删除。定时任务如果没有超时,说明本轮循环不需要处理,直接退出即可
+        // 执行TaskQueue中原有的任务和从延时队列中复制的已经超时或者正处于超时状态的定时任务,
         fetchFromScheduledTaskQueue();
         Runnable task = pollTask();
         if (task == null) {
@@ -401,10 +403,12 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         long runTasks = 0;
         long lastExecutionTime;
         for (;;) {
+
             safeExecute(task);
 
             runTasks ++;
 
+            // 由于获取系统纳秒时间是个耗时的操作,每次循环都获取当前系统纳秒时间进行超时判断会降低性能。为了提升性能,每执行60次循环判断一次,如果当前系统时间已经到了分配给非I/O操作的超时时间,则退出循环。这是为了防止由于非I/O任务过多导致I/O
             // Check timeout every 64 tasks because nanoTime() is relatively expensive.
             // XXX: Hard-coded value - will make it configurable if it is really a problem.
             if ((runTasks & 0x3F) == 0) {
