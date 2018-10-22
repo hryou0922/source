@@ -119,6 +119,8 @@ import java.util.Date;
  *
  * 由于中断通常意味着取消，并且中断的检查通常不频繁，所以建议通过普通方法返回中断中断信息。
  *
+ * 例子：
+ *  java Condition源码分析：https://blog.csdn.net/coslay/article/details/45217069
  *
  * @since 1.5
  * @author Doug Lea
