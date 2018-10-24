@@ -16,29 +16,24 @@
 package io.netty.buffer;
 
 /**
- * Implementations are responsible to allocate buffers. Implementations of this interface are expected to be
- * thread-safe.
+ * 此类负责分配缓冲区。 此接口的实现应该是线程安全的。
  */
 public interface ByteBufAllocator {
 
     ByteBufAllocator DEFAULT = ByteBufUtil.DEFAULT_ALLOCATOR;
 
     /**
-     * Allocate a {@link ByteBuf}. If it is a direct or heap buffer
-     * depends on the actual implementation.
+     * 分配一个ByteBuf. 缓冲区的类型（a direct or heap buffer）由ByteBufAllocator的实现类决定
      */
     ByteBuf buffer();
 
     /**
-     * Allocate a {@link ByteBuf} with the given initial capacity.
-     * If it is a direct or heap buffer depends on the actual implementation.
+     * 分配一个初始容量为initialCapacity的ByteBuf,缓冲区的类型(a direct or heap buffer)由ByteBufAllocator的实现类决定
      */
     ByteBuf buffer(int initialCapacity);
 
     /**
-     * Allocate a {@link ByteBuf} with the given initial capacity and the given
-     * maximal capacity. If it is a direct or heap buffer depends on the actual
-     * implementation.
+     * 分配一个初始容量为initialCapacity,最大容量为maxCapacity的ByteBuf,缓冲区的类型（a direct or heap buffer）由ByteBufAllocator的实现类决定
      */
     ByteBuf buffer(int initialCapacity, int maxCapacity);
 
@@ -53,7 +48,7 @@ public interface ByteBufAllocator {
     ByteBuf ioBuffer(int initialCapacity);
 
     /**
-     * Allocate a {@link ByteBuf}, preferably a direct buffer which is suitable for I/O.
+     * 分配一个初始容量为initialCapacity,最大容量为maxCapacity的ByteBuf， 缓冲区使用direct buffer ,因为directbuffer的IO操作性能更高
      */
     ByteBuf ioBuffer(int initialCapacity, int maxCapacity);
 
@@ -68,8 +63,7 @@ public interface ByteBufAllocator {
     ByteBuf heapBuffer(int initialCapacity);
 
     /**
-     * Allocate a heap {@link ByteBuf} with the given initial capacity and the given
-     * maximal capacity.
+     * 分配一个初始容量为initialCapacity,最大容量为maxCapacity的 heap ByteBuf
      */
     ByteBuf heapBuffer(int initialCapacity, int maxCapacity);
 
@@ -84,8 +78,7 @@ public interface ByteBufAllocator {
     ByteBuf directBuffer(int initialCapacity);
 
     /**
-     * Allocate a direct {@link ByteBuf} with the given initial capacity and the given
-     * maximal capacity.
+     * 分配一个初始容量为initialCapacity,最大容量为maxCapacity的direct ByteBuf
      */
     ByteBuf directBuffer(int initialCapacity, int maxCapacity);
 
@@ -96,8 +89,7 @@ public interface ByteBufAllocator {
     CompositeByteBuf compositeBuffer();
 
     /**
-     * Allocate a {@link CompositeByteBuf} with the given maximum number of components that can be stored in it.
-     * If it is a direct or heap buffer depends on the actual implementation.
+     * 分配一个最大容量为maxCapacity的CompositeByteBuf,内存类型（a direct or heap buffer）由ByteBufAllocator的实现类决定是否使用了直接内存内存池
      */
     CompositeByteBuf compositeBuffer(int maxNumComponents);
 
