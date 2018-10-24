@@ -313,6 +313,9 @@ import java.util.*;
  *   }
  * }}</pre>
  *
+ * 参考文献：
+ *  面试官常问的线程池，你真的了解吗：https://blog.csdn.net/Ch97CKd/article/details/80745137
+ *
  * @since 1.5
  * @author Doug Lea
  */
