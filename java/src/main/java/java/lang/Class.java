@@ -230,33 +230,10 @@ public final class Class<T> implements java.io.Serializable,
      * 此方法无法用于加载用于表示 primitive types 或 void 的Class对象。
      * 当将name值表示为a primitive type or void时，此方法会在未命名的包下面查找此值对应的用户定义的类
      *
+     * 如果name表示an array class，the component type of the array class被加载但是不会初始化
      *
-     * <p> If {@code name} denotes an array class, the component type of
-     * the array class is loaded but not initialized.
-     *
-     * <p> For example, in an instance method the expression:
-     *
-     * <blockquote>
-     *  {@code Class.forName("Foo")}
-     * </blockquote>
-     *
-     * is equivalent to:
-     *
-     * <blockquote>
-     *  {@code Class.forName("Foo", true, this.getClass().getClassLoader())}
-     * </blockquote>
-     *
-     * Note that this method throws errors related to loading, linking or
-     * initializing as specified in Sections 12.2, 12.3 and 12.4 of <em>The
-     * Java Language Specification</em>.
-     * Note that this method does not check whether the requested class
-     * is accessible to its caller.
-     *
+     * 如loader是nulk，且安全管理器存在，并且调用者的类加载器不为null，则此方法会调用安全管理器的checkPermission的方法是否有权限访问RuntimePermission("getClassLoader")
      * <p> If the {@code loader} is {@code null}, and a security
-     * manager is present, and the caller's class loader is not null, then this
-     * method calls the security manager's {@code checkPermission} method
-     * with a {@code RuntimePermission("getClassLoader")} permission to
-     * ensure it's ok to access the bootstrap class loader.
      *
      * @param name       fully qualified name of the desired class
      * @param initialize if {@code true} the class will be initialized.
@@ -303,20 +280,7 @@ public final class Class<T> implements java.io.Serializable,
         throws ClassNotFoundException;
 
     /**
-     * Creates a new instance of the class represented by this {@code Class}
-     * object.  The class is instantiated as if by a {@code new}
-     * expression with an empty argument list.  The class is initialized if it
-     * has not already been initialized.
-     *
-     * <p>Note that this method propagates any exception thrown by the
-     * nullary constructor, including a checked exception.  Use of
-     * this method effectively bypasses the compile-time exception
-     * checking that would otherwise be performed by the compiler.
-     * The {@link
-     * Constructor#newInstance(Object...)
-     * Constructor.newInstance} method avoids this problem by wrapping
-     * any exception thrown by the constructor in a (checked) {@link
-     * InvocationTargetException}.
+     * 根据此Class对象表示的class创建一个实例。在创建实例过程中会初始化class，如果class之前没有初始化过
      *
      * @return  a newly allocated instance of the class represented by this
      *          object.
@@ -356,6 +320,7 @@ public final class Class<T> implements java.io.Serializable,
                 );
             }
             try {
+                // 获取Class对象的无参Constructor并缓存
                 Class<?>[] empty = {};
                 final Constructor<T> c = getConstructor0(empty, Member.DECLARED);
                 // Disable accessibility checks on the constructor
@@ -399,29 +364,15 @@ public final class Class<T> implements java.io.Serializable,
 
 
     /**
-     * Determines if the specified {@code Object} is assignment-compatible
-     * with the object represented by this {@code Class}.  This method is
-     * the dynamic equivalent of the Java language {@code instanceof}
-     * operator. The method returns {@code true} if the specified
-     * {@code Object} argument is non-null and can be cast to the
-     * reference type represented by this {@code Class} object without
-     * raising a {@code ClassCastException.} It returns {@code false}
-     * otherwise.
+     * 如果指定的Object对象是此Class表示对象的类对象或子类对象，则返回true，否则返回false
+     * 此方法动态等价于 instanceof 操作
      *
-     * <p> Specifically, if this {@code Class} object represents a
-     * declared class, this method returns {@code true} if the specified
-     * {@code Object} argument is an instance of the represented class (or
-     * of any of its subclasses); it returns {@code false} otherwise. If
-     * this {@code Class} object represents an array class, this method
-     * returns {@code true} if the specified {@code Object} argument
-     * can be converted to an object of the array class by an identity
-     * conversion or by a widening reference conversion; it returns
-     * {@code false} otherwise. If this {@code Class} object
-     * represents an interface, this method returns {@code true} if the
-     * class or any superclass of the specified {@code Object} argument
-     * implements this interface; it returns {@code false} otherwise. If
-     * this {@code Class} object represents a primitive type, this method
-     * returns {@code false}.
+     * 如果本Class对象表示一个class，则Object是这个class的类或子类的对象，则返回true，否则返回false
+     * 如果本Class对象表示an array class，则指定的{Object}参数可以通过标识转换或扩展引用转换转换为数组类的对象
+     *  (the specified {@code Object} argument can be converted to an object of the array class by an identity conversion or by a widening reference conversion;)
+     *    则返回true，否则返回false
+     *      demo: String str [] = new String [ 2 ];  str instanceof String []; //11,true
+     *  如果本Class对象表示一个接口，则Object类或超类实现此Class对象的，则返回true，否则返回false
      *
      * @param   obj the object to check
      * @return  true if {@code obj} is an instance of this class
@@ -432,21 +383,17 @@ public final class Class<T> implements java.io.Serializable,
 
 
     /**
-     * Determines if the class or interface represented by this
-     * {@code Class} object is either the same as, or is a superclass or
-     * superinterface of, the class or interface represented by the specified
-     * {@code Class} parameter. It returns {@code true} if so;
-     * otherwise it returns {@code false}. If this {@code Class}
-     * object represents a primitive type, this method returns
-     * {@code true} if the specified {@code Class} parameter is
-     * exactly this {@code Class} object; otherwise it returns
-     * {@code false}.
+     * 和isInstance相比，此方法向上表示, inInstance是向下表示
      *
-     * <p> Specifically, this method tests whether the type represented by the
+     * 如果此Class表示对象的类是指定的Class对象(接口或类)相同或是它的超类,则返回true
+     *      Class.isAssignableFrom与 instanceof 区别: http://lucky16.iteye.com/blog/1631253
+     * 如果此Class是a primitive type,只有当指定Class参数和本Class对象严格相同时,才返回true,否则false
+     *
+     * 此方法用于测试指定Class参数表示的对象可以被此Class对象引用
+     * ( Specifically, this method tests whether the type represented by the
      * specified {@code Class} parameter can be converted to the type
      * represented by this {@code Class} object via an identity conversion
-     * or via a widening reference conversion. See <em>The Java Language
-     * Specification</em>, sections 5.1.1 and 5.1.4 , for details.
+     * or via a widening reference conversion)
      *
      * @param cls the {@code Class} object to be checked
      * @return the {@code boolean} value indicating whether objects of the
@@ -457,24 +404,10 @@ public final class Class<T> implements java.io.Serializable,
      */
     public native boolean isAssignableFrom(Class<?> cls);
 
-
-    /**
-     * Determines if the specified {@code Class} object represents an
-     * interface type.
-     *
-     * @return  {@code true} if this object represents an interface;
-     *          {@code false} otherwise.
-     */
+    // 如果此Class对象是接口返回true,否则false
     public native boolean isInterface();
 
-
-    /**
-     * Determines if this {@code Class} object represents an array class.
-     *
-     * @return  {@code true} if this object represents an array class;
-     *          {@code false} otherwise.
-     * @since   JDK1.1
-     */
+    // 如果此Class对象表示一个数组类，则返回true，否则返回false
     public native boolean isArray();
 
 
