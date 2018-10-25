@@ -48,6 +48,7 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
 
     private final ByteBufAllocator alloc;
     private final boolean direct;
+    // 它定义了一个Component类型的集合,实际上Component就是ByteBuf的包装实现类,
     private final ComponentList components;
     private final int maxNumComponents;
 
@@ -186,6 +187,8 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
     }
 
     /**
+     * 向CompositeByteBuf中新增一个ByteBuf
+     *
      * Add the given {@link ByteBuf} and increase the {@code writerIndex} if {@code increaseWriterIndex} is
      * {@code true}.
      *
@@ -462,6 +465,8 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
     }
 
     /**
+     * 删除增加的ByteBuf
+     *
      * Remove the {@link ByteBuf} from the given index.
      *
      * @param cIndex the index on from which the {@link ByteBuf} will be remove
@@ -1668,6 +1673,7 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf implements
         return result + ", components=" + components.size() + ')';
     }
 
+    // 它精合了ByteBuf对象,维护了在集合中的位置偏移量信息等
     private static final class Component {
         final ByteBuf buf;
         final int length;
