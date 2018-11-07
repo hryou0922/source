@@ -412,15 +412,10 @@ public final class Class<T> implements java.io.Serializable,
 
 
     /**
-     * Determines if the specified {@code Class} object represents a
-     * primitive type.
-     *
-     * <p> There are nine predefined {@code Class} objects to represent
-     * the eight primitive types and void.  These are created by the Java
-     * Virtual Machine, and have the same names as the primitive types that
-     * they represent, namely {@code boolean}, {@code byte},
-     * {@code char}, {@code short}, {@code int},
-     * {@code long}, {@code float}, and {@code double}.
+     * 判断此Class对象是否是primitive type
+     *  有9个预定义的Class对象，这些Class对象
+     *      a. 8个 primitive types：boolean、byte、char、short、int、long、float、double
+     *      b. void ： Void.class.isPrimitive() 返回 false
      *
      * <p> These objects may only be accessed via the following public static
      * final variables, and are the only {@code Class} objects for which
@@ -442,12 +437,9 @@ public final class Class<T> implements java.io.Serializable,
     public native boolean isPrimitive();
 
     /**
-     * Returns true if this {@code Class} object represents an annotation
-     * type.  Note that if this method returns true, {@link #isInterface()}
-     * would also return true, as all annotation types are also interfaces.
+     * 如果本Class对象是annotation类型，则返回true。
+     * 注意：如果此方法返回true，则isInterface()方法也会返回true，因为所有的annotation类型都是接口
      *
-     * @return {@code true} if this class object represents an annotation
-     *      type; {@code false} otherwise
      * @since 1.5
      */
     public boolean isAnnotation() {
@@ -467,9 +459,7 @@ public final class Class<T> implements java.io.Serializable,
     }
 
     /**
-     * Returns the  name of the entity (class, interface, array class,
-     * primitive type, or void) represented by this {@code Class} object,
-     * as a {@code String}.
+     * 返回Class对象的实体名称 (class, interface, array class, primitive type, or void)
      *
      * <p> If this class object represents a reference type that is not an
      * array type then the binary name of the class is returned, as specified
@@ -529,20 +519,16 @@ public final class Class<T> implements java.io.Serializable,
     private native String getName0();
 
     /**
-     * Returns the class loader for the class.  Some implementations may use
-     * null to represent the bootstrap class loader. This method will return
-     * null in such implementations if this class was loaded by the bootstrap
-     * class loader.
+     * 返回此类的class loader
+     * 如果此方法返回null，则表示此class由bootstrap class loader 加载
      *
-     * <p> If a security manager is present, and the caller's class loader is
-     * not null and the caller's class loader is not the same as or an ancestor of
-     * the class loader for the class whose class loader is requested, then
-     * this method calls the security manager's {@code checkPermission}
-     * method with a {@code RuntimePermission("getClassLoader")}
-     * permission to ensure it's ok to access the class loader for the class.
+     * 如果security manager存在，
+     *  调用者的class loader非空
+     *  且调用者的class loader与此被加载的类的class loader不相同
+     *  且调用者的class loader不是被加载的类的class loader的祖先
+     * 则此方法会调用security manager的checkPermission(RuntimePermission("getClassLoader"))的方法检查，来确认是否有权限访问此类的class loader
      *
-     * <p>If this object
-     * represents a primitive type or void, null is returned.
+     * 如果此类为a primitive type or void，则返回null
      *
      * @return  the class loader that loaded the class or interface
      *          represented by this object.
@@ -588,6 +574,12 @@ public final class Class<T> implements java.io.Serializable,
      *     the format specified in
      *     <cite>The Java&trade; Virtual Machine Specification</cite>
      * @since 1.5
+     *
+     * 返回泛型的参数类型
+     *
+     * 详细用法见这里：
+     *  Java泛型Type体系: https://blog.csdn.net/xxxzhi/article/details/49616577
+     *
      */
     @SuppressWarnings("unchecked")
     public TypeVariable<Class<T>>[] getTypeParameters() {
@@ -804,27 +796,18 @@ public final class Class<T> implements java.io.Serializable,
 
 
     /**
-     * Returns the Java language modifiers for this class or interface, encoded
-     * in an integer. The modifiers consist of the Java Virtual Machine's
-     * constants for {@code public}, {@code protected},
-     * {@code private}, {@code final}, {@code static},
-     * {@code abstract} and {@code interface}; they should be decoded
-     * using the methods of class {@code Modifier}.
+     * 返回此类或接口的Java语言修饰符(modifiers)，以整数编码。
+     * 此语言修饰符(modifiers)包括：public、protected、private、final、static、abstract、interface
      *
-     * <p> If the underlying class is an array class, then its
-     * {@code public}, {@code private} and {@code protected}
-     * modifiers are the same as those of its component type.  If this
-     * {@code Class} represents a primitive type or void, its
-     * {@code public} modifier is always {@code true}, and its
-     * {@code protected} and {@code private} modifiers are always
-     * {@code false}. If this object represents an array class, a
-     * primitive type or void, then its {@code final} modifier is always
-     * {@code true} and its interface modifier is always
-     * {@code false}. The values of its other modifiers are not determined
-     * by this specification.
+     * 如果此class是一个数组类，那么它的public，private和 protected 修饰符与它的组件类型( component type)相同
+     *      // a类定义如下：private  class a{}
+     *      System.out.println(Integer.toBinaryString(String[].class.getModifiers())); -->10000010001
+            System.out.println(Integer.toBinaryString(a[].class.getModifiers()));  -->    10000010010
+     * 如果此class对象表示a primitive type or void,则public修饰符一直返回true, 而protected、private修饰符一直返回false
+     * 如果此class对象表示一个数组类、primitive type 或 void，则final一直返回true; 对于接口，final一直返回false
      *
-     * <p> The modifier encodings are defined in <em>The Java Virtual Machine
-     * Specification</em>, table 4.1.
+     * 语言修饰符(modifiers)定义在 <em>The Java Virtual Machine Specification</em>, table 4.1.
+     *  https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.1
      *
      * @return the {@code int} representing the modifiers for this class
      * @see     Modifier
