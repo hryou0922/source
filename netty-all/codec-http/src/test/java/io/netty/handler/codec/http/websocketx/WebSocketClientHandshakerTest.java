@@ -240,7 +240,7 @@ public abstract class WebSocketClientHandshakerTest {
             }
         };
 
-        // use randomBytes helper from utils to check that it functions properly
+        // use randomBytes helper from util to check that it functions properly
         byte[] data = WebSocketUtil.randomBytes(24);
 
         // Create a EmbeddedChannel which we will use to encode a BinaryWebsocketFrame to bytes and so use these
